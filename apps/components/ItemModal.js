@@ -1,4 +1,7 @@
 // ItemModal.js
+// deprecated...leaving here as an example for editModal and how to
+// extract the right / wrong answers
+
 'use strict';
 
 var React = require('react');
@@ -25,7 +28,6 @@ var ItemModal = React.createClass({
                 modalHeader: 'New Question',
                 questionFileUrl: '',
                 questionString: '',
-                showModal: this.props.show,
                 wrongAnswer1: '',
                 wrongAnswer2: '',
                 wrongAnswer3: ''
@@ -54,7 +56,6 @@ var ItemModal = React.createClass({
                 modalHeader: 'Edit Question',
                 questionFileUrl: this.props.item.question.files.image_file,
                 questionString: this.props.item.question.text,
-                showModal: this.props.show,
                 wrongAnswer1: wrongAnswerTexts[0],
                 wrongAnswer2: wrongAnswerTexts[1],
                 wrongAnswer3: wrongAnswerTexts[2]
@@ -73,17 +74,14 @@ var ItemModal = React.createClass({
     reset: function() {
         questionFile = null;
         if (this.props.item === '') {
-            return {
-                correctAnswer: '',
-                modalButton: 'Create',
-                modalHeader: 'New Question',
-                questionFileUrl: '',
-                questionString: '',
-                showModal: this.props.show,
-                wrongAnswer1: '',
-                wrongAnswer2: '',
-                wrongAnswer3: ''
-            };
+            this.setState({ correctAnswer: '' });
+            this.setState({ modalButton: 'Create' });
+            this.setState({ modalHeader: 'New Question' });
+            this.setState({ questionFileUrl: '' });
+            this.setState({ questionString: '' });
+            this.setState({ wrongAnswer1: '' });
+            this.setState({ wrongAnswer2: '' });
+            this.setState({ wrongAnswer3: '' });
         } else {
             var answers = this.props.item.answers,
                 rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
@@ -102,22 +100,34 @@ var ItemModal = React.createClass({
                 return wrongAnswerIds.indexOf(choice.id) >= 0;
             });
 
-            return {
-                correctAnswer: correctAnswerText,
-                modalButton: 'Edit',
-                modalHeader: 'Edit Question',
-                questionFileUrl: this.props.item.question.files.image_file,
-                questionString: this.props.item.question.text,
-                showModal: this.props.show,
-                wrongAnswer1: wrongAnswerTexts[0],
-                wrongAnswer2: wrongAnswerTexts[1],
-                wrongAnswer3: wrongAnswerTexts[2]
-            };
+            this.setState({ correctAnswer: correctAnswerText });
+            this.setState({ modalButton: 'Edit' });
+            this.setState({ modalHeader: 'Edit Question' });
+            this.setState({ questionFileUrl: this.props.item.question.files.image_file });
+            this.setState({ questionString: this.props.item.question.text });
+            this.setState({ wrongAnswer1: wrongAnswerTexts[0] });
+            this.setState({ wrongAnswer2: wrongAnswerTexts[1] });
+            this.setState({ wrongAnswer3: wrongAnswerTexts[2] });
         }
     },
     save: function (e) {
         this.props.save({
-
+            description: this.state.itemDescription,
+            displayName: this.state.itemDisplayName,
+            question: {
+                text: this.state.questionString,
+                choices: [
+                    this.state.correctAnswer,
+                    this.state.wrongAnswer1,
+                    this.state.wrongAnswer2,
+                    this.state.wrongAnswer3
+                ]
+            },
+            questionFile: questionFile,
+            answers: [
+                {
+                    choiceIds: []
+                }]
         });
     },
     onChange: function(e) {
@@ -140,7 +150,7 @@ var ItemModal = React.createClass({
     },
     render: function () {
         // TODO: Add WYSIWYG editor so can add tables to questions / answers?
-        return <Modal show={this.state.showModal} onHide={this.close}>
+        return <Modal bsSize="lg" show={this.props.show} onHide={this.close}>
             <Modal.Header closeButton>
                 <Modal.Title>{this.state.modalHeader}</Modal.Title>
             </Modal.Header>
