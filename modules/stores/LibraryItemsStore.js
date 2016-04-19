@@ -27,11 +27,13 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             data = new FormData();
 
         _.each(_.keys(payload), function (key) {
-            if (key != 'questionFile') {
+            if (key == 'question' || key == 'answers') {
+                data.append(key, JSON.stringify(payload[key]));
+            } else if (key != 'questionFile') {
                 data.append(key, payload[key]);
             }
         });
-        data.append('question_image_file', payload.questionFile);
+        data.append('question_imageFile', payload.questionFile);
 
         fetch(url, {
             method: 'POST',
@@ -53,6 +55,31 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             }
         }).catch(function (error) {
             console.log('Problem with creating item: ' + error.message);
+        });
+    },
+    deleteItem: function (data) {
+        var url = this.url() + data.libraryId + '/items/' + data.itemId,
+            _this = this;
+
+        fetch(url, {
+            method: 'DELETE',
+            credentials: "same-origin",
+            headers: new Headers({
+                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+            })
+        }).then(function (response) {
+            if (response.ok) {
+                response.json().then(function (responseData) {
+                    _this.getItems(data.libraryId);
+                    console.log(responseData);
+                });
+            } else {
+                response.text().then(function (responseData) {
+                    alert(response.statusText + ': ' + responseData);
+                });
+            }
+        }).catch(function (error) {
+            console.log('Problem with deleting item: ' + error.message);
         });
     },
     getItems: function (id) {
@@ -84,6 +111,9 @@ LibraryItemsStore.dispatchToken = LibraryItemsDispatcher.register(function (acti
     switch(action.type) {
         case ActionTypes.CREATE_ITEM:
             LibraryItemsStore.createNewItem(action.content);
+            break;
+        case ActionTypes.DELETE_ITEM:
+            LibraryItemsStore.deleteItem(action.content);
             break;
     }
 });

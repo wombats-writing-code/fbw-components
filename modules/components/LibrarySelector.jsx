@@ -46,8 +46,8 @@ var LibrarySelector = React.createClass({
         return <FormGroup controlId="librarySelector">
             <ControlLabel>Select class ...</ControlLabel>
                 <FormControl componentClass="select"
-                          placeholder="Select a class"
-                          onChange={this.showItems}>
+                             placeholder="Select a class"
+                             onChange={this.showItems}>
                 {this.renderLibraries()}
             </FormControl>
         </FormGroup>

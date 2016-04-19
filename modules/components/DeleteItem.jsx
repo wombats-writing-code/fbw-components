@@ -1,11 +1,15 @@
+// DeleteItem.jsx
+'use strict';
+
 var React = require('react');
 var ReactBS = require('react-bootstrap');
-var Modal = ReactBS.Modal;
 var Button = ReactBS.Button;
+var Glyphicon = ReactBS.Glyphicon;
+var Modal = ReactBS.Modal;
 var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
-var dispatcher = require('../dispatcher/TSLAuthorDispatcher');
+var dispatcher = require('../dispatcher/LibraryItemsDispatcher');
 
-var DeleteObjectiveBtn = React.createClass({
+var DeleteItem = React.createClass({
     getInitialState: function () {
         return {
             showModal: false
@@ -15,34 +19,33 @@ var DeleteObjectiveBtn = React.createClass({
         this.setState({showModal: false});
     },
     open: function (e) {
-        var _this = this;
         this.setState({showModal: true}, function () {
 
         });
-        e.stopPropagation();
     },
     save: function (e) {
         dispatcher.dispatch({
-            type: ActionTypes.DELETE_OBJECTIVE,
+            type: ActionTypes.DELETE_ITEM,
             content: {
-                id: this.props.objective.id
+                itemId: this.props.item.id,
+                libraryId: this.props.libraryId
             }
         });
         this.close();
     },
     render: function () {
         return <span>
-            <Button onClick={this.open}>
-                <i className="fa fa-trash fa-2x" aria-hidden="true"></i>
-                <span className="sr-only">Delete Objective</span>
+            <Button onClick={this.open}
+                    bsSize="large">
+                <Glyphicon glyph="trash" />
             </Button>
             <Modal show={this.state.showModal} onHide={this.close}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Delete Objective</Modal.Title>
+                    <Modal.Title>Delete Item</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <div>
-                        <span className="red">Are you sure you want to delete {this.props.objective.displayName.text} and all its children?</span>
+                        <span className="red">Are you sure you want to delete {this.props.item.displayName.text}?</span>
                         <p>This action <strong>CANNOT</strong> be undone!</p>
                     </div>
                 </Modal.Body>
@@ -55,4 +58,4 @@ var DeleteObjectiveBtn = React.createClass({
     }
 });
 
-module.exports = DeleteObjectiveBtn;
+module.exports = DeleteItem;

@@ -12,6 +12,7 @@ var Glyphicon = ReactBS.Glyphicon;
 var Modal = ReactBS.Modal;
 
 var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
+var GenusTypes = require('../constants/AuthoringConstants').GenusTypes;
 var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
 
@@ -70,6 +71,36 @@ var AddItem = React.createClass({
             this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
             this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
         } else {
+            payload['displayName'] = this.state.itemDisplayName;
+            payload['description'] = this.state.itemDescription;
+            payload['question'] = {
+                text: this.state.questionString,
+                choices: [this.state.correctAnswer,
+                          this.state.wrongAnswer1,
+                          this.state.wrongAnswer2,
+                          this.state.wrongAnswer3]
+            };
+            payload['answers'] = [{
+                genusTypeId: GenusTypes.CORRECT_ANSWER,
+                choiceId: 0,
+                feedback: this.state.correctAnswerFeedback
+            },{
+                genusTypeId: GenusTypes.WRONG_ANSWER,
+                choiceId: 1,
+                feedback: this.state.wrongAnswer1Feedback
+            },{
+                genusTypeId: GenusTypes.WRONG_ANSWER,
+                choiceId: 2,
+                feedback: this.state.wrongAnswer2Feedback
+            },{
+                genusTypeId: GenusTypes.WRONG_ANSWER,
+                choiceId: 3,
+                feedback: this.state.wrongAnswer3Feedback
+            }];
+            if (questionFile != null) {
+                payload['questionFile'] = questionFile;
+            }
+
             Dispatcher.dispatch({
                 type: ActionTypes.CREATE_ITEM,
                 content: payload
@@ -99,7 +130,6 @@ var AddItem = React.createClass({
         this.setState({ itemDescription: '' });
         this.setState({ itemDisplayName: '' });
         this.setState({ itemDisplayNameError: false });
-        this.setState({ questionFileUrl: '' });
         this.setState({ questionString: '' });
         this.setState({ questionStringError: false });
         this.setState({ wrongAnswer1: '' });

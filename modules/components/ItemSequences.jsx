@@ -1,21 +1,24 @@
-// ItemStatus.js
+// ItemSequences.js
 
 'use strict';
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
-var Label = ReactBS.Label;
-
-var LibraryItemsStore = require('../stores/LibraryItemsStore');
-
+var Panel = ReactBS.Panel;
+var PanelGroup = ReactBS.PanelGroup;
 
 
-var ItemStatus = React.createClass({
+var ItemSequences = React.createClass({
     getInitialState: function () {
         return {
+            items: this.props.items
         }
     },
     componentWillMount: function() {
+        var _this = this;
+        LibraryItemsStore.addChangeListener(function(items) {
+            _this.setState({ items: items });
+        });
     },
     componentDidMount: function () {
 
@@ -23,7 +26,7 @@ var ItemStatus = React.createClass({
     render: function () {
         // How to figure out how many are uncurated?
         var libraryName = this.props.libraryDescription,
-            numberItems = this.props.items.length,
+            numberItems = this.state.items.length,
             numberUncuratedItems = 42;
 
         return <div>
@@ -37,4 +40,4 @@ var ItemStatus = React.createClass({
     }
 });
 
-module.exports = ItemStatus;
+module.exports = ItemSequences;

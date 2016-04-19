@@ -22,7 +22,6 @@ var ItemWrapper = React.createClass({
         }
     },
     componentWillMount: function() {
-        var _this = this;
     },
     componentDidMount: function () {
         // get list of modules to filter by
@@ -44,9 +43,8 @@ var ItemWrapper = React.createClass({
                 </Col>
             </Row>
             <Row>
-                <Col>
-                    <ItemsList items={this.state.items} />
-                </Col>
+                <ItemsList items={this.props.items}
+                           libraryId={this.props.libraryId} />
             </Row>
         </div>
     }

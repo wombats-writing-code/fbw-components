@@ -92,11 +92,11 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(8);
+	var ReactBS = __webpack_require__(7);
 	var Grid = ReactBS.Grid;
 	var Row = ReactBS.Row;
 	var Col = ReactBS.Col;
-	var _ = __webpack_require__(7);
+	var _ = __webpack_require__(8);
 
 	var LibraryItemsStore = __webpack_require__(4);
 
@@ -160,10 +160,10 @@
 	// LibraryItemsStore.js
 	'use strict';
 
-	var LibraryItemsDispatcher = __webpack_require__(13);
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(17).EventEmitter;
-	var _ = __webpack_require__(7);
+	var LibraryItemsDispatcher = __webpack_require__(15);
+	var AuthoringConstants = __webpack_require__(16);
+	var EventEmitter = __webpack_require__(19).EventEmitter;
+	var _ = __webpack_require__(8);
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -186,11 +186,13 @@
 	            data = new FormData();
 
 	        _.each(_.keys(payload), function (key) {
-	            if (key != 'questionFile') {
+	            if (key == 'question' || key == 'answers') {
+	                data.append(key, JSON.stringify(payload[key]));
+	            } else if (key != 'questionFile') {
 	                data.append(key, payload[key]);
 	            }
 	        });
-	        data.append('question_image_file', payload.questionFile);
+	        data.append('question_imageFile', payload.questionFile);
 
 	        fetch(url, {
 	            method: 'POST',
@@ -212,6 +214,31 @@
 	            }
 	        }).catch(function (error) {
 	            console.log('Problem with creating item: ' + error.message);
+	        });
+	    },
+	    deleteItem: function (data) {
+	        var url = this.url() + data.libraryId + '/items/' + data.itemId,
+	            _this = this;
+
+	        fetch(url, {
+	            method: 'DELETE',
+	            credentials: "same-origin",
+	            headers: new Headers({
+	                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+	            })
+	        }).then(function (response) {
+	            if (response.ok) {
+	                response.json().then(function (responseData) {
+	                    _this.getItems(data.libraryId);
+	                    console.log(responseData);
+	                });
+	            } else {
+	                response.text().then(function (responseData) {
+	                    alert(response.statusText + ': ' + responseData);
+	                });
+	            }
+	        }).catch(function (error) {
+	            console.log('Problem with deleting item: ' + error.message);
 	        });
 	    },
 	    getItems: function (id) {
@@ -244,6 +271,9 @@
 	        case ActionTypes.CREATE_ITEM:
 	            LibraryItemsStore.createNewItem(action.content);
 	            break;
+	        case ActionTypes.DELETE_ITEM:
+	            LibraryItemsStore.deleteItem(action.content);
+	            break;
 	    }
 	});
 
@@ -260,7 +290,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(8);
+	var ReactBS = __webpack_require__(7);
 	var Badge = ReactBS.Badge;
 	var Col = ReactBS.Col;
 	var Row = ReactBS.Row;
@@ -278,9 +308,7 @@
 	    getInitialState: function getInitialState() {
 	        return {};
 	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	    },
+	    componentWillMount: function componentWillMount() {},
 	    componentDidMount: function componentDidMount() {
 	        // get list of modules to filter by
 	    },
@@ -315,11 +343,8 @@
 	            React.createElement(
 	                Row,
 	                null,
-	                React.createElement(
-	                    Col,
-	                    null,
-	                    React.createElement(ItemsList, { items: this.state.items })
-	                )
+	                React.createElement(ItemsList, { items: this.props.items,
+	                    libraryId: this.props.libraryId })
 	            )
 	        );
 	    }
@@ -335,13 +360,13 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(8);
+	var ReactBS = __webpack_require__(7);
 	var ControlLabel = ReactBS.ControlLabel;
 	var FormControl = ReactBS.FormControl;
 	var FormGroup = ReactBS.FormGroup;
 
 	var LibraryItemsStore = __webpack_require__(4);
-	var LibrariesStore = __webpack_require__(15);
+	var LibrariesStore = __webpack_require__(13);
 
 	var LibrarySelector = React.createClass({
 	    displayName: 'LibrarySelector',
@@ -399,16 +424,10 @@
 	});
 
 	module.exports = LibrarySelector;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ },
 /* 7 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(16);
-
-/***/ },
-/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -19602,6 +19621,12 @@
 	;
 
 /***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(14);
+
+/***/ },
 /* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -19609,7 +19634,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(8);
+	var ReactBS = __webpack_require__(7);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -19618,8 +19643,9 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(13);
+	var ActionTypes = __webpack_require__(16).ActionTypes;
+	var GenusTypes = __webpack_require__(16).GenusTypes;
+	var Dispatcher = __webpack_require__(15);
 	var LibraryItemsStore = __webpack_require__(4);
 
 	var questionFile;
@@ -19671,6 +19697,33 @@
 	            this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
 	            this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
 	        } else {
+	            payload['displayName'] = this.state.itemDisplayName;
+	            payload['description'] = this.state.itemDescription;
+	            payload['question'] = {
+	                text: this.state.questionString,
+	                choices: [this.state.correctAnswer, this.state.wrongAnswer1, this.state.wrongAnswer2, this.state.wrongAnswer3]
+	            };
+	            payload['answers'] = [{
+	                genusTypeId: GenusTypes.CORRECT_ANSWER,
+	                choiceId: 0,
+	                feedback: this.state.correctAnswerFeedback
+	            }, {
+	                genusTypeId: GenusTypes.WRONG_ANSWER,
+	                choiceId: 1,
+	                feedback: this.state.wrongAnswer1Feedback
+	            }, {
+	                genusTypeId: GenusTypes.WRONG_ANSWER,
+	                choiceId: 2,
+	                feedback: this.state.wrongAnswer2Feedback
+	            }, {
+	                genusTypeId: GenusTypes.WRONG_ANSWER,
+	                choiceId: 3,
+	                feedback: this.state.wrongAnswer3Feedback
+	            }];
+	            if (questionFile != null) {
+	                payload['questionFile'] = questionFile;
+	            }
+
 	            Dispatcher.dispatch({
 	                type: ActionTypes.CREATE_ITEM,
 	                content: payload
@@ -19700,7 +19753,6 @@
 	        this.setState({ itemDescription: '' });
 	        this.setState({ itemDisplayName: '' });
 	        this.setState({ itemDisplayNameError: false });
-	        this.setState({ questionFileUrl: '' });
 	        this.setState({ questionString: '' });
 	        this.setState({ questionStringError: false });
 	        this.setState({ wrongAnswer1: '' });
@@ -20065,7 +20117,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(8);
+	var ReactBS = __webpack_require__(7);
 	var Badge = ReactBS.Badge;
 
 	var LibraryItemsStore = __webpack_require__(4);
@@ -20106,7 +20158,7 @@
 	});
 
 	module.exports = ItemSearch;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ },
 /* 11 */
@@ -20117,7 +20169,7 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(8);
+	var ReactBS = __webpack_require__(7);
 	var Label = ReactBS.Label;
 
 	var LibraryItemsStore = __webpack_require__(4);
@@ -20126,21 +20178,14 @@
 	    displayName: 'ItemStatus',
 
 	    getInitialState: function getInitialState() {
-	        return {
-	            items: this.props.items
-	        };
+	        return {};
 	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        LibraryItemsStore.addChangeListener(function (items) {
-	            _this.setState({ items: items });
-	        });
-	    },
+	    componentWillMount: function componentWillMount() {},
 	    componentDidMount: function componentDidMount() {},
 	    render: function render() {
 	        // How to figure out how many are uncurated?
 	        var libraryName = this.props.libraryDescription,
-	            numberItems = this.state.items.length,
+	            numberItems = this.props.items.length,
 	            numberUncuratedItems = 42;
 
 	        return React.createElement(
@@ -20179,9 +20224,17 @@
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(8);
-	var Badge = ReactBS.Badge;
+	var ReactBS = __webpack_require__(7);
+	var Col = ReactBS.Col;
+	var Grid = ReactBS.Grid;
+	var Panel = ReactBS.Panel;
+	var Row = ReactBS.Row;
 
+	var AuthoringConstants = __webpack_require__(16);
+	var GenusTypes = __webpack_require__(16).GenusTypes;
+
+	var AnswerText = __webpack_require__(28);
+	var ItemControls = __webpack_require__(17);
 	var LibraryItemsStore = __webpack_require__(4);
 
 	var ItemsList = React.createClass({
@@ -20189,75 +20242,129 @@
 
 	    getInitialState: function getInitialState() {
 	        return {
-	            items: []
+	            showBSequence: false,
+	            showCSequence: false,
+	            showDSequence: false
 	        };
 	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        LibraryItemsStore.addChangeListener(function (items) {
-	            _this.setState({ items: items });
-	        });
-	    },
+	    componentWillMount: function componentWillMount() {},
 	    componentDidMount: function componentDidMount() {},
-	    renderLibraries: function renderLibraries() {
-	        return _.map(this.state.libraries, function (library) {
+	    renderItems: function renderItems() {
+	        //TODO: Need to map the LOs to their displayNames...IDs are not useful
+	        var _this = this,
+
+	        // map the choiceIds, etc., in answers back to choices in questions
+	        items = [];
+
+	        _.each(this.props.items, function (item) {
+	            var answers = item.answers,
+	                rightAnswer = _.find(answers, { genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU" }),
+	                wrongAnswers = _.filter(answers, { genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU" }),
+	                wrongAnswerIds = [],
+	                choices = item.question.choices,
+	                correctAnswerText,
+	                wrongAnswerTexts;
+
+	            correctAnswerText = _.find(choices, { "id": rightAnswer.choiceIds[0] });
+
+	            _.each(wrongAnswers, function (wrongAnswer) {
+	                wrongAnswerIds.push(wrongAnswer.choiceIds[0]);
+	            });
+
+	            wrongAnswerTexts = _.filter(choices, function (choice) {
+	                return wrongAnswerIds.indexOf(choice.id) >= 0;
+	            });
+
+	            item['correctAnswer'] = correctAnswerText.text;
+	            item['wrongAnswer1'] = wrongAnswerTexts[0].text;
+	            item['wrongAnswer2'] = wrongAnswerTexts[1].text;
+	            item['wrongAnswer3'] = wrongAnswerTexts[2].text;
+	            items.push(item);
+	        });
+
+	        return _.map(items, function (item) {
 	            return React.createElement(
-	                'option',
-	                { value: library.id,
-	                    title: library.description.text,
-	                    key: library.id },
-	                library.displayName.text
+	                Row,
+	                { key: item.id },
+	                React.createElement(
+	                    Col,
+	                    { sm: 6, md: 6, lg: 6 },
+	                    React.createElement(
+	                        Panel,
+	                        { header: item.displayName.text },
+	                        React.createElement(
+	                            'strong',
+	                            null,
+	                            'Q:'
+	                        ),
+	                        item.question.text.text,
+	                        React.createElement('br', null),
+	                        '   a) ',
+	                        React.createElement(AnswerText, { answerText: item.correctAnswer }),
+	                        React.createElement('br', null),
+	                        '   b) ',
+	                        React.createElement(AnswerText, { answerText: item.wrongAnswer1 }),
+	                        React.createElement('br', null),
+	                        '   c) ',
+	                        React.createElement(AnswerText, { answerText: item.wrongAnswer1 }),
+	                        React.createElement('br', null),
+	                        '   d) ',
+	                        React.createElement(AnswerText, { answerText: item.wrongAnswer1 }),
+	                        React.createElement('br', null),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'itemControls' },
+	                            React.createElement(ItemControls, { item: item,
+	                                libraryId: _this.props.libraryId })
+	                        )
+	                    )
+	                ),
+	                React.createElement(
+	                    Col,
+	                    { sm: 6, md: 6, lg: 6 },
+	                    React.createElement(
+	                        Panel,
+	                        { header: 'Learning Outcomes' },
+	                        React.createElement(
+	                            'strong',
+	                            null,
+	                            'Q:'
+	                        ),
+	                        item.answers[0].confusedLearningObjectiveIds[0],
+	                        React.createElement('br', null),
+	                        React.createElement(
+	                            'strong',
+	                            null,
+	                            'A:'
+	                        ),
+	                        React.createElement('br', null)
+	                    )
+	                )
 	            );
 	        });
 	    },
-	    showItems: function showItems(e) {
-	        LibraryItemsStore.getItems(e.currentTarget.selectedOptions[0].value);
-	    },
 	    render: function render() {
 	        return React.createElement(
-	            'div',
+	            Grid,
 	            null,
-	            'This is an item list'
+	            this.renderItems()
 	        );
 	    }
 	});
 
 	module.exports = ItemsList;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ },
 /* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Dispatcher = __webpack_require__(19).Dispatcher;
-
-	module.exports = new Dispatcher();
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var keyMirror = __webpack_require__(20);
-
-	module.exports = {
-	    ActionTypes: keyMirror({
-	        CHANGE_EVENT: null,
-	        CREATE_ITEM: null,
-	        DELETE_ITEM: null,
-	        UPDATE_ITEM: null
-	    })
-	};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 
 	var LibrariesDispatcher = __webpack_require__(18);
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(17).EventEmitter;
-	var _ = __webpack_require__(7);
+	var AuthoringConstants = __webpack_require__(16);
+	var EventEmitter = __webpack_require__(19).EventEmitter;
+	var _ = __webpack_require__(8);
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -20308,7 +20415,7 @@
 
 
 /***/ },
-/* 16 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global, _) {/**
@@ -36339,10 +36446,74 @@
 	  }
 	}.call(this));
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21)(module), (function() { return this; }()), __webpack_require__(7)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(21)(module), (function() { return this; }()), __webpack_require__(8)))
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Dispatcher = __webpack_require__(22).Dispatcher;
+
+	module.exports = new Dispatcher();
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var keyMirror = __webpack_require__(23);
+
+	module.exports = {
+	    ActionTypes: keyMirror({
+	        CHANGE_EVENT: null,
+	        CREATE_ITEM: null,
+	        DELETE_ITEM: null,
+	        UPDATE_ITEM: null
+	    }),
+	    GenusTypes: {
+	        CORRECT_ANSWER: 'answer-type%3Aright-answer%40ODL.MIT.EDU',
+	        WRONG_ANSWER: 'answer-type%3Awrong-answer%40ODL.MIT.EDU'
+	    }
+	};
 
 /***/ },
 /* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// ItemControls.js
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+
+	var DeleteItem = __webpack_require__(20);
+	var EditItem = __webpack_require__(27);
+
+	var ItemControls = React.createClass({
+	    displayName: 'ItemControls',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    render: function render() {
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(EditItem, { item: this.props.item,
+	                libraryId: this.props.libraryId }),
+	            React.createElement(DeleteItem, { item: this.props.item,
+	                libraryId: this.props.libraryId })
+	        );
+	    }
+	});
+
+	module.exports = ItemControls;
+
+/***/ },
+/* 18 */
+15,
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -36646,9 +36817,131 @@
 
 
 /***/ },
-/* 18 */
-13,
-/* 19 */
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// DeleteItem.jsx
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(7);
+	var Button = ReactBS.Button;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+	var ActionTypes = __webpack_require__(16).ActionTypes;
+	var dispatcher = __webpack_require__(15);
+
+	var DeleteItem = React.createClass({
+	    displayName: 'DeleteItem',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            showModal: false
+	        };
+	    },
+	    close: function close() {
+	        this.setState({ showModal: false });
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    save: function save(e) {
+	        dispatcher.dispatch({
+	            type: ActionTypes.DELETE_ITEM,
+	            content: {
+	                itemId: this.props.item.id,
+	                libraryId: this.props.libraryId
+	            }
+	        });
+	        this.close();
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            'span',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open,
+	                    bsSize: 'large' },
+	                React.createElement(Glyphicon, { glyph: 'trash' })
+	            ),
+	            React.createElement(
+	                Modal,
+	                { show: this.state.showModal, onHide: this.close },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Delete Item'
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    React.createElement(
+	                        'div',
+	                        null,
+	                        React.createElement(
+	                            'span',
+	                            { className: 'red' },
+	                            'Are you sure you want to delete ',
+	                            this.props.item.displayName.text,
+	                            '?'
+	                        ),
+	                        React.createElement(
+	                            'p',
+	                            null,
+	                            'This action ',
+	                            React.createElement(
+	                                'strong',
+	                                null,
+	                                'CANNOT'
+	                            ),
+	                            ' be undone!'
+	                        )
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { bsStyle: 'success', onClick: this.close },
+	                        'Cancel'
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { bsStyle: 'danger', onClick: this.save },
+	                        'Delete'
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = DeleteItem;
+
+/***/ },
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = function(module) {
+		if(!module.webpackPolyfill) {
+			module.deprecate = function() {};
+			module.paths = [];
+			// module.parent = undefined by default
+			module.children = [];
+			module.webpackPolyfill = 1;
+		}
+		return module;
+	}
+
+
+/***/ },
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -36660,11 +36953,11 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 */
 
-	module.exports.Dispatcher = __webpack_require__(22);
+	module.exports.Dispatcher = __webpack_require__(24);
 
 
 /***/ },
-/* 20 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -36723,23 +37016,7 @@
 
 
 /***/ },
-/* 21 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = function(module) {
-		if(!module.webpackPolyfill) {
-			module.deprecate = function() {};
-			module.paths = [];
-			// module.parent = undefined by default
-			module.children = [];
-			module.webpackPolyfill = 1;
-		}
-		return module;
-	}
-
-
-/***/ },
-/* 22 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -36761,7 +37038,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var invariant = __webpack_require__(24);
+	var invariant = __webpack_require__(25);
 
 	var _prefix = 'ID_';
 
@@ -36973,10 +37250,65 @@
 	})();
 
 	module.exports = Dispatcher;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)))
 
 /***/ },
-/* 23 */
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule invariant
+	 */
+
+	"use strict";
+
+	/**
+	 * Use invariant() to assert state which your program assumes to be true.
+	 *
+	 * Provide sprintf-style format (only %s is supported) and arguments
+	 * to provide information about what broke and what you were
+	 * expecting.
+	 *
+	 * The invariant message will be stripped in production, but the invariant
+	 * will remain to ensure logic does not differ in production.
+	 */
+
+	var invariant = function (condition, format, a, b, c, d, e, f) {
+	  if (process.env.NODE_ENV !== 'production') {
+	    if (format === undefined) {
+	      throw new Error('invariant requires an error message argument');
+	    }
+	  }
+
+	  if (!condition) {
+	    var error;
+	    if (format === undefined) {
+	      error = new Error('Minified exception occurred; use the non-minified dev environment ' + 'for the full error message and additional helpful warnings.');
+	    } else {
+	      var args = [a, b, c, d, e, f];
+	      var argIndex = 0;
+	      error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
+	        return args[argIndex++];
+	      }));
+	    }
+
+	    error.framesToPop = 1; // we don't care about invariant's own frame
+	    throw error;
+	  }
+	};
+
+	module.exports = invariant;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)))
+
+/***/ },
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// shim for using process in browser
@@ -37040,59 +37372,376 @@
 
 
 /***/ },
-/* 24 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule invariant
-	 */
+	// EditItem.jsx
+	'use strict';
 
-	"use strict";
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(7);
+	var Button = ReactBS.Button;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
 
-	/**
-	 * Use invariant() to assert state which your program assumes to be true.
-	 *
-	 * Provide sprintf-style format (only %s is supported) and arguments
-	 * to provide information about what broke and what you were
-	 * expecting.
-	 *
-	 * The invariant message will be stripped in production, but the invariant
-	 * will remain to ensure logic does not differ in production.
-	 */
+	var ActionTypes = __webpack_require__(16).ActionTypes;
+	var dispatcher = __webpack_require__(15);
 
-	var invariant = function (condition, format, a, b, c, d, e, f) {
-	  if (process.env.NODE_ENV !== 'production') {
-	    if (format === undefined) {
-	      throw new Error('invariant requires an error message argument');
+	var EditItem = React.createClass({
+	    displayName: 'EditItem',
+
+	    getInitialState: function getInitialState() {
+	        var me = this.props.item;
+	        return {
+	            description: me.description.text,
+	            displayName: me.displayName.text,
+	            genusTypeId: me.genusTypeId,
+	            genusTypeName: '',
+	            showModal: false
+	        };
+	    },
+	    close: function close() {
+	        this.setState({ showModal: false });
+	        this.reset();
+	    },
+	    onChange: function onChange(e) {
+	        if (e.currentTarget.name === "displayName") {
+	            this.setState({ displayName: e.target.value });
+	        } else if (e.currentTarget.name === "genusTypeId") {
+	            this.setState({ genusTypeId: e.target.value });
+	        } else {
+	            this.setState({ description: e.target.value });
+	        }
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    reset: function reset() {},
+	    save: function save(e) {
+	        dispatcher.dispatch({
+	            type: ActionTypes.UPDATE_ITEM,
+	            content: {
+	                description: this.state.description,
+	                displayName: this.state.displayName,
+	                genusTypeId: this.state.genusTypeId,
+	                id: this.props.item.id
+	            }
+	        });
+	        this.close();
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            'span',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open,
+	                    bsSize: 'large' },
+	                React.createElement(Glyphicon, { glyph: 'pencil' })
+	            ),
+	            React.createElement(
+	                Modal,
+	                { show: this.state.showModal, onHide: this.close },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Edit Item'
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    React.createElement(
+	                        'form',
+	                        null,
+	                        React.createElement(
+	                            'div',
+	                            { className: 'form-group' },
+	                            React.createElement(
+	                                'select',
+	                                { className: 'form-control', ref: 'genusSelector', name: 'genusTypeId', defaultValue: this.props.item.genusTypeId },
+	                                React.createElement('option', null),
+	                                React.createElement(
+	                                    'option',
+	                                    { value: this.props.item.genusTypeId },
+	                                    this.state.genusTypeName
+	                                )
+	                            ),
+	                            React.createElement('input', { className: 'form-control', name: 'displayName', placeholder: 'Display name', type: 'text', value: this.state.displayName, onChange: this.onChange }),
+	                            React.createElement('input', { className: 'form-control', name: 'description', placeholder: 'Description', type: 'text', value: this.state.description, onChange: this.onChange })
+	                        )
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.close },
+	                        'Close'
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { bsStyle: 'success', onClick: this.save },
+	                        'Save'
+	                    )
+	                )
+	            )
+	        );
 	    }
-	  }
+	});
 
-	  if (!condition) {
-	    var error;
-	    if (format === undefined) {
-	      error = new Error('Minified exception occurred; use the non-minified dev environment ' + 'for the full error message and additional helpful warnings.');
-	    } else {
-	      var args = [a, b, c, d, e, f];
-	      var argIndex = 0;
-	      error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
-	        return args[argIndex++];
-	      }));
+	module.exports = EditItem;
+
+/***/ },
+/* 28 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(7);
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(16).ActionTypes;
+	var Dispatcher = __webpack_require__(15);
+
+	var LibraryItemsStore = __webpack_require__(4);
+	var OutcomesStore = __webpack_require__(29);
+
+	var AnswerText = React.createClass({
+	    displayName: 'AnswerText',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            outcomes: [],
+	            showModal: false
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {
+	        var _this = this;
+	        OutcomesStore.addChangeListener(function (outcomes) {
+	            _this.setState({ outcomes: outcomes });
+	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        OutcomesStore.getAll();
+	    },
+	    close: function close() {
+	        this.setState({ showModal: false });
+	        this.reset();
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    renderOutcomes: function renderOutcomes() {
+	        return _.map(this.state.outcomes, function (outcome) {
+	            return React.createElement(
+	                'option',
+	                { value: outcome.id,
+	                    title: outcome.description.text,
+	                    key: outcome.id },
+	                outcome.displayName.text
+	            );
+	        });
+	    },
+	    reset: function reset() {},
+	    save: function save(e) {},
+	    render: function render() {
+	        return React.createElement(
+	            'div',
+	            { className: 'taggableText' },
+	            React.createElement(
+	                'span',
+	                { className: 'textBlob' },
+	                this.props.answerText
+	            ),
+	            React.createElement(
+	                'span',
+	                { className: 'pullRight' },
+	                React.createElement(
+	                    Button,
+	                    { onClick: this.open },
+	                    React.createElement(Glyphicon, { glyph: 'link' })
+	                ),
+	                React.createElement(
+	                    Modal,
+	                    { show: this.state.showModal, onHide: this.close },
+	                    React.createElement(
+	                        Modal.Header,
+	                        { closeButton: true },
+	                        React.createElement(
+	                            Modal.Title,
+	                            null,
+	                            'Link to Outcome'
+	                        )
+	                    ),
+	                    React.createElement(
+	                        Modal.Body,
+	                        null,
+	                        React.createElement(
+	                            'form',
+	                            null,
+	                            React.createElement(
+	                                FormGroup,
+	                                { controlId: 'outcomeSelector' },
+	                                React.createElement(
+	                                    ControlLabel,
+	                                    null,
+	                                    'Select a learning outcome ...'
+	                                ),
+	                                React.createElement(
+	                                    FormControl,
+	                                    { componentClass: 'select',
+	                                        placeholder: 'Select a learning outcome ... ' },
+	                                    this.renderOutcomes()
+	                                )
+	                            )
+	                        )
+	                    ),
+	                    React.createElement(
+	                        Modal.Footer,
+	                        null,
+	                        React.createElement(
+	                            Button,
+	                            { onClick: this.close },
+	                            'Close'
+	                        ),
+	                        React.createElement(
+	                            Button,
+	                            { bsStyle: 'success', onClick: this.save },
+	                            'Save'
+	                        )
+	                    )
+	                )
+	            )
+	        );
 	    }
+	});
 
-	    error.framesToPop = 1; // we don't care about invariant's own frame
-	    throw error;
-	  }
+	module.exports = AnswerText;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var OutcomesDispatcher = __webpack_require__(30);
+	var AuthoringConstants = __webpack_require__(16);
+	var EventEmitter = __webpack_require__(19).EventEmitter;
+	var assign = __webpack_require__(31);
+	var _ = __webpack_require__(8);
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _outcomes = [];
+
+	var OutcomesStore = assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _outcomes);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    get: function (id) {
+	        return _.find(_outcomes, function (outcome) {
+	            return outcome.id = id;
+	        });
+	    },
+	    getAll: function () {
+	        var _this = this;
+	        fetch(this.url(), {
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _outcomes = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting objectives: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	        var location = window.location.href;
+	        if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
+	            return '/api/v1/learning/objectives/';
+	        } else {
+	            return '/fbw_author/api/v1/learning/objectives/';
+	        }
+
+	    }
+	});
+
+	OutcomesStore.dispatchToken = OutcomesDispatcher.register(function (action) {
+	    switch(action.type) {
+	    }
+	});
+
+	module.exports = OutcomesStore;
+
+/***/ },
+/* 30 */
+15,
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* eslint-disable no-unused-vars */
+	'use strict';
+	var hasOwnProperty = Object.prototype.hasOwnProperty;
+	var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+	function toObject(val) {
+		if (val === null || val === undefined) {
+			throw new TypeError('Object.assign cannot be called with null or undefined');
+		}
+
+		return Object(val);
+	}
+
+	module.exports = Object.assign || function (target, source) {
+		var from;
+		var to = toObject(target);
+		var symbols;
+
+		for (var s = 1; s < arguments.length; s++) {
+			from = Object(arguments[s]);
+
+			for (var key in from) {
+				if (hasOwnProperty.call(from, key)) {
+					to[key] = from[key];
+				}
+			}
+
+			if (Object.getOwnPropertySymbols) {
+				symbols = Object.getOwnPropertySymbols(from);
+				for (var i = 0; i < symbols.length; i++) {
+					if (propIsEnumerable.call(from, symbols[i])) {
+						to[symbols[i]] = from[symbols[i]];
+					}
+				}
+			}
+		}
+
+		return to;
 	};
 
-	module.exports = invariant;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23)))
 
 /***/ }
 /******/ ])))
