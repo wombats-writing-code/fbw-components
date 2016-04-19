@@ -12,7 +12,11 @@ module.exports = {
             {
                 //tell webpack to use jsx-loader for all *.jsx files
                 test: /\.jsx$/,
-                loader: 'jsx-loader?insertPragma=React.DOM&harmony'
+                exclude: /(node_modules|bower_components)/,
+                loader: 'babel',
+                query: {
+                    presets: ['es2015', 'react']
+                }
             },
             {
                 test: /\.css$/,
@@ -44,7 +48,8 @@ module.exports = {
     externals: {
         //don't bundle the 'react' npm package with our bundle.js
         //but get it from a global 'React' variable
-        'react': 'React'
+        'react': 'React',
+        'react-dom': 'ReactDOM'
     },
     resolve: {
 	alias: {
