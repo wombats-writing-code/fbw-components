@@ -4,7 +4,6 @@
 var LibraryItemsDispatcher = require('../dispatcher/LibraryItemsDispatcher');
 var AuthoringConstants = require('../constants/AuthoringConstants');
 var EventEmitter = require('events').EventEmitter;
-var assign = require('object-assign');
 var _ = require('lodash');
 
 var ActionTypes = AuthoringConstants.ActionTypes;
@@ -12,7 +11,7 @@ var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
 var _items = [];
 
-var LibraryItemsStore = assign({}, EventEmitter.prototype, {
+var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
     emitChange: function () {
         this.emit(CHANGE_EVENT, _items);
     },
