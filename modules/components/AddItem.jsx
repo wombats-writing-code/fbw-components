@@ -5,8 +5,10 @@ var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Alert = ReactBS.Alert;
 var Button = ReactBS.Button;
+var ControlLabel = ReactBS.ControlLabel;
+var FormControl = ReactBS.FormControl;
+var FormGroup = ReactBS.FormGroup;
 var Glyphicon = ReactBS.Glyphicon;
-var Input = ReactBS.Input;
 var Modal = ReactBS.Modal;
 
 var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
@@ -121,117 +123,123 @@ var AddItem = React.createClass({
         }
 
         if (this.state.correctAnswerError) {
-            correctAnswer = <Input type="text"
-                               label="Correct Answer"
-                               id="correctAnswer"
-                               value={this.state.correctAnswer}
-                               onChange={this.onChange}
-                               bsStyle="error"
-                               placeholder="The correct answer"
-                               hasFeedback />
+            correctAnswer = <FormGroup controlId="correctAnswer"
+                                       validationState="error">
+                <ControlLabel>Correct Answer</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.correctAnswer}
+                             onChange={this.onChange}
+                             placeholder="The correct answer"/>
+                <FormControl.Feedback />
+            </FormGroup>
         } else {
-            correctAnswer = <Input type="text"
-                               label="Correct Answer"
-                               id="correctAnswer"
-                               value={this.state.correctAnswer}
-                               onChange={this.onChange}
-                               placeholder="The correct answer"
-                               hasFeedback />
+            correctAnswer = <FormGroup controlId="correctAnswer">
+                <ControlLabel>Correct Answer</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.correctAnswer}
+                             onChange={this.onChange}
+                             placeholder="The correct answer"/>
+            </FormGroup>
         }
 
         if (this.state.itemDisplayNameError) {
-            itemDisplayName = <Input type="text"
-                               label="Item Name"
-                               id="itemDisplayName"
-                               value={this.state.itemDisplayName}
-                               onChange={this.onChange}
-                               bsStyle="error"
-                               placeholder="A name for the item"
-                               hasFeedback />
+            itemDisplayName = <FormGroup controlId="itemDisplayName"
+                                         validationState="error">
+                <ControlLabel>Item Name</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.itemDisplayName}
+                             onChange={this.onChange}
+                             placeholder="A name for the item" />
+                <FormControl.Feedback />
+            </FormGroup>
         } else {
-            itemDisplayName = <Input type="text"
-                               label="Item Name"
-                               id="itemDisplayName"
-                               value={this.state.itemDisplayName}
-                               onChange={this.onChange}
-                               placeholder="A name for the item"
-                               hasFeedback />
+            itemDisplayName = <FormGroup controlId="itemDisplayName">
+                <ControlLabel>Item Name</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.itemDisplayName}
+                             onChange={this.onChange}
+                             placeholder="A name for the item" />
+            </FormGroup>
         }
 
         if (this.state.questionStringError) {
-            questionString = <Input type="textarea"
-                               label="Question"
-                               id="questionString"
-                               value={this.state.questionString}
-                               onChange={this.onChange}
-                               bsStyle="error"
-                               placeholder="Please enter the question string, like 'What is your favorite color?'"
-                               hasFeedback />
+            questionString = <FormGroup controlId="questionString"
+                                        validationState="error">
+                <ControlLabel>Question</ControlLabel>
+                <FormControl componentClass="textarea"
+                             value={this.state.questionString}
+                             onChange={this.onChange}
+                             placeholder="Please enter the question string, like 'What is your favorite color?'" />
+                <FormControl.Feedback />
+            </FormGroup>
         } else {
-            questionString = <Input type="textarea"
-                               label="Question"
-                               id="questionString"
-                               value={this.state.questionString}
-                               onChange={this.onChange}
-                               placeholder="Please enter the question string, like 'What is your favorite color?'"
-                               hasFeedback />
+            questionString = <FormGroup controlId="questionString">
+                <ControlLabel>Question</ControlLabel>
+                <FormControl componentClass="textarea"
+                             value={this.state.questionString}
+                             onChange={this.onChange}
+                             placeholder="Please enter the question string, like 'What is your favorite color?'" />
+            </FormGroup>
         }
 
         if (this.state.wrongAnswer1Error) {
-            wrongAnswer1 = <Input type="text"
-                               label="Wrong Answer 1"
-                               id="wrongAnswer1"
-                               value={this.state.wrongAnswer1}
-                               onChange={this.onChange}
-                               bsStyle="error"
-                               placeholder="The first mis-direction answer"
-                               hasFeedback />
+            wrongAnswer1 = <FormGroup controlId="wrongAnswer1"
+                                      validationState="error">
+                <ControlLabel>Wrong Answer 1</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.wrongAnswer1}
+                             onChange={this.onChange}
+                             placeholder="The first mis-direction answer" />
+                <FormControl.Feedback />
+            </FormGroup>
         } else {
-            wrongAnswer1 = <Input type="text"
-                               label="Wrong Answer 1"
-                               id="wrongAnswer1"
-                               value={this.state.wrongAnswer1}
-                               onChange={this.onChange}
-                               placeholder="The first mis-direction answer"
-                               hasFeedback />
+            wrongAnswer1 = <FormGroup controlId="wrongAnswer1">
+                <ControlLabel>Wrong Answer 1</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.wrongAnswer1}
+                             onChange={this.onChange}
+                             placeholder="The first mis-direction answer" />
+            </FormGroup>
         }
 
         if (this.state.wrongAnswer2Error) {
-            wrongAnswer2 = <Input type="text"
-                               label="Wrong Answer 2"
-                               id="wrongAnswer2"
-                               value={this.state.wrongAnswer2}
-                               onChange={this.onChange}
-                               bsStyle="error"
-                               placeholder="The second mis-direction answer"
-                               hasFeedback />
+            wrongAnswer2 = <FormGroup controlId="wrongAnswer2"
+                                      validationState="error">
+                <ControlLabel>Wrong Answer 2</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.wrongAnswer2}
+                             onChange={this.onChange}
+                             placeholder="The second mis-direction answer" />
+                <FormControl.Feedback />
+            </FormGroup>
         } else {
-            wrongAnswer2 = <Input type="text"
-                               label="Wrong Answer 2"
-                               id="wrongAnswer2"
-                               value={this.state.wrongAnswer2}
-                               onChange={this.onChange}
-                               placeholder="The second mis-direction answer"
-                               hasFeedback />
+            wrongAnswer2 = <FormGroup controlId="wrongAnswer2">
+                <ControlLabel>Wrong Answer 2</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.wrongAnswer2}
+                             onChange={this.onChange}
+                             placeholder="The second mis-direction answer" />
+            </FormGroup>
         }
 
         if (this.state.wrongAnswer3Error) {
-            wrongAnswer3 = <Input type="text"
-                               label="Wrong Answer 3"
-                               id="wrongAnswer3"
-                               value={this.state.wrongAnswer3}
-                               onChange={this.onChange}
-                               bsStyle="error"
-                               placeholder="The third mis-direction answer"
-                               hasFeedback />
+            wrongAnswer3 = <FormGroup controlId="wrongAnswer3"
+                                      validationState="error">
+                <ControlLabel>Wrong Answer 3</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.wrongAnswer3}
+                             onChange={this.onChange}
+                             placeholder="The third mis-direction answer" />
+                <FormControl.Feedback />
+            </FormGroup>
         } else {
-            wrongAnswer3 = <Input type="text"
-                               label="Wrong Answer 3"
-                               id="wrongAnswer3"
-                               value={this.state.wrongAnswer3}
-                               onChange={this.onChange}
-                               placeholder="The third mis-direction answer"
-                               hasFeedback />
+            wrongAnswer3 = <FormGroup controlId="wrongAnswer3">
+                <ControlLabel>Wrong Answer 3</ControlLabel>
+                <FormControl type="text"
+                             value={this.state.wrongAnswer3}
+                             onChange={this.onChange}
+                             placeholder="The third mis-direction answer" />
+            </FormGroup>
         }
 
         return <div>
@@ -247,46 +255,51 @@ var AddItem = React.createClass({
                     {alert}
                     <form>
                         {itemDisplayName}
-                        <Input type="text"
-                               label="Item Description (optional)"
-                               id="itemDescription"
-                               value={this.state.itemDescription}
-                               onChange={this.onChange}
-                               placeholder="A description for this item" />
+                        <FormGroup controlId="itemDescription">
+                            <ControlLabel>Item Description (optional)</ControlLabel>
+                            <FormControl type="text"
+                                         value={this.state.itemDescription}
+                                         onChange={this.onChange}
+                                         placeholder="A description for this item" />
+                        </FormGroup>
                         {questionString}
-                        <Input type="file"
-                               label="Image file (optional)"
-                               id="questionFile"
-                               onChange={this.onChange}
-                               placeholder="(Optional) Please include an image if the question references one" />
+                        <FormGroup controlId="questionFile">
+                            <ControlLabel>Image File (optional)</ControlLabel>
+                            <FormControl type="file"
+                                         onChange={this.onChange} />
+                        </FormGroup>
                         {correctAnswer}
-                        <Input type="textarea"
-                               label="Correct Answer Feedback (recommended)"
-                               id="correctAnswerFeedback"
-                               value={this.state.correctAnswerFeedback}
-                               onChange={this.onChange}
-                               placeholder="Feedback for the correct answer" />
+                        <FormGroup controlId="correctAnswerFeedback">
+                            <ControlLabel>Correct Answer Feedback (recommended)</ControlLabel>
+                            <FormControl componentClass="textarea"
+                                         value={this.state.correctAnswerFeedback}
+                                         onChange={this.onChange}
+                                         placeholder="Feedback for the correct answer" />
+                        </FormGroup>
                         {wrongAnswer1}
-                        <Input type="textarea"
-                               label="Wrong Answer 1 Feedback (recommended)"
-                               id="wrongAnswer1Feedback"
-                               value={this.state.wrongAnswer1Feedback}
-                               onChange={this.onChange}
-                               placeholder="Feedback for the first mis-direction answer" />
+                        <FormGroup controlId="wrongAnswer1Feedback">
+                            <ControlLabel>Wrong Answer 1 Feedback (recommended)</ControlLabel>
+                            <FormControl componentClass="textarea"
+                                         value={this.state.wrongAnswer1Feedback}
+                                         onChange={this.onChange}
+                                         placeholder="Feedback for the first mis-direction answer" />
+                        </FormGroup>
                         {wrongAnswer2}
-                        <Input type="textarea"
-                               label="Wrong Answer 2 Feedback (recommended)"
-                               id="wrongAnswer2Feedback"
-                               value={this.state.wrongAnswer2Feedback}
-                               onChange={this.onChange}
-                               placeholder="Feedback for the second mis-direction answer" />
+                        <FormGroup controlId="wrongAnswer2Feedback">
+                            <ControlLabel>Wrong Answer 2 Feedback (recommended)</ControlLabel>
+                            <FormControl componentClass="textarea"
+                                         value={this.state.wrongAnswer2Feedback}
+                                         onChange={this.onChange}
+                                         placeholder="Feedback for the second mis-direction answer" />
+                        </FormGroup>
                         {wrongAnswer3}
-                        <Input type="textarea"
-                               label="Wrong Answer 3 Feedback (recommended)"
-                               id="wrongAnswer3Feedback"
-                               value={this.state.wrongAnswer3Feedback}
-                               onChange={this.onChange}
-                               placeholder="Feedback for the third mis-direction answer" />
+                        <FormGroup controlId="wrongAnswer3Feedback">
+                            <ControlLabel>Wrong Answer 3 Feedback (recommended)</ControlLabel>
+                            <FormControl componentClass="textarea"
+                                         value={this.state.wrongAnswer3Feedback}
+                                         onChange={this.onChange}
+                                         placeholder="Feedback for the third mis-direction answer" />
+                        </FormGroup>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

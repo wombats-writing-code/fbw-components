@@ -3,7 +3,9 @@
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
-var Input = ReactBS.Input;
+var ControlLabel = ReactBS.ControlLabel;
+var FormControl = ReactBS.FormControl;
+var FormGroup = ReactBS.FormGroup;
 
 
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
@@ -41,12 +43,14 @@ var LibrarySelector = React.createClass({
         this.props.onSelect(id, description);
     },
     render: function () {
-        return <Input type="select"
-                      label="Select class ..."
-                      placeholder="Select a class"
-                      onChange={this.showItems}>
-            {this.renderLibraries()}
-        </Input>
+        return <FormGroup controlId="librarySelector">
+            <ControlLabel>Select class ...</ControlLabel>
+                <FormControl componentClass="select"
+                          placeholder="Select a class"
+                          onChange={this.showItems}>
+                {this.renderLibraries()}
+            </FormControl>
+        </FormGroup>
     }
 });
 
