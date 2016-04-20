@@ -3,7 +3,6 @@
 var OutcomesDispatcher = require('../dispatcher/OutcomesDispatcher');
 var AuthoringConstants = require('../constants/AuthoringConstants');
 var EventEmitter = require('events').EventEmitter;
-var assign = require('object-assign');
 var _ = require('lodash');
 
 var ActionTypes = AuthoringConstants.ActionTypes;
@@ -11,7 +10,7 @@ var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
 var _outcomes = [];
 
-var OutcomesStore = assign({}, EventEmitter.prototype, {
+var OutcomesStore = _.assign({}, EventEmitter.prototype, {
     emitChange: function () {
         this.emit(CHANGE_EVENT, _outcomes);
     },
