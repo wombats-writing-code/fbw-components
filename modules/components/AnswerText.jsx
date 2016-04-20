@@ -32,7 +32,11 @@ var AnswerText = React.createClass({
         this.reset();
     },
     onChange: function (e) {
-        this.setState({ confusedLO: e.value });
+        if (e == null) {
+            this.setState({ confusedLO: '' });
+        } else {
+            this.setState({ confusedLO: e.value });
+        }
     },
     open: function (e) {
         this.setState({showModal: true}, function () {

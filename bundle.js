@@ -20231,7 +20231,7 @@
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// ItemStatus.js
+	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
 
 	'use strict';
 
@@ -20239,6 +20239,8 @@
 	var ReactBS = __webpack_require__(7);
 	var Label = ReactBS.Label;
 
+	var AuthoringConstants = __webpack_require__(16);
+	var GenusTypes = __webpack_require__(16).GenusTypes;
 	var LibraryItemsStore = __webpack_require__(4);
 
 	var ItemStatus = React.createClass({
@@ -20253,7 +20255,31 @@
 	        // How to figure out how many are uncurated?
 	        var libraryName = this.props.libraryDescription,
 	            numberItems = this.props.items.length,
-	            numberUncuratedItems = 42;
+	            numberUncuratedItems = 0,
+	            uncuratedLabel;
+
+	        _.each(this.props.items, function (item) {
+	            var unlinkedAnswers = _.find(item.answers, function (answer) {
+	                return answer.confusedLearningObjectiveIds.length === 0 && answer.genusTypeId === GenusTypes.WRONG_ANSWER;
+	            });
+	            if (item.question.learningObjectiveIds.length === 0 || unlinkedAnswers != null) {
+	                numberUncuratedItems++;
+	            }
+	        });
+
+	        if (numberUncuratedItems === 0) {
+	            uncuratedLabel = React.createElement(
+	                Label,
+	                { bsStyle: 'success' },
+	                numberUncuratedItems
+	            );
+	        } else {
+	            uncuratedLabel = React.createElement(
+	                Label,
+	                { bsStyle: 'danger' },
+	                numberUncuratedItems
+	            );
+	        }
 
 	        return React.createElement(
 	            'div',
@@ -20270,17 +20296,14 @@
 	                'div',
 	                null,
 	                'Number of uncurated questions: ',
-	                React.createElement(
-	                    Label,
-	                    { bsStyle: 'danger' },
-	                    numberUncuratedItems
-	                )
+	                uncuratedLabel
 	            )
 	        );
 	    }
 	});
 
 	module.exports = ItemStatus;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
 
 /***/ },
 /* 12 */
@@ -37744,7 +37767,11 @@
 	        this.reset();
 	    },
 	    onChange: function onChange(e) {
-	        this.setState({ confusedLO: e.value });
+	        if (e == null) {
+	            this.setState({ confusedLO: '' });
+	        } else {
+	            this.setState({ confusedLO: e.value });
+	        }
 	    },
 	    open: function open(e) {
 	        this.setState({ showModal: true }, function () {});
@@ -39479,7 +39506,11 @@
 	        this.reset();
 	    },
 	    onChange: function onChange(e) {
-	        this.setState({ questionLO: e.value });
+	        if (e == null) {
+	            this.setState({ questionLO: '' });
+	        } else {
+	            this.setState({ questionLO: e.value });
+	        }
 	    },
 	    open: function open(e) {
 	        this.setState({ showModal: true }, function () {});

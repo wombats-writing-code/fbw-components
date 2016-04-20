@@ -32,7 +32,11 @@ var QuestionText = React.createClass({
         this.reset();
     },
     onChange: function (e) {
-        this.setState({ questionLO: e.value });
+        if (e == null) {
+            this.setState({ questionLO: '' });
+        } else {
+            this.setState({ questionLO: e.value });
+        }
     },
     open: function (e) {
         this.setState({showModal: true}, function () {
