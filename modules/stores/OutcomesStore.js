@@ -23,7 +23,7 @@ var OutcomesStore = assign({}, EventEmitter.prototype, {
     },
     get: function (id) {
         return _.find(_outcomes, function (outcome) {
-            return outcome.id = id;
+            return outcome.id == id;
         });
     },
     getAll: function () {

@@ -4,50 +4,105 @@
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
-var Modal = ReactBS.Modal;
+var Select = require('react-select');
+
 var Button = ReactBS.Button;
+var ControlLabel = ReactBS.ControlLabel;
+var FormGroup = ReactBS.FormGroup;
+var Glyphicon = ReactBS.Glyphicon;
+var Modal = ReactBS.Modal;
 
 var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
-var dispatcher = require('../dispatcher/LibraryItemsDispatcher');
+var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
 
 var QuestionText = React.createClass({
     getInitialState: function () {
+        var questionLO = this.props.questionLO === '' ? '' : this.props.questionLO;
         return {
-        }
+            questionLO: questionLO,
+            showModal: false
+        };
     },
-    showLearningObjectives: function (e) {
+    componentWillMount: function() {
+    },
+    componentDidMount: function () {
+    },
+    close: function () {
+        this.setState({showModal: false});
+        this.reset();
+    },
+    onChange: function (e) {
+        this.setState({ questionLO: e.value });
+    },
+    open: function (e) {
+        this.setState({showModal: true}, function () {
+
+        });
+    },
+    renderOutcomes: function () {
+        return _.map(this.props.outcomes, function (outcome) {
+            return <option value={outcome.id}
+                           title={outcome.description.text}
+                           key={outcome.id}>
+                {outcome.displayName.text}
+            </option>;
+        });
+    },
+    reset: function () {
 
     },
+    save: function (e) {
+        var payload = {
+            learningObjectiveId: this.state.questionLO,
+            itemId: this.props.questionId,
+            libraryId: this.props.libraryId
+        };
+
+        Dispatcher.dispatch({
+            type: ActionTypes.LINK_ITEM_LO,
+            content: payload
+        });
+        this.close();
+    },
     render: function () {
-        var childOutcomes = '';
-        if (this.state.showChildren) {
-            if (this.props.outcome.hasOwnProperty('childNodes')) {
-                if (this.props.outcome.childNodes.length > 0) {
-                    childOutcomes = this.props.outcome.childNodes.map(function (child) {
-                        return (
-                            <Outcome outcome={child} key={child.id}/>
-                            );
-                    });
-                } else {
-                    childOutcomes = <Alert bsStyle="danger">
-                    No children
-                    </Alert>
-                }
-            } else {
-                childOutcomes = <Alert bsStyle="danger">
-                No children
-                </Alert>
-            }
-        }
-        return <div>
-            <ListGroupItem className={this.state.selfState}
-                   data-raw-obj="{this.props.outcome}"
-                   title="{this.props.outcome.description.text}"
-                   onClick={this.toggleState}>
-                <span className={this.state.toggleIcon} onClick={this.toggleChildren}></span>
-                <span className="display-name">{this.props.outcome.displayName.text}</span>
-            </ListGroupItem>
-            {childOutcomes}
+        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
+            return {
+                value: outcome.id,
+                label: outcome.displayName.text
+            };
+        });
+
+        return <div className="taggable-text">
+            <div className="text-blob">
+                {this.props.questionText}
+            </div>
+            <div className="pull-right">
+                <Button onClick={this.open} bsSize="small">
+                    <Glyphicon glyph="link" />
+                </Button>
+                <Modal show={this.state.showModal} onHide={this.close}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Link Question to Outcome</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <form>
+                            <FormGroup controlId="outcomeSelector">
+                                <ControlLabel>Select a learning outcome ...</ControlLabel>
+                                <Select name="questionOutcomeSelector"
+                                        placeholder="Select an outcome ... "
+                                        value={this.state.questionLO}
+                                        onChange={this.onChange}
+                                        options={formattedOutcomes}>
+                                </Select>
+                            </FormGroup>
+                        </form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={this.close}>Close</Button>
+                        <Button bsStyle="success" onClick={this.save}>Save</Button>
+                    </Modal.Footer>
+                </Modal>
+            </div>
         </div>
 
     }

@@ -4,9 +4,10 @@
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
+var Select = require('react-select');
+
 var Button = ReactBS.Button;
 var ControlLabel = ReactBS.ControlLabel;
-var FormControl = ReactBS.FormControl;
 var FormGroup = ReactBS.FormGroup;
 var Glyphicon = ReactBS.Glyphicon;
 var Modal = ReactBS.Modal;
@@ -14,28 +15,24 @@ var Modal = ReactBS.Modal;
 var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
 var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
 
-var LibraryItemsStore = require('../stores/LibraryItemsStore');
-var OutcomesStore = require('../stores/OutcomesStore');
-
 var AnswerText = React.createClass({
     getInitialState: function () {
+        var confusedLO = this.props.confusedLO === 'None linked yet' ? '' : this.props.confusedLO;
         return {
-            outcomes: [],
+            confusedLO: confusedLO,
             showModal: false
         };
     },
     componentWillMount: function() {
-        var _this = this;
-        OutcomesStore.addChangeListener(function(outcomes) {
-            _this.setState({ outcomes: outcomes });
-        });
     },
     componentDidMount: function () {
-        OutcomesStore.getAll();
     },
     close: function () {
         this.setState({showModal: false});
         this.reset();
+    },
+    onChange: function (e) {
+        this.setState({ confusedLO: e.value });
     },
     open: function (e) {
         this.setState({showModal: true}, function () {
@@ -43,7 +40,7 @@ var AnswerText = React.createClass({
         });
     },
     renderOutcomes: function () {
-        return _.map(this.state.outcomes, function (outcome) {
+        return _.map(this.props.outcomes, function (outcome) {
             return <option value={outcome.id}
                            title={outcome.description.text}
                            key={outcome.id}>
@@ -52,31 +49,50 @@ var AnswerText = React.createClass({
         });
     },
     reset: function () {
-    },
-    save: function (e) {
 
     },
+    save: function (e) {
+        var payload = {
+            answerId: this.props.answerId,
+            confusedLearningObjectiveId: this.state.confusedLO,
+            itemId: this.props.itemId,
+            libraryId: this.props.libraryId
+        };
+
+        Dispatcher.dispatch({
+            type: ActionTypes.LINK_ANSWER_LO,
+            content: payload
+        });
+        this.close();
+    },
     render: function () {
-        return <div className="taggableText">
-            <span className="textBlob">
-                {this.props.answerText}
-            </span>
-            <span className="pullRight">
-                <Button onClick={this.open}>
+        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
+            return {
+                value: outcome.id,
+                label: outcome.displayName.text
+            };
+        }),
+            linkButton = '';
+
+        if (!this.props.hideLinkBtn) {
+            linkButton = <div className="pull-right">
+                <Button onClick={this.open} bsSize="small">
                     <Glyphicon glyph="link" />
                 </Button>
                 <Modal show={this.state.showModal} onHide={this.close}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Link to Outcome</Modal.Title>
+                        <Modal.Title>Link Answer to Outcome</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <form>
                             <FormGroup controlId="outcomeSelector">
                                 <ControlLabel>Select a learning outcome ...</ControlLabel>
-                                <FormControl componentClass="select"
-                                             placeholder="Select a learning outcome ... ">
-                                    {this.renderOutcomes()}
-                                </FormControl>
+                                <Select name="confusedOutcomeSelector"
+                                        placeholder="Select an outcome ... "
+                                        value={this.state.confusedLO}
+                                        onChange={this.onChange}
+                                        options={formattedOutcomes}>
+                                </Select>
                             </FormGroup>
                         </form>
                     </Modal.Body>
@@ -85,7 +101,18 @@ var AnswerText = React.createClass({
                         <Button bsStyle="success" onClick={this.save}>Save</Button>
                     </Modal.Footer>
                 </Modal>
-            </span>
+            </div>
+        } else {
+            linkButton = <div className="right-answer-check">
+                <Glyphicon glyph="ok" />
+            </div>
+        }
+
+        return <div className="taggable-text">
+            <div className="text-blob">
+                {this.props.answerText}
+            </div>
+            {linkButton}
         </div>
 
     }
