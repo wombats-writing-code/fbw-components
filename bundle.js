@@ -321,7 +321,7 @@
 	        if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
 	            return '/api/v1/assessment/libraries/';
 	        } else {
-	            return '/fbw_author/api/v1/assessment/libraries/';
+	            return '/fbw-author/api/v1/assessment/libraries/';
 	        }
 
 	    }
@@ -20631,7 +20631,7 @@
 	        if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
 	            return '/api/v1/assessment/libraries/';
 	        } else {
-	            return '/fbw_author/api/v1/assessment/libraries/';
+	            return '/fbw-author/api/v1/assessment/libraries/';
 	        }
 
 	    }
@@ -37944,7 +37944,7 @@
 	        if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
 	            return '/api/v1/learning/objectives/';
 	        } else {
-	            return '/fbw_author/api/v1/learning/objectives/';
+	            return '/fbw-author/api/v1/learning/objectives/';
 	        }
 
 	    }
