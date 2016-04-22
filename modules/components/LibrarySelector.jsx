@@ -45,9 +45,10 @@ var LibrarySelector = React.createClass({
     render: function () {
         return <FormGroup controlId="librarySelector">
             <ControlLabel>Select class ...</ControlLabel>
-                <FormControl componentClass="select"
-                             placeholder="Select a class"
-                             onChange={this.showItems}>
+            <FormControl componentClass="select"
+                         placeholder="Select a class"
+                         onChange={this.showItems}>
+                <option value="-1">Please select a content domain ... </option>
                 {this.renderLibraries()}
             </FormControl>
         </FormGroup>
