@@ -8,14 +8,16 @@ var AnswerExtraction = function (item) {
     // TODO: Extract feedback
     var answers = item.answers,
         rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
+        correctChoiceId = rightAnswer.choiceIds[0],
         wrongAnswers = _.filter(answers, {genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU"}),
         wrongAnswerIds = [],
         wrongAnswerLOs = [],
+        wrongChoiceIds = [],
         choices = item.question.choices,
         correctAnswerId = rightAnswer.id,
         correctAnswerText, wrongAnswerTexts;
 
-    correctAnswerText = _.find(choices, {"id": rightAnswer.choiceIds[0]});
+    correctAnswerText = _.find(choices, {"id": correctChoiceId});
 
     _.each(wrongAnswers, function (wrongAnswer) {
         wrongAnswerIds.push(wrongAnswer.choiceIds[0]);
@@ -33,6 +35,7 @@ var AnswerExtraction = function (item) {
             return wrongAnswer.choiceIds[0] == wrongAnswerText.id;
         });
         wrongAnswerIds.push(wrongAnswer.id);
+        wrongChoiceIds.push(wrongAnswer.choiceIds[0]);
 
         if (wrongAnswer.confusedLearningObjectiveIds.length > 0) {
             wrongAnswerLOs.push(wrongAnswer.confusedLearningObjectiveIds[0]);
@@ -44,9 +47,11 @@ var AnswerExtraction = function (item) {
     return {
         correctAnswerId: correctAnswerId,
         correctAnswerText: correctAnswerText,
+        correctChoiceId: correctChoiceId,
         wrongAnswerIds: wrongAnswerIds,
         wrongAnswerLOs: wrongAnswerLOs,
-        wrongAnswerTexts: wrongAnswerTexts
+        wrongAnswerTexts: wrongAnswerTexts,
+        wrongChoiceIds: wrongChoiceIds
     };
 };
 
