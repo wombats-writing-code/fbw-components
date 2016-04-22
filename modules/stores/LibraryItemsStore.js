@@ -69,10 +69,8 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             })
         }).then(function (response) {
             if (response.ok) {
-                response.json().then(function (responseData) {
-                    _this.getItems(data.libraryId);
-                    console.log(responseData);
-                });
+                _this.getItems(data.libraryId);
+                console.log('item deleted');
             } else {
                 response.text().then(function (responseData) {
                     alert(response.statusText + ': ' + responseData);
