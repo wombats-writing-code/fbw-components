@@ -53,6 +53,9 @@ var EditItem = React.createClass({
     },
     close: function () {
         this.setState({showModal: false});
+    },
+    closeAndReset: function () {
+        this.setState({showModal: false});
         this.reset();
     },
     onChange: function(e) {
@@ -120,31 +123,42 @@ var EditItem = React.createClass({
             this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
             this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
         } else {
+            var choiceData = AnswerExtraction(this.props.item);
+
             payload['displayName'] = this.state.itemDisplayName;
             payload['description'] = this.state.itemDescription;
 
             payload['question'] = {
                 text: this.state.questionString,
-                choices: [this.state.correctAnswer,
-                          this.state.wrongAnswer1,
-                          this.state.wrongAnswer2,
-                          this.state.wrongAnswer3]
+                choices: [{
+                    choiceId: choiceData.correctChoiceId,
+                    text: this.state.correctAnswer
+                },{
+                    choiceId: choiceData.wrongChoiceIds[0],
+                    text: this.state.wrongAnswer1
+                },{
+                    choiceId: choiceData.wrongChoiceIds[1],
+                    text: this.state.wrongAnswer2
+                },{
+                    choiceId: choiceData.wrongChoiceIds[2],
+                    text: this.state.wrongAnswer3
+                }]
             };
             payload['answers'] = [{
                 answerId: this.state.correctAnswerId,
-                choiceId: 0,
+                choiceId: choiceData.correctChoiceId,
                 feedback: this.state.correctAnswerFeedback
             },{
                 answerId: this.state.wrongAnswer1Id,
-                choiceId: 1,
+                choiceId: choiceData.wrongChoiceIds[0],
                 feedback: this.state.wrongAnswer1Feedback
             },{
                 answerId: this.state.wrongAnswer2Id,
-                choiceId: 2,
+                choiceId: choiceData.wrongChoiceIds[1],
                 feedback: this.state.wrongAnswer2Feedback
             },{
                 answerId: this.state.wrongAnswer3Id,
-                choiceId: 3,
+                choiceId: choiceData.wrongChoiceIds[2],
                 feedback: this.state.wrongAnswer3Feedback
             }];
             if (questionFile != null) {
@@ -348,7 +362,7 @@ var EditItem = React.createClass({
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.close}>Close</Button>
+                    <Button onClick={this.closeAndReset}>Close</Button>
                     <Button bsStyle="success" onClick={this.save}>Save</Button>
                 </Modal.Footer>
             </Modal>
