@@ -1,0 +1,45 @@
+.item-controls {
+    float: right;
+}
+
+.item-controls div {
+    display: inline;
+}
+
+.text-row-wrapper {
+    display: flex;
+    padding: 5px 5px;
+}
+
+.answer-label {
+    margin-right: 10px;
+}
+
+.correct-answer-lo {
+    color: darkgreen;
+    font-weight: bold;
+}
+
+.missing-lo {
+    color: darkred;
+    font-weight: bold;
+}
+
+.question-label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.right-answer-check {
+    color: green;
+    margin-right: 10px;
+}
+
+.taggable-text {
+    display: flex;
+    flex: 1 1 100%;
+}
+
+.text-blob {
+    flex: 1 1 90%;
+}

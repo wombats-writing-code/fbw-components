@@ -2,6 +2,8 @@
 
 'use strict';
 
+require('../../stylesheets/vendor/reactSelectOverride.css');
+
 var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Select = require('react-select');

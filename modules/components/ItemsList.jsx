@@ -2,6 +2,8 @@
 
 'use strict';
 
+require('../../stylesheets/components/itemsList.css');
+
 var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Col = ReactBS.Col;
@@ -12,6 +14,7 @@ var Row = ReactBS.Row;
 var AuthoringConstants = require('../constants/AuthoringConstants');
 var GenusTypes = require('../constants/AuthoringConstants').GenusTypes;
 
+var AnswerExtraction = require('../utilities/AnswerExtraction');
 var AnswerText = require('./AnswerText');
 var ItemControls = require('./ItemControls');
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
@@ -40,7 +43,7 @@ var ItemsList = React.createClass({
     getOutcomeDisplayName: function (outcomeId) {
         var outcome = OutcomesStore.get(outcomeId);
         if (outcome == null) {
-            return "None linked yet";
+            return <p className="missing-lo">None linked yet</p>;
         } else {
             return outcome.displayName.text;
         }
@@ -52,50 +55,18 @@ var ItemsList = React.createClass({
             items = [];
 
         _.each(this.props.items, function (item) {
-            var answers = item.answers,
-                rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
-                wrongAnswers = _.filter(answers, {genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU"}),
-                wrongAnswerIds = [],
-                wrongAnswerLOs = [],
-                choices = item.question.choices,
-                correctAnswerText, wrongAnswerTexts;
+            var answers = AnswerExtraction(item);
 
-            correctAnswerText = _.find(choices, {"id": rightAnswer.choiceIds[0]});
-
-            _.each(wrongAnswers, function (wrongAnswer) {
-                wrongAnswerIds.push(wrongAnswer.choiceIds[0]);
-            });
-
-            wrongAnswerTexts = _.filter(choices, function (choice) {
-                return wrongAnswerIds.indexOf(choice.id) >= 0;
-            });
-
-            // need to get these in the same order as wrongAnswerTexts
-            wrongAnswerIds = [];
-
-            _.each(wrongAnswerTexts, function (wrongAnswerText) {
-                var wrongAnswer = _.find(wrongAnswers, function (wrongAnswer) {
-                    return wrongAnswer.choiceIds[0] == wrongAnswerText.id;
-                });
-                wrongAnswerIds.push(wrongAnswer.id);
-
-                if (wrongAnswer.confusedLearningObjectiveIds.length > 0) {
-                    wrongAnswerLOs.push(wrongAnswer.confusedLearningObjectiveIds[0]);
-                } else {
-                    wrongAnswerLOs.push('None linked yet');
-                }
-            });
-
-            item['correctAnswer'] = correctAnswerText.text;
-            item['wrongAnswer1'] = wrongAnswerTexts[0].text;
-            item['wrongAnswer1ID'] = wrongAnswerIds[0];
-            item['wrongAnswer1LO'] = wrongAnswerLOs[0];
-            item['wrongAnswer2'] = wrongAnswerTexts[1].text;
-            item['wrongAnswer2ID'] = wrongAnswerIds[1];
-            item['wrongAnswer2LO'] = wrongAnswerLOs[1];
-            item['wrongAnswer3'] = wrongAnswerTexts[2].text;
-            item['wrongAnswer3ID'] = wrongAnswerIds[2];
-            item['wrongAnswer3LO'] = wrongAnswerLOs[2];
+            item['correctAnswer'] = answers.correctAnswerText.text;
+            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
+            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
+            item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
+            item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
+            item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
+            item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
+            item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
+            item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
+            item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
             items.push(item);
         });
 
@@ -164,7 +135,7 @@ var ItemsList = React.createClass({
                             {_this.getOutcomeDisplayName(questionLO)}
                         </div>
                         <div className="text-row-wrapper">
-                            <p className="answer-label correct-answer-lo">a)</p>
+                            <p className="answer-label">a)</p>
                             <p className="correct-answer-lo">
                                 Correct answer -- no confused LO
                             </p>
