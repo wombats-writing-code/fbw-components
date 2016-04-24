@@ -69,10 +69,8 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             })
         }).then(function (response) {
             if (response.ok) {
-                response.json().then(function (responseData) {
-                    _this.getItems(data.libraryId);
-                    console.log(responseData);
-                });
+                _this.getItems(data.libraryId);
+                console.log('item deleted');
             } else {
                 response.text().then(function (responseData) {
                     alert(response.statusText + ': ' + responseData);
@@ -157,6 +155,42 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             console.log('Problem with linking question to a learning objective: ' + error.message);
         });
     },
+    updateItem: function (payload) {
+        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+            _this = this,
+            data = new FormData();
+
+        _.each(_.keys(payload), function (key) {
+            if (key == 'question' || key == 'answers') {
+                data.append(key, JSON.stringify(payload[key]));
+            } else if (key != 'questionFile') {
+                data.append(key, payload[key]);
+            }
+        });
+        data.append('question_imageFile', payload.questionFile);
+
+        fetch(url, {
+            method: 'PUT',
+            credentials: "same-origin",
+            headers: new Headers({
+                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+            }),
+            body: data
+        }).then(function (response) {
+            if (response.ok) {
+                response.json().then(function (data) {
+                    _this.getItems(payload.libraryId);
+                    console.log(data);
+                });
+            } else {
+                response.text().then(function (data) {
+                    alert(response.statusText + ': ' + data);
+                });
+            }
+        }).catch(function (error) {
+            console.log('Problem with updating item ' + payload.itemId + ': ' + error.message);
+        });
+    },
     url: function () {
         return MiddlewareService.host() + '/assessment/libraries/';
     }
@@ -169,6 +203,9 @@ LibraryItemsStore.dispatchToken = LibraryItemsDispatcher.register(function (acti
             break;
         case ActionTypes.DELETE_ITEM:
             LibraryItemsStore.deleteItem(action.content);
+            break;
+        case ActionTypes.UPDATE_ITEM:
+            LibraryItemsStore.updateItem(action.content);
             break;
         case ActionTypes.LINK_ANSWER_LO:
             LibraryItemsStore.linkAnswerToLO(action.content);

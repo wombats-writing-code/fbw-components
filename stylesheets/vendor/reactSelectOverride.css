@@ -1,0 +1,8 @@
+/*Override these from react-select*/
+.Select-menu-outer {
+    max-height: 60vh;
+}
+
+.Select-menu {
+    max-height: 59vh;
+}

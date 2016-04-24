@@ -66,6 +66,8 @@
 	// Filename: fbw_author/index.jsx
 	'use strict';
 
+	__webpack_require__(47);
+
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(2);
 	var ItemAuthoring = __webpack_require__(3);
@@ -316,6 +318,42 @@
 	            console.log('Problem with linking question to a learning objective: ' + error.message);
 	        });
 	    },
+	    updateItem: function (payload) {
+	        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+	            _this = this,
+	            data = new FormData();
+
+	        _.each(_.keys(payload), function (key) {
+	            if (key == 'question' || key == 'answers') {
+	                data.append(key, JSON.stringify(payload[key]));
+	            } else if (key != 'questionFile') {
+	                data.append(key, payload[key]);
+	            }
+	        });
+	        data.append('question_imageFile', payload.questionFile);
+
+	        fetch(url, {
+	            method: 'PUT',
+	            credentials: "same-origin",
+	            headers: new Headers({
+	                'X-CSRFToken': document.getElementsByName('csrfmiddlewaretoken')[0].value
+	            }),
+	            body: data
+	        }).then(function (response) {
+	            if (response.ok) {
+	                response.json().then(function (data) {
+	                    _this.getItems(payload.libraryId);
+	                    console.log(data);
+	                });
+	            } else {
+	                response.text().then(function (data) {
+	                    alert(response.statusText + ': ' + data);
+	                });
+	            }
+	        }).catch(function (error) {
+	            console.log('Problem with updating item ' + payload.itemId + ': ' + error.message);
+	        });
+	    },
 	    url: function () {
 	        var location = window.location.href;
 	        if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
@@ -334,6 +372,9 @@
 	            break;
 	        case ActionTypes.DELETE_ITEM:
 	            LibraryItemsStore.deleteItem(action.content);
+	            break;
+	        case ActionTypes.UPDATE_ITEM:
+	            LibraryItemsStore.updateItem(action.content);
 	            break;
 	        case ActionTypes.LINK_ANSWER_LO:
 	            LibraryItemsStore.linkAnswerToLO(action.content);
@@ -20313,6 +20354,8 @@
 
 	'use strict';
 
+	__webpack_require__(45);
+
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(7);
 	var Col = ReactBS.Col;
@@ -20323,6 +20366,7 @@
 	var AuthoringConstants = __webpack_require__(16);
 	var GenusTypes = __webpack_require__(16).GenusTypes;
 
+	var AnswerExtraction = __webpack_require__(40);
 	var AnswerText = __webpack_require__(28);
 	var ItemControls = __webpack_require__(17);
 	var LibraryItemsStore = __webpack_require__(4);
@@ -20352,7 +20396,11 @@
 	    getOutcomeDisplayName: function getOutcomeDisplayName(outcomeId) {
 	        var outcome = OutcomesStore.get(outcomeId);
 	        if (outcome == null) {
-	            return "None linked yet";
+	            return React.createElement(
+	                'p',
+	                { className: 'missing-lo' },
+	                'None linked yet'
+	            );
 	        } else {
 	            return outcome.displayName.text;
 	        }
@@ -20365,51 +20413,18 @@
 	        items = [];
 
 	        _.each(this.props.items, function (item) {
-	            var answers = item.answers,
-	                rightAnswer = _.find(answers, { genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU" }),
-	                wrongAnswers = _.filter(answers, { genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU" }),
-	                wrongAnswerIds = [],
-	                wrongAnswerLOs = [],
-	                choices = item.question.choices,
-	                correctAnswerText,
-	                wrongAnswerTexts;
+	            var answers = AnswerExtraction(item);
 
-	            correctAnswerText = _.find(choices, { "id": rightAnswer.choiceIds[0] });
-
-	            _.each(wrongAnswers, function (wrongAnswer) {
-	                wrongAnswerIds.push(wrongAnswer.choiceIds[0]);
-	            });
-
-	            wrongAnswerTexts = _.filter(choices, function (choice) {
-	                return wrongAnswerIds.indexOf(choice.id) >= 0;
-	            });
-
-	            // need to get these in the same order as wrongAnswerTexts
-	            wrongAnswerIds = [];
-
-	            _.each(wrongAnswerTexts, function (wrongAnswerText) {
-	                var wrongAnswer = _.find(wrongAnswers, function (wrongAnswer) {
-	                    return wrongAnswer.choiceIds[0] == wrongAnswerText.id;
-	                });
-	                wrongAnswerIds.push(wrongAnswer.id);
-
-	                if (wrongAnswer.confusedLearningObjectiveIds.length > 0) {
-	                    wrongAnswerLOs.push(wrongAnswer.confusedLearningObjectiveIds[0]);
-	                } else {
-	                    wrongAnswerLOs.push('None linked yet');
-	                }
-	            });
-
-	            item['correctAnswer'] = correctAnswerText.text;
-	            item['wrongAnswer1'] = wrongAnswerTexts[0].text;
-	            item['wrongAnswer1ID'] = wrongAnswerIds[0];
-	            item['wrongAnswer1LO'] = wrongAnswerLOs[0];
-	            item['wrongAnswer2'] = wrongAnswerTexts[1].text;
-	            item['wrongAnswer2ID'] = wrongAnswerIds[1];
-	            item['wrongAnswer2LO'] = wrongAnswerLOs[1];
-	            item['wrongAnswer3'] = wrongAnswerTexts[2].text;
-	            item['wrongAnswer3ID'] = wrongAnswerIds[2];
-	            item['wrongAnswer3LO'] = wrongAnswerLOs[2];
+	            item['correctAnswer'] = answers.correctAnswerText.text;
+	            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
+	            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
+	            item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
+	            item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
+	            item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
+	            item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
+	            item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
+	            item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
+	            item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
 	            items.push(item);
 	        });
 
@@ -20530,7 +20545,7 @@
 	                            { className: 'text-row-wrapper' },
 	                            React.createElement(
 	                                'p',
-	                                { className: 'answer-label correct-answer-lo' },
+	                                { className: 'answer-label' },
 	                                'a)'
 	                            ),
 	                            React.createElement(
@@ -37613,24 +37628,54 @@
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(7);
+	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
 	var ActionTypes = __webpack_require__(16).ActionTypes;
-	var dispatcher = __webpack_require__(15);
+	var AnswerExtraction = __webpack_require__(40);
+	var Dispatcher = __webpack_require__(15);
+	var GenusTypes = __webpack_require__(16).GenusTypes;
+
+	var questionFile;
 
 	var EditItem = React.createClass({
 	    displayName: 'EditItem',
 
 	    getInitialState: function getInitialState() {
-	        var me = this.props.item;
+	        var me = this.props.item,
+	            answers = AnswerExtraction(me),
+	            currentImage = me.question.hasOwnProperty('files') ? me.question.files.imageFile : '';
+
 	        return {
-	            description: me.description.text,
-	            displayName: me.displayName.text,
-	            genusTypeId: me.genusTypeId,
-	            genusTypeName: '',
-	            showModal: false
+	            correctAnswer: answers.correctAnswerText.text,
+	            correctAnswerError: false,
+	            correctAnswerId: answers.correctAnswerId,
+	            correctAnswerFeedback: '',
+	            itemDescription: me.description.text,
+	            itemDisplayName: me.displayName.text,
+	            itemDisplayNameError: false,
+	            questionFile: currentImage,
+	            questionString: me.question.text.text,
+	            questionStringError: false,
+	            showAlert: false,
+	            showModal: false,
+	            wrongAnswer1: answers.wrongAnswerTexts[0].text,
+	            wrongAnswer1Error: false,
+	            wrongAnswer1Id: answers.wrongAnswerIds[0],
+	            wrongAnswer1Feedback: '',
+	            wrongAnswer2: answers.wrongAnswerTexts[1].text,
+	            wrongAnswer2Error: false,
+	            wrongAnswer2Id: answers.wrongAnswerIds[1],
+	            wrongAnswer2Feedback: '',
+	            wrongAnswer3: answers.wrongAnswerTexts[2].text,
+	            wrongAnswer3Error: false,
+	            wrongAnswer3Id: answers.wrongAnswerIds[2],
+	            wrongAnswer3Feedback: ''
 	        };
 	    },
 	    close: function close() {
@@ -37638,73 +37683,416 @@
 	        this.reset();
 	    },
 	    onChange: function onChange(e) {
-	        if (e.currentTarget.name === "displayName") {
-	            this.setState({ displayName: e.target.value });
-	        } else if (e.currentTarget.name === "genusTypeId") {
-	            this.setState({ genusTypeId: e.target.value });
+	        var inputId = e.currentTarget.id,
+	            inputValue = e.target.value;
+	        if (inputId === "questionFile") {
+	            questionFile = e.target.files[0];
 	        } else {
-	            this.setState({ description: e.target.value });
+	            var update = {};
+	            update[inputId] = inputValue;
+	            this.setState(update);
 	        }
 	    },
 	    open: function open(e) {
 	        this.setState({ showModal: true }, function () {});
 	    },
-	    reset: function reset() {},
+	    reset: function reset() {
+	        var me = this.props.item,
+	            answers = AnswerExtraction(me);
+	        questionFile = null;
+	        this.setState({ correctAnswer: answers.correctAnswerText.text });
+	        this.setState({ correctAnswerError: false });
+	        this.setState({ correctAnswerId: answers.correctAnswerId });
+	        this.setState({ correctAnswerFeedback: '' });
+	        this.setState({ itemDescription: me.description.text });
+	        this.setState({ itemDisplayName: me.displayName.text });
+	        this.setState({ itemDisplayNameError: false });
+	        this.setState({ questionFile: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
+	        this.setState({ questionString: me.question.text.text });
+	        this.setState({ questionStringError: false });
+	        this.setState({ showAlert: false });
+	        this.setState({ wrongAnswer1: answers.wrongAnswerTexts[0].text });
+	        this.setState({ wrongAnswer1Error: false });
+	        this.setState({ wrongAnswer1Id: answers.wrongAnswerIds[0] });
+	        this.setState({ wrongAnswer1Feedback: '' });
+	        this.setState({ wrongAnswer2: answers.wrongAnswerTexts[1].text });
+	        this.setState({ wrongAnswer2Error: false });
+	        this.setState({ wrongAnswer2Id: answers.wrongAnswerIds[1] });
+	        this.setState({ wrongAnswer2Feedback: '' });
+	        this.setState({ wrongAnswer3: answers.wrongAnswerTexts[2].text });
+	        this.setState({ wrongAnswer3Error: false });
+	        this.setState({ wrongAnswer3Id: answers.wrongAnswerIds[2] });
+	        this.setState({ wrongAnswer3Feedback: '' });
+	    },
 	    save: function save(e) {
-	        dispatcher.dispatch({
-	            type: ActionTypes.UPDATE_ITEM,
-	            content: {
-	                description: this.state.description,
-	                displayName: this.state.displayName,
-	                genusTypeId: this.state.genusTypeId,
-	                id: this.props.item.id
+	        var payload = {
+	            itemId: this.props.item.id,
+	            libraryId: this.props.libraryId
+	        };
+
+	        if (this.state.itemDisplayName === '' || this.state.correctAnswer === '' || this.state.questionString === '' || this.state.wrongAnswer1 === '' || this.state.wrongAnswer2 === '' || this.state.wrongAnswer3 === '') {
+	            this.setState({ showAlert: true });
+
+	            this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
+	            this.setState({ correctAnswerError: this.state.correctAnswer === '' });
+	            this.setState({ questionStringError: this.state.questionString === '' });
+	            this.setState({ wrongAnswer1Error: this.state.wrongAnswer1 === '' });
+	            this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
+	            this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
+	        } else {
+	            payload['displayName'] = this.state.itemDisplayName;
+	            payload['description'] = this.state.itemDescription;
+
+	            payload['question'] = {
+	                text: this.state.questionString,
+	                choices: [this.state.correctAnswer, this.state.wrongAnswer1, this.state.wrongAnswer2, this.state.wrongAnswer3]
+	            };
+	            payload['answers'] = [{
+	                answerId: this.state.correctAnswerId,
+	                choiceId: 0,
+	                feedback: this.state.correctAnswerFeedback
+	            }, {
+	                answerId: this.state.wrongAnswer1Id,
+	                choiceId: 1,
+	                feedback: this.state.wrongAnswer1Feedback
+	            }, {
+	                answerId: this.state.wrongAnswer2Id,
+	                choiceId: 2,
+	                feedback: this.state.wrongAnswer2Feedback
+	            }, {
+	                answerId: this.state.wrongAnswer3Id,
+	                choiceId: 3,
+	                feedback: this.state.wrongAnswer3Feedback
+	            }];
+	            if (questionFile != null) {
+	                payload['questionFile'] = questionFile;
 	            }
-	        });
-	        this.close();
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.UPDATE_ITEM,
+	                content: payload
+	            });
+	            this.close();
+	        }
 	    },
 	    render: function render() {
+	        // TODO: Add WYSIWYG editor so can add tables to questions / answers?
+	        var alert = '',
+	            correctAnswer,
+	            itemDisplayName,
+	            questionString,
+	            wrongAnswer1,
+	            wrongAnswer2,
+	            wrongAnswer3;
+
+	        if (this.state.showAlert) {
+	            alert = React.createElement(
+	                Alert,
+	                { bsStyle: 'danger' },
+	                'You are missing some required fields'
+	            );
+	        }
+
+	        if (this.state.correctAnswerError) {
+	            correctAnswer = React.createElement(
+	                FormGroup,
+	                { controlId: 'correctAnswer',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Correct Answer'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.correctAnswer,
+	                    onChange: this.onChange,
+	                    placeholder: 'The correct answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            correctAnswer = React.createElement(
+	                FormGroup,
+	                { controlId: 'correctAnswer' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Correct Answer'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.correctAnswer,
+	                    onChange: this.onChange,
+	                    placeholder: 'The correct answer' })
+	            );
+	        }
+
+	        if (this.state.itemDisplayNameError) {
+	            itemDisplayName = React.createElement(
+	                FormGroup,
+	                { controlId: 'itemDisplayName',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Item Name'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.itemDisplayName,
+	                    onChange: this.onChange,
+	                    placeholder: 'A name for the item' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            itemDisplayName = React.createElement(
+	                FormGroup,
+	                { controlId: 'itemDisplayName' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Item Name'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.itemDisplayName,
+	                    onChange: this.onChange,
+	                    placeholder: 'A name for the item' })
+	            );
+	        }
+
+	        if (this.state.questionStringError) {
+	            questionString = React.createElement(
+	                FormGroup,
+	                { controlId: 'questionString',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Question'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.questionString,
+	                    onChange: this.onChange,
+	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            questionString = React.createElement(
+	                FormGroup,
+	                { controlId: 'questionString' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Question'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.questionString,
+	                    onChange: this.onChange,
+	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' })
+	            );
+	        }
+
+	        if (this.state.wrongAnswer1Error) {
+	            wrongAnswer1 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer1',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 1'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.wrongAnswer1,
+	                    onChange: this.onChange,
+	                    placeholder: 'The first mis-direction answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            wrongAnswer1 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer1' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 1'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.wrongAnswer1,
+	                    onChange: this.onChange,
+	                    placeholder: 'The first mis-direction answer' })
+	            );
+	        }
+
+	        if (this.state.wrongAnswer2Error) {
+	            wrongAnswer2 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer2',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 2'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.wrongAnswer2,
+	                    onChange: this.onChange,
+	                    placeholder: 'The second mis-direction answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            wrongAnswer2 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer2' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 2'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.wrongAnswer2,
+	                    onChange: this.onChange,
+	                    placeholder: 'The second mis-direction answer' })
+	            );
+	        }
+
+	        if (this.state.wrongAnswer3Error) {
+	            wrongAnswer3 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer3',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 3'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.wrongAnswer3,
+	                    onChange: this.onChange,
+	                    placeholder: 'The third mis-direction answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            wrongAnswer3 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer3' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 3'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.wrongAnswer3,
+	                    onChange: this.onChange,
+	                    placeholder: 'The third mis-direction answer' })
+	            );
+	        }
+
 	        return React.createElement(
-	            'span',
+	            'div',
 	            null,
 	            React.createElement(
 	                Button,
-	                { onClick: this.open,
-	                    bsSize: 'large' },
+	                { onClick: this.open, bsSize: 'large' },
 	                React.createElement(Glyphicon, { glyph: 'pencil' })
 	            ),
 	            React.createElement(
 	                Modal,
-	                { show: this.state.showModal, onHide: this.close },
+	                { bsSize: 'lg', show: this.state.showModal, onHide: this.close },
 	                React.createElement(
 	                    Modal.Header,
 	                    { closeButton: true },
 	                    React.createElement(
 	                        Modal.Title,
 	                        null,
-	                        'Edit Item'
+	                        'Edit Question'
 	                    )
 	                ),
 	                React.createElement(
 	                    Modal.Body,
 	                    null,
+	                    alert,
 	                    React.createElement(
 	                        'form',
 	                        null,
+	                        itemDisplayName,
 	                        React.createElement(
-	                            'div',
-	                            { className: 'form-group' },
+	                            FormGroup,
+	                            { controlId: 'itemDescription' },
 	                            React.createElement(
-	                                'select',
-	                                { className: 'form-control', ref: 'genusSelector', name: 'genusTypeId', defaultValue: this.props.item.genusTypeId },
-	                                React.createElement('option', null),
-	                                React.createElement(
-	                                    'option',
-	                                    { value: this.props.item.genusTypeId },
-	                                    this.state.genusTypeName
-	                                )
+	                                ControlLabel,
+	                                null,
+	                                'Item Description (optional)'
 	                            ),
-	                            React.createElement('input', { className: 'form-control', name: 'displayName', placeholder: 'Display name', type: 'text', value: this.state.displayName, onChange: this.onChange }),
-	                            React.createElement('input', { className: 'form-control', name: 'description', placeholder: 'Description', type: 'text', value: this.state.description, onChange: this.onChange })
+	                            React.createElement(FormControl, { type: 'text',
+	                                value: this.state.itemDescription,
+	                                onChange: this.onChange,
+	                                placeholder: 'A description for this item' })
+	                        ),
+	                        questionString,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'questionFile' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Image File (optional)'
+	                            ),
+	                            React.createElement(FormControl, { type: 'file',
+	                                onChange: this.onChange })
+	                        ),
+	                        correctAnswer,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'correctAnswerFeedback' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Correct Answer Feedback (recommended)'
+	                            ),
+	                            React.createElement(FormControl, { componentClass: 'textarea',
+	                                value: this.state.correctAnswerFeedback,
+	                                onChange: this.onChange,
+	                                placeholder: 'Feedback for the correct answer' })
+	                        ),
+	                        wrongAnswer1,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'wrongAnswer1Feedback' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Wrong Answer 1 Feedback (recommended)'
+	                            ),
+	                            React.createElement(FormControl, { componentClass: 'textarea',
+	                                value: this.state.wrongAnswer1Feedback,
+	                                onChange: this.onChange,
+	                                placeholder: 'Feedback for the first mis-direction answer' })
+	                        ),
+	                        wrongAnswer2,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'wrongAnswer2Feedback' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Wrong Answer 2 Feedback (recommended)'
+	                            ),
+	                            React.createElement(FormControl, { componentClass: 'textarea',
+	                                value: this.state.wrongAnswer2Feedback,
+	                                onChange: this.onChange,
+	                                placeholder: 'Feedback for the second mis-direction answer' })
+	                        ),
+	                        wrongAnswer3,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'wrongAnswer3Feedback' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Wrong Answer 3 Feedback (recommended)'
+	                            ),
+	                            React.createElement(FormControl, { componentClass: 'textarea',
+	                                value: this.state.wrongAnswer3Feedback,
+	                                onChange: this.onChange,
+	                                placeholder: 'Feedback for the third mis-direction answer' })
 	                        )
 	                    )
 	                ),
@@ -37736,6 +38124,8 @@
 	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
 
 	'use strict';
+
+	__webpack_require__(41);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(7);
@@ -39476,6 +39866,8 @@
 
 	'use strict';
 
+	__webpack_require__(41);
+
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(7);
 	var Select = __webpack_require__(32);
@@ -39620,6 +40012,492 @@
 
 	module.exports = QuestionText;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
+
+/***/ },
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// AnswerExtraction.js
+	'use strict';
+
+	var _ = __webpack_require__(8);
+
+
+	var AnswerExtraction = function (item) {
+	    // TODO: Extract feedback
+	    var answers = item.answers,
+	        rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
+	        wrongAnswers = _.filter(answers, {genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU"}),
+	        wrongAnswerIds = [],
+	        wrongAnswerLOs = [],
+	        choices = item.question.choices,
+	        correctAnswerId = rightAnswer.id,
+	        correctAnswerText, wrongAnswerTexts;
+
+	    correctAnswerText = _.find(choices, {"id": rightAnswer.choiceIds[0]});
+
+	    _.each(wrongAnswers, function (wrongAnswer) {
+	        wrongAnswerIds.push(wrongAnswer.choiceIds[0]);
+	    });
+
+	    wrongAnswerTexts = _.filter(choices, function (choice) {
+	        return wrongAnswerIds.indexOf(choice.id) >= 0;
+	    });
+
+	    // need to get these in the same order as wrongAnswerTexts
+	    wrongAnswerIds = [];
+
+	    _.each(wrongAnswerTexts, function (wrongAnswerText) {
+	        var wrongAnswer = _.find(wrongAnswers, function (wrongAnswer) {
+	            return wrongAnswer.choiceIds[0] == wrongAnswerText.id;
+	        });
+	        wrongAnswerIds.push(wrongAnswer.id);
+
+	        if (wrongAnswer.confusedLearningObjectiveIds.length > 0) {
+	            wrongAnswerLOs.push(wrongAnswer.confusedLearningObjectiveIds[0]);
+	        } else {
+	            wrongAnswerLOs.push('None linked yet');
+	        }
+	    });
+
+	    return {
+	        correctAnswerId: correctAnswerId,
+	        correctAnswerText: correctAnswerText,
+	        wrongAnswerIds: wrongAnswerIds,
+	        wrongAnswerLOs: wrongAnswerLOs,
+	        wrongAnswerTexts: wrongAnswerTexts
+	    };
+	};
+
+	module.exports = AnswerExtraction;
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(42);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(43)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./reactSelectOverride.css", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./reactSelectOverride.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 42 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(44)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "/*Override these from react-select*/\n.Select-menu-outer {\n    max-height: 60vh;\n}\n\n.Select-menu {\n    max-height: 59vh;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 43 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	var stylesInDom = {},
+		memoize = function(fn) {
+			var memo;
+			return function () {
+				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+				return memo;
+			};
+		},
+		isOldIE = memoize(function() {
+			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+		}),
+		getHeadElement = memoize(function () {
+			return document.head || document.getElementsByTagName("head")[0];
+		}),
+		singletonElement = null,
+		singletonCounter = 0,
+		styleElementsInsertedAtTop = [];
+
+	module.exports = function(list, options) {
+		if(false) {
+			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+		}
+
+		options = options || {};
+		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+		// tags it will allow on a page
+		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+
+		// By default, add <style> tags to the bottom of <head>.
+		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+
+		var styles = listToStyles(list);
+		addStylesToDom(styles, options);
+
+		return function update(newList) {
+			var mayRemove = [];
+			for(var i = 0; i < styles.length; i++) {
+				var item = styles[i];
+				var domStyle = stylesInDom[item.id];
+				domStyle.refs--;
+				mayRemove.push(domStyle);
+			}
+			if(newList) {
+				var newStyles = listToStyles(newList);
+				addStylesToDom(newStyles, options);
+			}
+			for(var i = 0; i < mayRemove.length; i++) {
+				var domStyle = mayRemove[i];
+				if(domStyle.refs === 0) {
+					for(var j = 0; j < domStyle.parts.length; j++)
+						domStyle.parts[j]();
+					delete stylesInDom[domStyle.id];
+				}
+			}
+		};
+	}
+
+	function addStylesToDom(styles, options) {
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			if(domStyle) {
+				domStyle.refs++;
+				for(var j = 0; j < domStyle.parts.length; j++) {
+					domStyle.parts[j](item.parts[j]);
+				}
+				for(; j < item.parts.length; j++) {
+					domStyle.parts.push(addStyle(item.parts[j], options));
+				}
+			} else {
+				var parts = [];
+				for(var j = 0; j < item.parts.length; j++) {
+					parts.push(addStyle(item.parts[j], options));
+				}
+				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+			}
+		}
+	}
+
+	function listToStyles(list) {
+		var styles = [];
+		var newStyles = {};
+		for(var i = 0; i < list.length; i++) {
+			var item = list[i];
+			var id = item[0];
+			var css = item[1];
+			var media = item[2];
+			var sourceMap = item[3];
+			var part = {css: css, media: media, sourceMap: sourceMap};
+			if(!newStyles[id])
+				styles.push(newStyles[id] = {id: id, parts: [part]});
+			else
+				newStyles[id].parts.push(part);
+		}
+		return styles;
+	}
+
+	function insertStyleElement(options, styleElement) {
+		var head = getHeadElement();
+		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+		if (options.insertAt === "top") {
+			if(!lastStyleElementInsertedAtTop) {
+				head.insertBefore(styleElement, head.firstChild);
+			} else if(lastStyleElementInsertedAtTop.nextSibling) {
+				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+			} else {
+				head.appendChild(styleElement);
+			}
+			styleElementsInsertedAtTop.push(styleElement);
+		} else if (options.insertAt === "bottom") {
+			head.appendChild(styleElement);
+		} else {
+			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+		}
+	}
+
+	function removeStyleElement(styleElement) {
+		styleElement.parentNode.removeChild(styleElement);
+		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+		if(idx >= 0) {
+			styleElementsInsertedAtTop.splice(idx, 1);
+		}
+	}
+
+	function createStyleElement(options) {
+		var styleElement = document.createElement("style");
+		styleElement.type = "text/css";
+		insertStyleElement(options, styleElement);
+		return styleElement;
+	}
+
+	function createLinkElement(options) {
+		var linkElement = document.createElement("link");
+		linkElement.rel = "stylesheet";
+		insertStyleElement(options, linkElement);
+		return linkElement;
+	}
+
+	function addStyle(obj, options) {
+		var styleElement, update, remove;
+
+		if (options.singleton) {
+			var styleIndex = singletonCounter++;
+			styleElement = singletonElement || (singletonElement = createStyleElement(options));
+			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+		} else if(obj.sourceMap &&
+			typeof URL === "function" &&
+			typeof URL.createObjectURL === "function" &&
+			typeof URL.revokeObjectURL === "function" &&
+			typeof Blob === "function" &&
+			typeof btoa === "function") {
+			styleElement = createLinkElement(options);
+			update = updateLink.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+				if(styleElement.href)
+					URL.revokeObjectURL(styleElement.href);
+			};
+		} else {
+			styleElement = createStyleElement(options);
+			update = applyToTag.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+			};
+		}
+
+		update(obj);
+
+		return function updateStyle(newObj) {
+			if(newObj) {
+				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+					return;
+				update(obj = newObj);
+			} else {
+				remove();
+			}
+		};
+	}
+
+	var replaceText = (function () {
+		var textStore = [];
+
+		return function (index, replacement) {
+			textStore[index] = replacement;
+			return textStore.filter(Boolean).join('\n');
+		};
+	})();
+
+	function applyToSingletonTag(styleElement, index, remove, obj) {
+		var css = remove ? "" : obj.css;
+
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = replaceText(index, css);
+		} else {
+			var cssNode = document.createTextNode(css);
+			var childNodes = styleElement.childNodes;
+			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+			if (childNodes.length) {
+				styleElement.insertBefore(cssNode, childNodes[index]);
+			} else {
+				styleElement.appendChild(cssNode);
+			}
+		}
+	}
+
+	function applyToTag(styleElement, obj) {
+		var css = obj.css;
+		var media = obj.media;
+
+		if(media) {
+			styleElement.setAttribute("media", media)
+		}
+
+		if(styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+			while(styleElement.firstChild) {
+				styleElement.removeChild(styleElement.firstChild);
+			}
+			styleElement.appendChild(document.createTextNode(css));
+		}
+	}
+
+	function updateLink(linkElement, obj) {
+		var css = obj.css;
+		var sourceMap = obj.sourceMap;
+
+		if(sourceMap) {
+			// http://stackoverflow.com/a/26603875
+			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+		}
+
+		var blob = new Blob([css], { type: "text/css" });
+
+		var oldSrc = linkElement.href;
+
+		linkElement.href = URL.createObjectURL(blob);
+
+		if(oldSrc)
+			URL.revokeObjectURL(oldSrc);
+	}
+
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	// css base code, injected by the css-loader
+	module.exports = function() {
+		var list = [];
+
+		// return the list of modules as css string
+		list.toString = function toString() {
+			var result = [];
+			for(var i = 0; i < this.length; i++) {
+				var item = this[i];
+				if(item[2]) {
+					result.push("@media " + item[2] + "{" + item[1] + "}");
+				} else {
+					result.push(item[1]);
+				}
+			}
+			return result.join("");
+		};
+
+		// import a list of modules into the list
+		list.i = function(modules, mediaQuery) {
+			if(typeof modules === "string")
+				modules = [[null, modules, ""]];
+			var alreadyImportedModules = {};
+			for(var i = 0; i < this.length; i++) {
+				var id = this[i][0];
+				if(typeof id === "number")
+					alreadyImportedModules[id] = true;
+			}
+			for(i = 0; i < modules.length; i++) {
+				var item = modules[i];
+				// skip already imported module
+				// this implementation is not 100% perfect for weird media query combinations
+				//  when a module is imported multiple times with different media queries.
+				//  I hope this will never occur (Hey this way we have smaller bundles)
+				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+					if(mediaQuery && !item[2]) {
+						item[2] = mediaQuery;
+					} else if(mediaQuery) {
+						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+					}
+					list.push(item);
+				}
+			}
+		};
+		return list;
+	};
+
+
+/***/ },
+/* 45 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(46);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(43)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./itemsList.css", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./itemsList.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 46 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(44)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 47 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(48);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(43)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../node_modules/css-loader/index.js!./app.css", function() {
+				var newContent = require("!!./../node_modules/css-loader/index.js!./app.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 48 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(44)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "#app-container {\n    min-height: 80vh;\n}\n\n.red {\n    color: red;\n}", ""]);
+
+	// exports
+
 
 /***/ }
 /******/ ])))

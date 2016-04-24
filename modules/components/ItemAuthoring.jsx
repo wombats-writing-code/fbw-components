@@ -32,6 +32,9 @@ var ItemAuthoring = React.createClass({
     },
     componentDidMount: function () {
     },
+    hideItems: function () {
+        this.setState({ showItems: false });
+    },
     librarySelected: function (id, libraryDescription) {
         this.setState({ libraryId: id});
         this.setState({ libraryDescription: libraryDescription });
@@ -46,7 +49,8 @@ var ItemAuthoring = React.createClass({
         return <Grid>
             <Row>
                 <Col sm={6} md={3} lg={3}>
-                    <LibrarySelector onSelect={this.librarySelected}/>
+                    <LibrarySelector onSelect={this.librarySelected}
+                                     hideItems={this.hideItems} />
                 </Col>
             </Row>
             {itemsWrapper}
