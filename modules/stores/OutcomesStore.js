@@ -2,8 +2,9 @@
 
 var OutcomesDispatcher = require('../dispatcher/OutcomesDispatcher');
 var AuthoringConstants = require('../constants/AuthoringConstants');
+var MiddlewareService = require('./middleware.service');
+
 var EventEmitter = require('events').EventEmitter;
-var _ = require('lodash');
 
 var ActionTypes = AuthoringConstants.ActionTypes;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -40,13 +41,7 @@ var OutcomesStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     url: function () {
-        var location = window.location.href;
-        if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
-            return '/api/v1/learning/objectives/';
-        } else {
-            return '/fbw-author/api/v1/learning/objectives/';
-        }
-
+      return MiddlewareService.host() + '/learning/objectives/';
     }
 });
 
