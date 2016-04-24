@@ -2,7 +2,7 @@
 
 var OutcomesDispatcher = require('../dispatcher/OutcomesDispatcher');
 var AuthoringConstants = require('../constants/AuthoringConstants');
-var MiddlewareService = require('./middleware.service');
+var MiddlewareService = require('../services/middleware.service');
 
 var EventEmitter = require('events').EventEmitter;
 
@@ -41,6 +41,8 @@ var OutcomesStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     url: function () {
+      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
+
       return MiddlewareService.host() + '/learning/objectives/';
     }
 });

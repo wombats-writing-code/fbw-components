@@ -7,11 +7,12 @@ var ReactBS = require('react-bootstrap');
 var Badge = ReactBS.Badge;
 
 
-var LibraryItemsStore = require('../stores/LibraryItemsStore');
+var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 
 var ItemSearch = React.createClass({
     getInitialState: function () {
         return {
+            searchQuery: '',
             libraries: []
         }
     },
@@ -33,10 +34,17 @@ var ItemSearch = React.createClass({
         LibraryItemsStore.getItems(e.currentTarget.selectedOptions[0].value);
     },
     render: function () {
-        return <div>
-                Search for your items here!
+        return <div class="item-search">
+             <input type="search" class="item-search__input" placeholder="Search question items by question text"
+               onChange={this._onChange} value={this.state.searchQuery}/>
             </div>
+    },
+    _onChange: function(event) {
+      this.setState({searchQuery: event.target.value});
+      // TODO: ask cole what the purpose of ItemWrapper is. let's pass down a filtered list of items to ItemsList
+      // this.props.onChange();
     }
+
 });
 
 module.exports = ItemSearch;
