@@ -36460,7 +36460,6 @@
 	var AddItem = __webpack_require__(19);
 	var ItemSearch = __webpack_require__(20);
 	var ItemStatus = __webpack_require__(21);
-	var ItemsList = __webpack_require__(22);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -36484,15 +36483,6 @@
 	                    { sm: 6, md: 4, lg: 4 },
 	                    React.createElement(ItemStatus, { items: this.props.items,
 	                        libraryDescription: this.props.libraryDescription })
-	                )
-	            ),
-	            React.createElement(
-	                Row,
-	                null,
-	                React.createElement(
-	                    Col,
-	                    { sm: 6, md: 4, lg: 4 },
-	                    React.createElement(ItemSearch, null)
 	                ),
 	                React.createElement(
 	                    Col,
@@ -36503,9 +36493,12 @@
 	            React.createElement(
 	                Row,
 	                null,
-	                React.createElement(ItemsList, { items: this.props.items,
-	                    libraryId: this.props.libraryId,
-	                    enableClickthrough: true })
+	                React.createElement(
+	                    Col,
+	                    null,
+	                    React.createElement(ItemSearch, { items: this.props.items,
+	                        libraryId: this.props.libraryId })
+	                )
 	            )
 	        );
 	    }
@@ -36999,7 +36992,7 @@
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(_) {// ItemSearch.js
+	// ItemSearch.js
 
 	'use strict';
 
@@ -37007,6 +37000,7 @@
 	var ReactBS = __webpack_require__(4);
 	var Badge = ReactBS.Badge;
 
+	var ItemsList = __webpack_require__(22);
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemSearch = React.createClass({
@@ -37015,33 +37009,26 @@
 	    getInitialState: function getInitialState() {
 	        return {
 	            searchQuery: '',
-	            libraries: []
+	            filteredItems: this.props.items
 	        };
 	    },
 	    componentWillMount: function componentWillMount() {
 	        var _this = this;
 	    },
 	    componentDidMount: function componentDidMount() {},
-	    renderLibraries: function renderLibraries() {
-	        return _.map(this.state.libraries, function (library) {
-	            return React.createElement(
-	                'option',
-	                { value: library.id,
-	                    title: library.description.text,
-	                    key: library.id },
-	                library.displayName.text
-	            );
-	        });
-	    },
-	    showItems: function showItems(e) {
-	        LibraryItemsStore.getItems(e.currentTarget.selectedOptions[0].value);
-	    },
 	    render: function render() {
 	        return React.createElement(
 	            'div',
-	            { 'class': 'item-search' },
-	            React.createElement('input', { type: 'search', 'class': 'item-search__input', placeholder: 'Search question items by question text',
-	                onChange: this._onChange, value: this.state.searchQuery })
+	            null,
+	            React.createElement(
+	                'div',
+	                { 'class': 'item-search' },
+	                React.createElement('input', { type: 'search', 'class': 'item-search__input', placeholder: 'Search question items by question text',
+	                    onChange: this._onChange, value: this.state.searchQuery })
+	            ),
+	            React.createElement(ItemsList, { items: this.state.filteredItems,
+	                libraryId: this.props.libraryId,
+	                enableClickthrough: true })
 	        );
 	    },
 	    _onChange: function _onChange(event) {
@@ -37053,7 +37040,6 @@
 	});
 
 	module.exports = ItemSearch;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
 /* 21 */

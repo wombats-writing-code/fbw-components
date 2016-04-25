@@ -14,7 +14,6 @@ var LibraryItemsStore = require('../stores/LibraryItemsStore');
 var AddItem = require('./AddItem');
 var ItemSearch = require('./item-search/ItemSearch.jsx');
 var ItemStatus = require('./ItemStatus');
-var ItemsList = require('./ItemsList');
 
 var ItemWrapper = React.createClass({
     getInitialState: function () {
@@ -33,20 +32,15 @@ var ItemWrapper = React.createClass({
                     <ItemStatus items={this.props.items}
                                 libraryDescription={this.props.libraryDescription} />
                 </Col>
-            </Row>
-            <Row>
-                <Col sm={6} md={4} lg={4}>
-                    <ItemSearch />
-                </Col>
-                
                 <Col sm={4} md={2} lg={2}>
                     <AddItem libraryId={this.props.libraryId} />
                 </Col>
             </Row>
             <Row>
-                <ItemsList items={this.props.items}
-                           libraryId={this.props.libraryId}
-                           enableClickthrough={true}/>
+                <Col>
+                    <ItemSearch items={this.props.items}
+                                libraryId={this.props.libraryId} />
+                </Col>
             </Row>
         </div>
     }

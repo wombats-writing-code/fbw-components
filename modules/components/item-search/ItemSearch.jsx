@@ -7,13 +7,14 @@ var ReactBS = require('react-bootstrap');
 var Badge = ReactBS.Badge;
 
 
+var ItemsList = require('../ItemsList');
 var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 
 var ItemSearch = React.createClass({
     getInitialState: function () {
         return {
             searchQuery: '',
-            libraries: []
+            filteredItems: this.props.items
         }
     },
     componentWillMount: function() {
@@ -21,23 +22,16 @@ var ItemSearch = React.createClass({
     },
     componentDidMount: function () {
     },
-    renderLibraries: function () {
-        return _.map(this.state.libraries, function (library) {
-            return <option value={library.id}
-                           title={library.description.text}
-                           key={library.id}>
-                {library.displayName.text}
-            </option>;
-        });
-    },
-    showItems: function (e) {
-        LibraryItemsStore.getItems(e.currentTarget.selectedOptions[0].value);
-    },
     render: function () {
-        return <div class="item-search">
+        return <div>
+            <div class="item-search">
              <input type="search" class="item-search__input" placeholder="Search question items by question text"
                onChange={this._onChange} value={this.state.searchQuery}/>
             </div>
+            <ItemsList items={this.state.filteredItems}
+                       libraryId={this.props.libraryId}
+                       enableClickthrough={true}/>
+        </div>
     },
     _onChange: function(event) {
       this.setState({searchQuery: event.target.value});
