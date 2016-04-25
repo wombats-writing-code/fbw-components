@@ -2,7 +2,7 @@
 
 'use strict';
 
-require('./itemsList.css');
+require('./ItemsList.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
@@ -11,16 +11,16 @@ var Grid = ReactBS.Grid;
 var Panel = ReactBS.Panel;
 var Row = ReactBS.Row;
 
-var AuthoringConstants = require('../constants/AuthoringConstants');
-var GenusTypes = require('../constants/AuthoringConstants').GenusTypes;
+var AuthoringConstants = require('../../constants/AuthoringConstants');
+var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
 
-var AnswerExtraction = require('../utilities/AnswerExtraction');
-var AnswerText = require('./AnswerText');
-var ItemControls = require('./ItemControls');
-var LibraryItemsStore = require('../stores/LibraryItemsStore');
-var LORelatedItems = require('../utilities/LORelatedItems');
-var OutcomesStore = require('../stores/OutcomesStore');
-var QuestionText = require('./QuestionText');
+var AnswerExtraction = require('../../utilities/AnswerExtraction');
+var AnswerText = require('../AnswerText');
+var ItemControls = require('../ItemControls');
+var LibraryItemsStore = require('../../stores/LibraryItemsStore');
+var LORelatedItems = require('../../utilities/LORelatedItems');
+var OutcomesStore = require('../../stores/OutcomesStore');
+var QuestionText = require('../QuestionText');
 
 
 var ItemsList = React.createClass({

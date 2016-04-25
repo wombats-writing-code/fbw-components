@@ -37000,7 +37000,7 @@
 	var ReactBS = __webpack_require__(4);
 	var Badge = ReactBS.Badge;
 
-	var ItemsList = __webpack_require__(22);
+	var ItemsList = __webpack_require__(51);
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemSearch = React.createClass({
@@ -37120,333 +37120,9 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 22 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// ItemsList.js
-
-	'use strict';
-
-	__webpack_require__(23);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Col = ReactBS.Col;
-	var Grid = ReactBS.Grid;
-	var Panel = ReactBS.Panel;
-	var Row = ReactBS.Row;
-
-	var AuthoringConstants = __webpack_require__(14);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-
-	var AnswerExtraction = __webpack_require__(27);
-	var AnswerText = __webpack_require__(28);
-	var ItemControls = __webpack_require__(41);
-	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(44);
-	var OutcomesStore = __webpack_require__(45);
-	var QuestionText = __webpack_require__(47);
-
-	var ItemsList = React.createClass({
-	    displayName: 'ItemsList',
-
-	    getInitialState: function getInitialState() {
-	        return {
-	            outcomes: [],
-	            sortedItems: {} // loId => [itemsList]
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        OutcomesStore.addChangeListener(function (outcomes) {
-	            _this.setState({ outcomes: outcomes });
-	            _this.sortItemsByOutcome();
-	        });
-	        LibraryItemsStore.addChangeListener(function (items) {
-	            _this.sortItemsByOutcome();
-	        });
-	    },
-	    componentDidMount: function componentDidMount() {
-	        OutcomesStore.getAll();
-	    },
-	    getOutcomeDisplayName: function getOutcomeDisplayName(outcomeId) {
-	        var outcome = OutcomesStore.get(outcomeId);
-	        if (outcome == null) {
-	            return React.createElement(
-	                'p',
-	                { className: 'missing-lo' },
-	                'None linked yet'
-	            );
-	        } else {
-	            return outcome.displayName.text;
-	        }
-	    },
-	    renderItems: function renderItems() {
-	        //TODO: Need to map the LOs to their displayNames...IDs are not useful
-	        var _this = this,
-
-	        // map the choiceIds, etc., in answers back to choices in questions
-	        items = [];
-
-	        function getRelatedItems(loId) {
-	            if (_this.state.sortedItems.hasOwnProperty(loId)) {
-	                return _this.state.sortedItems[loId];
-	            } else {
-	                return [];
-	            }
-	        }
-
-	        _.each(this.props.items, function (item) {
-	            var answers = AnswerExtraction(item);
-
-	            item['correctAnswer'] = answers.correctAnswerText.text;
-	            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
-	            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
-	            item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
-	            item['wrongAnswer1RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[0]);
-	            item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
-	            item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
-	            item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
-	            item['wrongAnswer2RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[1]);
-	            item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
-	            item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
-	            item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
-	            item['wrongAnswer3RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[2]);
-	            items.push(item);
-	        });
-
-	        return _.map(items, function (item) {
-	            var questionLO, itemControls;
-
-	            if (item.question.learningObjectiveIds.length > 0) {
-	                questionLO = item.question.learningObjectiveIds[0];
-	            } else {
-	                questionLO = '';
-	            }
-
-	            if (_this.props.enableClickthrough) {
-	                itemControls = React.createElement(
-	                    'div',
-	                    { className: 'item-controls' },
-	                    React.createElement(ItemControls, { item: item,
-	                        libraryId: _this.props.libraryId })
-	                );
-	            } else {
-	                itemControls = '';
-	            }
-
-	            return React.createElement(
-	                Row,
-	                { key: item.id },
-	                React.createElement(
-	                    Col,
-	                    { sm: 6, md: 6, lg: 6 },
-	                    React.createElement(
-	                        Panel,
-	                        { header: item.displayName.text },
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'question-label' },
-	                                'Q:'
-	                            ),
-	                            React.createElement(QuestionText, { questionId: item.id,
-	                                questionLO: questionLO,
-	                                questionText: item.question.text.text,
-	                                enableClickthrough: _this.props.enableClickthrough,
-	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes })
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'a)'
-	                            ),
-	                            React.createElement(AnswerText, { answerText: item.correctAnswer,
-	                                outcomes: _this.state.outcomes,
-	                                hideLinkBtn: 'true' })
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'b)'
-	                            ),
-	                            React.createElement(AnswerText, { answerId: item.wrongAnswer1ID,
-	                                answerText: item.wrongAnswer1,
-	                                confusedLO: item.wrongAnswer1LO,
-	                                enableClickthrough: _this.props.enableClickthrough,
-	                                itemId: item.id,
-	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer1RelatedItems })
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'c)'
-	                            ),
-	                            React.createElement(AnswerText, { answerId: item.wrongAnswer2ID,
-	                                answerText: item.wrongAnswer2,
-	                                confusedLO: item.wrongAnswer2LO,
-	                                enableClickthrough: _this.props.enableClickthrough,
-	                                itemId: item.id,
-	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer2RelatedItems })
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'd)'
-	                            ),
-	                            React.createElement(AnswerText, { answerId: item.wrongAnswer3ID,
-	                                answerText: item.wrongAnswer3,
-	                                confusedLO: item.wrongAnswer3LO,
-	                                enableClickthrough: _this.props.enableClickthrough,
-	                                itemId: item.id,
-	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer3RelatedItems })
-	                        ),
-	                        itemControls
-	                    )
-	                ),
-	                React.createElement(
-	                    Col,
-	                    { sm: 6, md: 6, lg: 6 },
-	                    React.createElement(
-	                        Panel,
-	                        { header: 'Learning Outcomes' },
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'question-label' },
-	                                'Q:'
-	                            ),
-	                            _this.getOutcomeDisplayName(questionLO)
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'a)'
-	                            ),
-	                            React.createElement(
-	                                'p',
-	                                { className: 'correct-answer-lo' },
-	                                'Correct answer -- no confused LO'
-	                            )
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'b)'
-	                            ),
-	                            _this.getOutcomeDisplayName(item.wrongAnswer1LO)
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'c)'
-	                            ),
-	                            _this.getOutcomeDisplayName(item.wrongAnswer2LO)
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'd)'
-	                            ),
-	                            _this.getOutcomeDisplayName(item.wrongAnswer3LO)
-	                        )
-	                    )
-	                )
-	            );
-	        });
-	    },
-	    sortItemsByOutcome: function sortItemsByOutcome() {
-	        // get a pre-sorted list of all items, organized by learning outcome
-	        this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
-	    },
-	    render: function render() {
-	        return React.createElement(
-	            Grid,
-	            null,
-	            this.renderItems()
-	        );
-	    }
-	});
-
-	module.exports = ItemsList;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 23 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(24);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(26)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../node_modules/css-loader/index.js!./itemsList.css", function() {
-				var newContent = require("!!./../../node_modules/css-loader/index.js!./itemsList.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(25)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.wrong-answer-actions {\n    float: right;\n    display: flex;\n}\n\n.item-controls button,\n.wrong-answer-actions button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n", ""]);
-
-	// exports
-
-
-/***/ },
+/* 22 */,
+/* 23 */,
+/* 24 */,
 /* 25 */
 /***/ function(module, exports) {
 
@@ -39575,7 +39251,7 @@
 	        this.setState({ showModal: true });
 	    },
 	    render: function render() {
-	        var ItemsList = __webpack_require__(22);
+	        var ItemsList = __webpack_require__(51);
 	        var items, lo;
 
 	        lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;
@@ -40740,5 +40416,332 @@
 
 /***/ },
 /* 50 */
-9
+9,
+/* 51 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// ItemsList.js
+
+	'use strict';
+
+	__webpack_require__(52);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Col = ReactBS.Col;
+	var Grid = ReactBS.Grid;
+	var Panel = ReactBS.Panel;
+	var Row = ReactBS.Row;
+
+	var AuthoringConstants = __webpack_require__(14);
+	var GenusTypes = __webpack_require__(14).GenusTypes;
+
+	var AnswerExtraction = __webpack_require__(27);
+	var AnswerText = __webpack_require__(28);
+	var ItemControls = __webpack_require__(41);
+	var LibraryItemsStore = __webpack_require__(8);
+	var LORelatedItems = __webpack_require__(44);
+	var OutcomesStore = __webpack_require__(45);
+	var QuestionText = __webpack_require__(47);
+
+	var ItemsList = React.createClass({
+	    displayName: 'ItemsList',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            outcomes: [],
+	            sortedItems: {} // loId => [itemsList]
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {
+	        var _this = this;
+	        OutcomesStore.addChangeListener(function (outcomes) {
+	            _this.setState({ outcomes: outcomes });
+	            _this.sortItemsByOutcome();
+	        });
+	        LibraryItemsStore.addChangeListener(function (items) {
+	            _this.sortItemsByOutcome();
+	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        OutcomesStore.getAll();
+	    },
+	    getOutcomeDisplayName: function getOutcomeDisplayName(outcomeId) {
+	        var outcome = OutcomesStore.get(outcomeId);
+	        if (outcome == null) {
+	            return React.createElement(
+	                'p',
+	                { className: 'missing-lo' },
+	                'None linked yet'
+	            );
+	        } else {
+	            return outcome.displayName.text;
+	        }
+	    },
+	    renderItems: function renderItems() {
+	        //TODO: Need to map the LOs to their displayNames...IDs are not useful
+	        var _this = this,
+
+	        // map the choiceIds, etc., in answers back to choices in questions
+	        items = [];
+
+	        function getRelatedItems(loId) {
+	            if (_this.state.sortedItems.hasOwnProperty(loId)) {
+	                return _this.state.sortedItems[loId];
+	            } else {
+	                return [];
+	            }
+	        }
+
+	        _.each(this.props.items, function (item) {
+	            var answers = AnswerExtraction(item);
+
+	            item['correctAnswer'] = answers.correctAnswerText.text;
+	            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
+	            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
+	            item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
+	            item['wrongAnswer1RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[0]);
+	            item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
+	            item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
+	            item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
+	            item['wrongAnswer2RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[1]);
+	            item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
+	            item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
+	            item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
+	            item['wrongAnswer3RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[2]);
+	            items.push(item);
+	        });
+
+	        return _.map(items, function (item) {
+	            var questionLO, itemControls;
+
+	            if (item.question.learningObjectiveIds.length > 0) {
+	                questionLO = item.question.learningObjectiveIds[0];
+	            } else {
+	                questionLO = '';
+	            }
+
+	            if (_this.props.enableClickthrough) {
+	                itemControls = React.createElement(
+	                    'div',
+	                    { className: 'item-controls' },
+	                    React.createElement(ItemControls, { item: item,
+	                        libraryId: _this.props.libraryId })
+	                );
+	            } else {
+	                itemControls = '';
+	            }
+
+	            return React.createElement(
+	                Row,
+	                { key: item.id },
+	                React.createElement(
+	                    Col,
+	                    { sm: 6, md: 6, lg: 6 },
+	                    React.createElement(
+	                        Panel,
+	                        { header: item.displayName.text },
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'question-label' },
+	                                'Q:'
+	                            ),
+	                            React.createElement(QuestionText, { questionId: item.id,
+	                                questionLO: questionLO,
+	                                questionText: item.question.text.text,
+	                                enableClickthrough: _this.props.enableClickthrough,
+	                                libraryId: _this.props.libraryId,
+	                                outcomes: _this.state.outcomes })
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'answer-label' },
+	                                'a)'
+	                            ),
+	                            React.createElement(AnswerText, { answerText: item.correctAnswer,
+	                                outcomes: _this.state.outcomes,
+	                                hideLinkBtn: 'true' })
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'answer-label' },
+	                                'b)'
+	                            ),
+	                            React.createElement(AnswerText, { answerId: item.wrongAnswer1ID,
+	                                answerText: item.wrongAnswer1,
+	                                confusedLO: item.wrongAnswer1LO,
+	                                enableClickthrough: _this.props.enableClickthrough,
+	                                itemId: item.id,
+	                                libraryId: _this.props.libraryId,
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer1RelatedItems })
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'answer-label' },
+	                                'c)'
+	                            ),
+	                            React.createElement(AnswerText, { answerId: item.wrongAnswer2ID,
+	                                answerText: item.wrongAnswer2,
+	                                confusedLO: item.wrongAnswer2LO,
+	                                enableClickthrough: _this.props.enableClickthrough,
+	                                itemId: item.id,
+	                                libraryId: _this.props.libraryId,
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer2RelatedItems })
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'answer-label' },
+	                                'd)'
+	                            ),
+	                            React.createElement(AnswerText, { answerId: item.wrongAnswer3ID,
+	                                answerText: item.wrongAnswer3,
+	                                confusedLO: item.wrongAnswer3LO,
+	                                enableClickthrough: _this.props.enableClickthrough,
+	                                itemId: item.id,
+	                                libraryId: _this.props.libraryId,
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer3RelatedItems })
+	                        ),
+	                        itemControls
+	                    )
+	                ),
+	                React.createElement(
+	                    Col,
+	                    { sm: 6, md: 6, lg: 6 },
+	                    React.createElement(
+	                        Panel,
+	                        { header: 'Learning Outcomes' },
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'question-label' },
+	                                'Q:'
+	                            ),
+	                            _this.getOutcomeDisplayName(questionLO)
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'answer-label' },
+	                                'a)'
+	                            ),
+	                            React.createElement(
+	                                'p',
+	                                { className: 'correct-answer-lo' },
+	                                'Correct answer -- no confused LO'
+	                            )
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'answer-label' },
+	                                'b)'
+	                            ),
+	                            _this.getOutcomeDisplayName(item.wrongAnswer1LO)
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'answer-label' },
+	                                'c)'
+	                            ),
+	                            _this.getOutcomeDisplayName(item.wrongAnswer2LO)
+	                        ),
+	                        React.createElement(
+	                            'div',
+	                            { className: 'text-row-wrapper' },
+	                            React.createElement(
+	                                'p',
+	                                { className: 'answer-label' },
+	                                'd)'
+	                            ),
+	                            _this.getOutcomeDisplayName(item.wrongAnswer3LO)
+	                        )
+	                    )
+	                )
+	            );
+	        });
+	    },
+	    sortItemsByOutcome: function sortItemsByOutcome() {
+	        // get a pre-sorted list of all items, organized by learning outcome
+	        this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            Grid,
+	            null,
+	            this.renderItems()
+	        );
+	    }
+	});
+
+	module.exports = ItemsList;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 52 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(53);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(26)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemsList.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemsList.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 53 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(25)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.wrong-answer-actions {\n    float: right;\n    display: flex;\n}\n\n.item-controls button,\n.wrong-answer-actions button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n", ""]);
+
+	// exports
+
+
+/***/ }
 /******/ ])));

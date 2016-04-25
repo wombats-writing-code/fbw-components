@@ -34,7 +34,7 @@ var LORelatedItemsBadge = React.createClass({
         this.setState({ showModal: true });
     },
     render: function () {
-        var ItemsList = require('../ItemsList');
+        var ItemsList = require('../items-list/ItemsList');
         var items, lo;
 
         lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;

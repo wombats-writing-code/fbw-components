@@ -7,7 +7,7 @@ var ReactBS = require('react-bootstrap');
 var Badge = ReactBS.Badge;
 
 
-var ItemsList = require('../ItemsList');
+var ItemsList = require('../items-list/ItemsList');
 var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 
 var ItemSearch = React.createClass({
