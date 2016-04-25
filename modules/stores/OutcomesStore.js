@@ -1,3 +1,5 @@
+// OutcomesStore.js
+
 'use strict';
 
 var OutcomesDispatcher = require('../dispatcher/OutcomesDispatcher');

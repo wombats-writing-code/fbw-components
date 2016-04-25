@@ -16,6 +16,7 @@ var Modal = ReactBS.Modal;
 
 var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
 var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
+var LORelatedItemsBadge = require('./LORelatedItemsBadge');
 
 var AnswerText = React.createClass({
     getInitialState: function () {
@@ -81,33 +82,38 @@ var AnswerText = React.createClass({
             linkButton = '';
 
         if (!this.props.hideLinkBtn) {
-            linkButton = <div className="pull-right">
-                <Button onClick={this.open} bsSize="small">
-                    <Glyphicon glyph="link" />
-                </Button>
-                <Modal show={this.state.showModal} onHide={this.close}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Link Answer to Outcome</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <form>
-                            <FormGroup controlId="outcomeSelector">
-                                <ControlLabel>Select a learning outcome ...</ControlLabel>
-                                <Select name="confusedOutcomeSelector"
-                                        placeholder="Select an outcome ... "
-                                        value={this.state.confusedLO}
-                                        onChange={this.onChange}
-                                        options={formattedOutcomes}>
-                                </Select>
-                            </FormGroup>
-                        </form>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button onClick={this.close}>Close</Button>
-                        <Button bsStyle="success" onClick={this.save}>Save</Button>
-                    </Modal.Footer>
-                </Modal>
-            </div>
+            if (this.props.enableClickthrough) {
+                linkButton = <div className="wrong-answer-actions">
+                    <LORelatedItemsBadge confusedLO={this.state.confusedLO}
+                                         libraryId={this.props.libraryId}
+                                         relatedItems={this.props.relatedItems} />
+                    <Button onClick={this.open} bsSize="small">
+                        <Glyphicon glyph="link" />
+                    </Button>
+                    <Modal show={this.state.showModal} onHide={this.close}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Link Answer to Outcome</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <form>
+                                <FormGroup controlId="outcomeSelector">
+                                    <ControlLabel>Select a learning outcome ...</ControlLabel>
+                                    <Select name="confusedOutcomeSelector"
+                                            placeholder="Select an outcome ... "
+                                            value={this.state.confusedLO}
+                                            onChange={this.onChange}
+                                            options={formattedOutcomes}>
+                                    </Select>
+                                </FormGroup>
+                            </form>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={this.close}>Close</Button>
+                            <Button bsStyle="success" onClick={this.save}>Save</Button>
+                        </Modal.Footer>
+                    </Modal>
+                </div>
+            }
         } else {
             linkButton = <div className="right-answer-check">
                 <Glyphicon glyph="ok" />

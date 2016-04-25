@@ -2,6 +2,22 @@
     float: right;
 }
 
+.wrong-answer-actions {
+    float: right;
+    display: flex;
+}
+
+.item-controls button,
+.wrong-answer-actions button {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.wrong-answer-actions .badge {
+    background-color: gray;
+    margin-right: 5px;
+}
+
 .item-controls div {
     display: inline;
 }

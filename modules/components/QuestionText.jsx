@@ -76,13 +76,11 @@ var QuestionText = React.createClass({
                 value: outcome.id,
                 label: outcome.displayName.text
             };
-        });
+        }),
+            linkButton = '';
 
-        return <div className="taggable-text">
-            <div className="text-blob">
-                {this.props.questionText}
-            </div>
-            <div className="pull-right">
+        if (this.props.enableClickthrough) {
+            linkButton = <div className="pull-right">
                 <Button onClick={this.open} bsSize="small">
                     <Glyphicon glyph="link" />
                 </Button>
@@ -109,6 +107,13 @@ var QuestionText = React.createClass({
                     </Modal.Footer>
                 </Modal>
             </div>
+        }
+
+        return <div className="taggable-text">
+            <div className="text-blob">
+                {this.props.questionText}
+            </div>
+            {linkButton}
         </div>
 
     }

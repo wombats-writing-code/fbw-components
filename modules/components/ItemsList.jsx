@@ -18,6 +18,8 @@ var AnswerExtraction = require('../utilities/AnswerExtraction');
 var AnswerText = require('./AnswerText');
 var ItemControls = require('./ItemControls');
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
+var LORelatedItems = require('../utilities/LORelatedItems');
+var LORelatedItemsBadge = require('./LORelatedItemsBadge');
 var OutcomesStore = require('../stores/OutcomesStore');
 var QuestionText = require('./QuestionText');
 
@@ -26,15 +28,17 @@ var ItemsList = React.createClass({
     getInitialState: function () {
         return {
             outcomes: [],
-            showBSequence: false,
-            showCSequence: false,
-            showDSequence: false
+            sortedItems: {}  // loId => [itemsList]
         };
     },
     componentWillMount: function() {
         var _this = this;
         OutcomesStore.addChangeListener(function(outcomes) {
             _this.setState({ outcomes: outcomes });
+            _this.sortItemsByOutcome();
+        });
+        LibraryItemsStore.addChangeListener(function(items) {
+            _this.sortItemsByOutcome();
         });
     },
     componentDidMount: function () {
@@ -54,6 +58,14 @@ var ItemsList = React.createClass({
         // map the choiceIds, etc., in answers back to choices in questions
             items = [];
 
+        function getRelatedItems(loId) {
+            if (_this.state.sortedItems.hasOwnProperty(loId)) {
+                return _this.state.sortedItems[loId];
+            } else {
+                return [];
+            }
+        }
+
         _.each(this.props.items, function (item) {
             var answers = AnswerExtraction(item);
 
@@ -61,23 +73,36 @@ var ItemsList = React.createClass({
             item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
             item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
             item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
+            item['wrongAnswer1RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[0]);
             item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
             item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
             item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
+            item['wrongAnswer2RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[1]);
             item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
             item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
             item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
+            item['wrongAnswer3RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[2]);
             items.push(item);
         });
 
         return _.map(items, function (item) {
-            var questionLO;
+            var questionLO, itemControls;
 
             if (item.question.learningObjectiveIds.length > 0) {
                 questionLO = item.question.learningObjectiveIds[0];
             } else {
                 questionLO = '';
             }
+
+            if (_this.props.enableClickthrough) {
+                itemControls = <div className="item-controls">
+                    <ItemControls item={item}
+                                  libraryId={_this.props.libraryId} />
+                </div>
+            } else {
+                itemControls = '';
+            }
+
             return <Row key={item.id}>
                 <Col sm={6} md={6} lg={6}>
                     <Panel header={item.displayName.text}>
@@ -86,6 +111,7 @@ var ItemsList = React.createClass({
                             <QuestionText questionId={item.id}
                                           questionLO={questionLO}
                                           questionText={item.question.text.text}
+                                          enableClickthrough={_this.props.enableClickthrough}
                                           libraryId={_this.props.libraryId}
                                           outcomes={_this.state.outcomes} />
                         </div>
@@ -100,32 +126,35 @@ var ItemsList = React.createClass({
                             <AnswerText answerId={item.wrongAnswer1ID}
                                         answerText={item.wrongAnswer1}
                                         confusedLO={item.wrongAnswer1LO}
+                                        enableClickthrough={_this.props.enableClickthrough}
                                         itemId={item.id}
                                         libraryId={_this.props.libraryId}
-                                        outcomes={_this.state.outcomes} />
+                                        outcomes={_this.state.outcomes}
+                                        relatedItems={item.wrongAnswer1RelatedItems} />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">c)</p>
                             <AnswerText answerId={item.wrongAnswer2ID}
                                         answerText={item.wrongAnswer2}
                                         confusedLO={item.wrongAnswer2LO}
+                                        enableClickthrough={_this.props.enableClickthrough}
                                         itemId={item.id}
                                         libraryId={_this.props.libraryId}
-                                        outcomes={_this.state.outcomes} />
+                                        outcomes={_this.state.outcomes}
+                                        relatedItems={item.wrongAnswer2RelatedItems}  />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">d)</p>
                             <AnswerText answerId={item.wrongAnswer3ID}
                                         answerText={item.wrongAnswer3}
                                         confusedLO={item.wrongAnswer3LO}
+                                        enableClickthrough={_this.props.enableClickthrough}
                                         itemId={item.id}
                                         libraryId={_this.props.libraryId}
-                                        outcomes={_this.state.outcomes} />
+                                        outcomes={_this.state.outcomes}
+                                        relatedItems={item.wrongAnswer3RelatedItems}  />
                         </div>
-                        <div className="item-controls">
-                            <ItemControls item={item}
-                                          libraryId={_this.props.libraryId} />
-                        </div>
+                        {itemControls}
                     </Panel>
                 </Col>
                 <Col sm={6} md={6} lg={6}>
@@ -156,6 +185,10 @@ var ItemsList = React.createClass({
                 </Col>
             </Row>
         });
+    },
+    sortItemsByOutcome: function () {
+        // get a pre-sorted list of all items, organized by learning outcome
+        this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
     },
     render: function () {
         return <Grid>

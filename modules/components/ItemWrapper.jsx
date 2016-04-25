@@ -44,7 +44,8 @@ var ItemWrapper = React.createClass({
             </Row>
             <Row>
                 <ItemsList items={this.props.items}
-                           libraryId={this.props.libraryId} />
+                           libraryId={this.props.libraryId}
+                           enableClickthrough={true}/>
             </Row>
         </div>
     }

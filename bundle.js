@@ -125,6 +125,9 @@
 	        });
 	    },
 	    componentDidMount: function componentDidMount() {},
+	    hideItems: function hideItems() {
+	        this.setState({ showItems: false });
+	    },
 	    librarySelected: function librarySelected(id, libraryDescription) {
 	        this.setState({ libraryId: id });
 	        this.setState({ libraryDescription: libraryDescription });
@@ -145,7 +148,8 @@
 	                React.createElement(
 	                    Col,
 	                    { sm: 6, md: 3, lg: 3 },
-	                    React.createElement(LibrarySelector, { onSelect: this.librarySelected })
+	                    React.createElement(LibrarySelector, { onSelect: this.librarySelected,
+	                        hideItems: this.hideItems })
 	                )
 	            ),
 	            itemsWrapper
@@ -230,10 +234,8 @@
 	            })
 	        }).then(function (response) {
 	            if (response.ok) {
-	                response.json().then(function (responseData) {
-	                    _this.getItems(data.libraryId);
-	                    console.log(responseData);
-	                });
+	                _this.getItems(data.libraryId);
+	                console.log('item deleted');
 	            } else {
 	                response.text().then(function (responseData) {
 	                    alert(response.statusText + ': ' + responseData);
@@ -452,7 +454,8 @@
 	                Row,
 	                null,
 	                React.createElement(ItemsList, { items: this.props.items,
-	                    libraryId: this.props.libraryId })
+	                    libraryId: this.props.libraryId,
+	                    enableClickthrough: true })
 	            )
 	        );
 	    }
@@ -508,8 +511,12 @@
 	        var option = e.currentTarget.selectedOptions[0],
 	            id = option.value,
 	            description = option.title;
-	        LibraryItemsStore.getItems(id);
-	        this.props.onSelect(id, description);
+	        if (id !== '-1') {
+	            LibraryItemsStore.getItems(id);
+	            this.props.onSelect(id, description);
+	        } else {
+	            this.props.hideItems();
+	        }
 	    },
 	    render: function render() {
 	        return React.createElement(
@@ -525,6 +532,11 @@
 	                { componentClass: 'select',
 	                    placeholder: 'Select a class',
 	                    onChange: this.showItems },
+	                React.createElement(
+	                    'option',
+	                    { value: '-1' },
+	                    'Please select a content domain ... '
+	                ),
 	                this.renderLibraries()
 	            )
 	        );
@@ -20370,6 +20382,8 @@
 	var AnswerText = __webpack_require__(28);
 	var ItemControls = __webpack_require__(17);
 	var LibraryItemsStore = __webpack_require__(4);
+	var LORelatedItems = __webpack_require__(49);
+	var LORelatedItemsBadge = __webpack_require__(50);
 	var OutcomesStore = __webpack_require__(29);
 	var QuestionText = __webpack_require__(39);
 
@@ -20379,15 +20393,17 @@
 	    getInitialState: function getInitialState() {
 	        return {
 	            outcomes: [],
-	            showBSequence: false,
-	            showCSequence: false,
-	            showDSequence: false
+	            sortedItems: {} // loId => [itemsList]
 	        };
 	    },
 	    componentWillMount: function componentWillMount() {
 	        var _this = this;
 	        OutcomesStore.addChangeListener(function (outcomes) {
 	            _this.setState({ outcomes: outcomes });
+	            _this.sortItemsByOutcome();
+	        });
+	        LibraryItemsStore.addChangeListener(function (items) {
+	            _this.sortItemsByOutcome();
 	        });
 	    },
 	    componentDidMount: function componentDidMount() {
@@ -20412,6 +20428,14 @@
 	        // map the choiceIds, etc., in answers back to choices in questions
 	        items = [];
 
+	        function getRelatedItems(loId) {
+	            if (_this.state.sortedItems.hasOwnProperty(loId)) {
+	                return _this.state.sortedItems[loId];
+	            } else {
+	                return [];
+	            }
+	        }
+
 	        _.each(this.props.items, function (item) {
 	            var answers = AnswerExtraction(item);
 
@@ -20419,23 +20443,38 @@
 	            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
 	            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
 	            item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
+	            item['wrongAnswer1RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[0]);
 	            item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
 	            item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
 	            item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
+	            item['wrongAnswer2RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[1]);
 	            item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
 	            item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
 	            item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
+	            item['wrongAnswer3RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[2]);
 	            items.push(item);
 	        });
 
 	        return _.map(items, function (item) {
-	            var questionLO;
+	            var questionLO, itemControls;
 
 	            if (item.question.learningObjectiveIds.length > 0) {
 	                questionLO = item.question.learningObjectiveIds[0];
 	            } else {
 	                questionLO = '';
 	            }
+
+	            if (_this.props.enableClickthrough) {
+	                itemControls = React.createElement(
+	                    'div',
+	                    { className: 'item-controls' },
+	                    React.createElement(ItemControls, { item: item,
+	                        libraryId: _this.props.libraryId })
+	                );
+	            } else {
+	                itemControls = '';
+	            }
+
 	            return React.createElement(
 	                Row,
 	                { key: item.id },
@@ -20456,6 +20495,7 @@
 	                            React.createElement(QuestionText, { questionId: item.id,
 	                                questionLO: questionLO,
 	                                questionText: item.question.text.text,
+	                                enableClickthrough: _this.props.enableClickthrough,
 	                                libraryId: _this.props.libraryId,
 	                                outcomes: _this.state.outcomes })
 	                        ),
@@ -20482,9 +20522,11 @@
 	                            React.createElement(AnswerText, { answerId: item.wrongAnswer1ID,
 	                                answerText: item.wrongAnswer1,
 	                                confusedLO: item.wrongAnswer1LO,
+	                                enableClickthrough: _this.props.enableClickthrough,
 	                                itemId: item.id,
 	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes })
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer1RelatedItems })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -20497,9 +20539,11 @@
 	                            React.createElement(AnswerText, { answerId: item.wrongAnswer2ID,
 	                                answerText: item.wrongAnswer2,
 	                                confusedLO: item.wrongAnswer2LO,
+	                                enableClickthrough: _this.props.enableClickthrough,
 	                                itemId: item.id,
 	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes })
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer2RelatedItems })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -20512,16 +20556,13 @@
 	                            React.createElement(AnswerText, { answerId: item.wrongAnswer3ID,
 	                                answerText: item.wrongAnswer3,
 	                                confusedLO: item.wrongAnswer3LO,
+	                                enableClickthrough: _this.props.enableClickthrough,
 	                                itemId: item.id,
 	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes })
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer3RelatedItems })
 	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'item-controls' },
-	                            React.createElement(ItemControls, { item: item,
-	                                libraryId: _this.props.libraryId })
-	                        )
+	                        itemControls
 	                    )
 	                ),
 	                React.createElement(
@@ -20588,6 +20629,10 @@
 	                )
 	            );
 	        });
+	    },
+	    sortItemsByOutcome: function sortItemsByOutcome() {
+	        // get a pre-sorted list of all items, organized by learning outcome
+	        this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
 	    },
 	    render: function render() {
 	        return React.createElement(
@@ -37680,6 +37725,9 @@
 	    },
 	    close: function close() {
 	        this.setState({ showModal: false });
+	    },
+	    closeAndReset: function closeAndReset() {
+	        this.setState({ showModal: false });
 	        this.reset();
 	    },
 	    onChange: function onChange(e) {
@@ -37740,28 +37788,42 @@
 	            this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
 	            this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
 	        } else {
+	            var choiceData = AnswerExtraction(this.props.item);
+
 	            payload['displayName'] = this.state.itemDisplayName;
 	            payload['description'] = this.state.itemDescription;
 
 	            payload['question'] = {
 	                text: this.state.questionString,
-	                choices: [this.state.correctAnswer, this.state.wrongAnswer1, this.state.wrongAnswer2, this.state.wrongAnswer3]
+	                choices: [{
+	                    choiceId: choiceData.correctChoiceId,
+	                    text: this.state.correctAnswer
+	                }, {
+	                    choiceId: choiceData.wrongChoiceIds[0],
+	                    text: this.state.wrongAnswer1
+	                }, {
+	                    choiceId: choiceData.wrongChoiceIds[1],
+	                    text: this.state.wrongAnswer2
+	                }, {
+	                    choiceId: choiceData.wrongChoiceIds[2],
+	                    text: this.state.wrongAnswer3
+	                }]
 	            };
 	            payload['answers'] = [{
 	                answerId: this.state.correctAnswerId,
-	                choiceId: 0,
+	                choiceId: choiceData.correctChoiceId,
 	                feedback: this.state.correctAnswerFeedback
 	            }, {
 	                answerId: this.state.wrongAnswer1Id,
-	                choiceId: 1,
+	                choiceId: choiceData.wrongChoiceIds[0],
 	                feedback: this.state.wrongAnswer1Feedback
 	            }, {
 	                answerId: this.state.wrongAnswer2Id,
-	                choiceId: 2,
+	                choiceId: choiceData.wrongChoiceIds[1],
 	                feedback: this.state.wrongAnswer2Feedback
 	            }, {
 	                answerId: this.state.wrongAnswer3Id,
-	                choiceId: 3,
+	                choiceId: choiceData.wrongChoiceIds[2],
 	                feedback: this.state.wrongAnswer3Feedback
 	            }];
 	            if (questionFile != null) {
@@ -38101,7 +38163,7 @@
 	                    null,
 	                    React.createElement(
 	                        Button,
-	                        { onClick: this.close },
+	                        { onClick: this.closeAndReset },
 	                        'Close'
 	                    ),
 	                    React.createElement(
@@ -38139,6 +38201,7 @@
 
 	var ActionTypes = __webpack_require__(16).ActionTypes;
 	var Dispatcher = __webpack_require__(15);
+	var LORelatedItemsBadge = __webpack_require__(50);
 
 	var AnswerText = React.createClass({
 	    displayName: 'AnswerText',
@@ -38202,64 +38265,69 @@
 	            linkButton = '';
 
 	        if (!this.props.hideLinkBtn) {
-	            linkButton = React.createElement(
-	                'div',
-	                { className: 'pull-right' },
-	                React.createElement(
-	                    Button,
-	                    { onClick: this.open, bsSize: 'small' },
-	                    React.createElement(Glyphicon, { glyph: 'link' })
-	                ),
-	                React.createElement(
-	                    Modal,
-	                    { show: this.state.showModal, onHide: this.close },
+	            if (this.props.enableClickthrough) {
+	                linkButton = React.createElement(
+	                    'div',
+	                    { className: 'wrong-answer-actions' },
+	                    React.createElement(LORelatedItemsBadge, { confusedLO: this.state.confusedLO,
+	                        libraryId: this.props.libraryId,
+	                        relatedItems: this.props.relatedItems }),
 	                    React.createElement(
-	                        Modal.Header,
-	                        { closeButton: true },
-	                        React.createElement(
-	                            Modal.Title,
-	                            null,
-	                            'Link Answer to Outcome'
-	                        )
+	                        Button,
+	                        { onClick: this.open, bsSize: 'small' },
+	                        React.createElement(Glyphicon, { glyph: 'link' })
 	                    ),
 	                    React.createElement(
-	                        Modal.Body,
-	                        null,
+	                        Modal,
+	                        { show: this.state.showModal, onHide: this.close },
 	                        React.createElement(
-	                            'form',
-	                            null,
+	                            Modal.Header,
+	                            { closeButton: true },
 	                            React.createElement(
-	                                FormGroup,
-	                                { controlId: 'outcomeSelector' },
-	                                React.createElement(
-	                                    ControlLabel,
-	                                    null,
-	                                    'Select a learning outcome ...'
-	                                ),
-	                                React.createElement(Select, { name: 'confusedOutcomeSelector',
-	                                    placeholder: 'Select an outcome ... ',
-	                                    value: this.state.confusedLO,
-	                                    onChange: this.onChange,
-	                                    options: formattedOutcomes })
+	                                Modal.Title,
+	                                null,
+	                                'Link Answer to Outcome'
 	                            )
-	                        )
-	                    ),
-	                    React.createElement(
-	                        Modal.Footer,
-	                        null,
-	                        React.createElement(
-	                            Button,
-	                            { onClick: this.close },
-	                            'Close'
 	                        ),
 	                        React.createElement(
-	                            Button,
-	                            { bsStyle: 'success', onClick: this.save },
-	                            'Save'
+	                            Modal.Body,
+	                            null,
+	                            React.createElement(
+	                                'form',
+	                                null,
+	                                React.createElement(
+	                                    FormGroup,
+	                                    { controlId: 'outcomeSelector' },
+	                                    React.createElement(
+	                                        ControlLabel,
+	                                        null,
+	                                        'Select a learning outcome ...'
+	                                    ),
+	                                    React.createElement(Select, { name: 'confusedOutcomeSelector',
+	                                        placeholder: 'Select an outcome ... ',
+	                                        value: this.state.confusedLO,
+	                                        onChange: this.onChange,
+	                                        options: formattedOutcomes })
+	                                )
+	                            )
+	                        ),
+	                        React.createElement(
+	                            Modal.Footer,
+	                            null,
+	                            React.createElement(
+	                                Button,
+	                                { onClick: this.close },
+	                                'Close'
+	                            ),
+	                            React.createElement(
+	                                Button,
+	                                { bsStyle: 'success', onClick: this.save },
+	                                'Save'
+	                            )
 	                        )
 	                    )
-	                )
-	            );
+	                );
+	            }
 	        } else {
 	            linkButton = React.createElement(
 	                'div',
@@ -38287,6 +38355,8 @@
 /***/ },
 /* 29 */
 /***/ function(module, exports, __webpack_require__) {
+
+	// OutcomesStore.js
 
 	'use strict';
 
@@ -39938,17 +40008,11 @@
 	                value: outcome.id,
 	                label: outcome.displayName.text
 	            };
-	        });
+	        }),
+	            linkButton = '';
 
-	        return React.createElement(
-	            'div',
-	            { className: 'taggable-text' },
-	            React.createElement(
-	                'div',
-	                { className: 'text-blob' },
-	                this.props.questionText
-	            ),
-	            React.createElement(
+	        if (this.props.enableClickthrough) {
+	            linkButton = React.createElement(
 	                'div',
 	                { className: 'pull-right' },
 	                React.createElement(
@@ -40005,7 +40069,18 @@
 	                        )
 	                    )
 	                )
-	            )
+	            );
+	        }
+
+	        return React.createElement(
+	            'div',
+	            { className: 'taggable-text' },
+	            React.createElement(
+	                'div',
+	                { className: 'text-blob' },
+	                this.props.questionText
+	            ),
+	            linkButton
 	        );
 	    }
 	});
@@ -40027,14 +40102,16 @@
 	    // TODO: Extract feedback
 	    var answers = item.answers,
 	        rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
+	        correctChoiceId = rightAnswer.choiceIds[0],
 	        wrongAnswers = _.filter(answers, {genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU"}),
 	        wrongAnswerIds = [],
 	        wrongAnswerLOs = [],
+	        wrongChoiceIds = [],
 	        choices = item.question.choices,
 	        correctAnswerId = rightAnswer.id,
 	        correctAnswerText, wrongAnswerTexts;
 
-	    correctAnswerText = _.find(choices, {"id": rightAnswer.choiceIds[0]});
+	    correctAnswerText = _.find(choices, {"id": correctChoiceId});
 
 	    _.each(wrongAnswers, function (wrongAnswer) {
 	        wrongAnswerIds.push(wrongAnswer.choiceIds[0]);
@@ -40052,6 +40129,7 @@
 	            return wrongAnswer.choiceIds[0] == wrongAnswerText.id;
 	        });
 	        wrongAnswerIds.push(wrongAnswer.id);
+	        wrongChoiceIds.push(wrongAnswer.choiceIds[0]);
 
 	        if (wrongAnswer.confusedLearningObjectiveIds.length > 0) {
 	            wrongAnswerLOs.push(wrongAnswer.confusedLearningObjectiveIds[0]);
@@ -40063,9 +40141,11 @@
 	    return {
 	        correctAnswerId: correctAnswerId,
 	        correctAnswerText: correctAnswerText,
+	        correctChoiceId: correctChoiceId,
 	        wrongAnswerIds: wrongAnswerIds,
 	        wrongAnswerLOs: wrongAnswerLOs,
-	        wrongAnswerTexts: wrongAnswerTexts
+	        wrongAnswerTexts: wrongAnswerTexts,
+	        wrongChoiceIds: wrongChoiceIds
 	    };
 	};
 
@@ -40454,7 +40534,7 @@
 
 
 	// module
-	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n", ""]);
+	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.wrong-answer-actions {\n    float: right;\n    display: flex;\n}\n\n.item-controls button,\n.wrong-answer-actions button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n", ""]);
 
 	// exports
 
@@ -40495,6 +40575,183 @@
 
 	// module
 	exports.push([module.id, "#app-container {\n    min-height: 80vh;\n}\n\n.red {\n    color: red;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 49 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// LORelatedItems.js
+	'use strict';
+
+	var _ = __webpack_require__(8);
+
+
+	var LORelatedItems = function (items, outcomes) {
+	    // given a list of items, and a list of learning outcomes,
+	    // returns a sorted dictionary of the items where the question itself
+	    // is tagged with each given LO.
+	    // loId => [itemsList]
+
+	    var returnData = {};
+
+	    _.each(items, function (item) {
+	        _.each(outcomes, function (outcome) {
+	            var outcomeId = outcome.id;
+	            if (!returnData.hasOwnProperty(outcomeId)) {
+	                returnData[outcomeId] = [];
+	            }
+	            if (item.learningObjectiveIds[0] == outcomeId) {
+	                returnData[outcomeId].push(item);
+	            }
+	        });
+	    });
+
+	    return returnData;
+	};
+
+	module.exports = LORelatedItems;
+
+/***/ },
+/* 50 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// LORelatedItemsBadge.jsx
+	'use strict';
+
+	__webpack_require__(51);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(7);
+	var Alert = ReactBS.Alert;
+	var Badge = ReactBS.Badge;
+	var Button = ReactBS.Button;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(16).ActionTypes;
+	var Dispatcher = __webpack_require__(15);
+	var LibraryItemsStore = __webpack_require__(4);
+	var OutcomesStore = __webpack_require__(29);
+
+	var LORelatedItemsBadge = React.createClass({
+	    displayName: 'LORelatedItemsBadge',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    close: function close() {
+	        this.setState({ showModal: false });
+	    },
+	    open: function open() {
+	        this.setState({ showModal: true });
+	    },
+	    render: function render() {
+	        var ItemsList = __webpack_require__(12);
+	        var items, lo;
+
+	        lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;
+
+	        if (this.props.relatedItems.length > 0) {
+	            items = React.createElement(ItemsList, { items: this.props.relatedItems,
+	                libraryId: this.props.libraryId,
+	                enableClickthrough: false });
+	        } else {
+	            items = React.createElement(
+	                Alert,
+	                { bsStyle: 'danger' },
+	                'No items with this LO'
+	            );
+	        }
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open },
+	                React.createElement(
+	                    Badge,
+	                    null,
+	                    this.props.relatedItems.length
+	                ),
+	                React.createElement(Glyphicon, { glyph: 'tags' })
+	            ),
+	            React.createElement(
+	                Modal,
+	                { bsSize: 'lg', show: this.state.showModal,
+	                    onHide: this.close,
+	                    dialogClassName: 'extra-wide-modal' },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Items related to: ',
+	                        lo
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    items
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.close },
+	                        'Close'
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = LORelatedItemsBadge;
+
+/***/ },
+/* 51 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(52);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(43)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../node_modules/css-loader/index.js!./loRelatedItemsBadge.css", function() {
+				var newContent = require("!!./../../node_modules/css-loader/index.js!./loRelatedItemsBadge.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 52 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(44)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".extra-wide-modal {\n    width: 90%;\n}", ""]);
 
 	// exports
 
