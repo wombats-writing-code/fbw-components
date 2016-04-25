@@ -1,7 +1,7 @@
 // LORelatedItemsBadge.jsx
 'use strict';
 
-require('../../stylesheets/components/loRelatedItemsBadge.css');
+require('./LORelatedItemsBadge.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
@@ -11,10 +11,10 @@ var Button = ReactBS.Button;
 var Glyphicon = ReactBS.Glyphicon;
 var Modal = ReactBS.Modal;
 
-var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
-var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
-var LibraryItemsStore = require('../stores/LibraryItemsStore');
-var OutcomesStore = require('../stores/OutcomesStore');
+var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+var LibraryItemsStore = require('../../stores/LibraryItemsStore');
+var OutcomesStore = require('../../stores/OutcomesStore');
 
 
 var LORelatedItemsBadge = React.createClass({
@@ -34,7 +34,7 @@ var LORelatedItemsBadge = React.createClass({
         this.setState({ showModal: true });
     },
     render: function () {
-        var ItemsList = require('./ItemsList');
+        var ItemsList = require('../ItemsList');
         var items, lo;
 
         lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;

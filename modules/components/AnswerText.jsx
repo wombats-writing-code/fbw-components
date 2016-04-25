@@ -16,7 +16,7 @@ var Modal = ReactBS.Modal;
 
 var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
 var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
-var LORelatedItemsBadge = require('./LORelatedItemsBadge');
+var LORelatedItemsBadge = require('./lo-related-items-badge/LORelatedItemsBadge');
 
 var AnswerText = React.createClass({
     getInitialState: function () {

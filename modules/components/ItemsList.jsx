@@ -19,7 +19,6 @@ var AnswerText = require('./AnswerText');
 var ItemControls = require('./ItemControls');
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
 var LORelatedItems = require('../utilities/LORelatedItems');
-var LORelatedItemsBadge = require('./LORelatedItemsBadge');
 var OutcomesStore = require('../stores/OutcomesStore');
 var QuestionText = require('./QuestionText');
 
