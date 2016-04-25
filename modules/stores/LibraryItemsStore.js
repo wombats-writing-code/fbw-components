@@ -4,7 +4,7 @@
 var LibraryItemsDispatcher = require('../dispatcher/LibraryItemsDispatcher');
 var AuthoringConstants = require('../constants/AuthoringConstants');
 var EventEmitter = require('events').EventEmitter;
-var _ = require('lodash');
+let MiddlewareService = require('../services/middleware.service.js');
 
 var ActionTypes = AuthoringConstants.ActionTypes;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -81,8 +81,15 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     getItems: function (id) {
-        var url = this.url() + id + '/items?wronganswers',
-            _this = this;
+
+        let url, _this = this;
+        if (MiddlewareService.shouldReturnStatic()) {
+          url = '/raw_data/CAD_items.json';
+
+        } else {
+          url = this.url() + id + '/items?wronganswers';
+        }
+
         fetch(url, {
             credentials: "same-origin"
         }).then(function (response) {
@@ -192,13 +199,9 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     url: function () {
-        var location = window.location.href;
-        if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
-            return '/api/v1/assessment/libraries/';
-        } else {
-            return '/fbw-author/api/v1/assessment/libraries/';
-        }
+      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
 
+      return MiddlewareService.host() + '/assessment/libraries/';
     }
 });
 

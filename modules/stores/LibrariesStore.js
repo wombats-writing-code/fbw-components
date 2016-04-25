@@ -4,6 +4,7 @@ var LibrariesDispatcher = require('../dispatcher/LibrariesDispatcher');
 var AuthoringConstants = require('../constants/AuthoringConstants');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
+var MiddlewareService = require('../services/middleware.service')
 
 var ActionTypes = AuthoringConstants.ActionTypes;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -35,13 +36,9 @@ var LibrariesStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     url: function () {
-        var location = window.location.href;
-        if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
-            return '/api/v1/assessment/libraries/';
-        } else {
-            return '/fbw-author/api/v1/assessment/libraries/';
-        }
+        if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
 
+        return MiddlewareService.host() + '/assessment/libraries/';
     }
 });
 

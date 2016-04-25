@@ -12,7 +12,7 @@ var Row = ReactBS.Row;
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
 
 var AddItem = require('./AddItem');
-var ItemSearch = require('./ItemSearch');
+var ItemSearch = require('./item-search/ItemSearch.jsx');
 var ItemStatus = require('./ItemStatus');
 var ItemsList = require('./ItemsList');
 
@@ -38,6 +38,7 @@ var ItemWrapper = React.createClass({
                 <Col sm={6} md={4} lg={4}>
                     <ItemSearch />
                 </Col>
+                
                 <Col sm={4} md={2} lg={2}>
                     <AddItem libraryId={this.props.libraryId} />
                 </Col>

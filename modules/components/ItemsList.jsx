@@ -2,7 +2,7 @@
 
 'use strict';
 
-require('../../stylesheets/components/itemsList.css');
+require('./itemsList.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');

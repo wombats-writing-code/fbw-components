@@ -8,14 +8,15 @@
   "version": "0.1.0",
   "main": "index.js",
   "dependencies": {
-    "lodash": "4.11.1",
-    "redux": "3.4.0",
+    "classnames": "^2.2.3",
     "flux": "^2.0.0",
-    "react": "15.0.1",
     "keymirror": "0.1.1",
+    "lodash": "4.11.1",
+    "react": "15.0.1",
     "react-bootstrap": "0.29.0",
     "react-dom": "15.0.1",
-    "react-select": "^1.0.0-beta12"
+    "react-select": "^1.0.0-beta12",
+    "redux": "3.4.0"
   },
   "devDependencies": {
     "babel-core": "^6.7.6",
