@@ -11,7 +11,7 @@ var Row = ReactBS.Row;
 
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
 
-var AddItem = require('./AddItem');
+var AddItem = require('./add-item/AddItem');
 var ItemSearch = require('./item-search/ItemSearch.jsx');
 var ItemStatus = require('./ItemStatus');
 
