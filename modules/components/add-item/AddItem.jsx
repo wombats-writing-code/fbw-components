@@ -1,6 +1,8 @@
 // AddItem.js
 'use strict';
 
+require('./AddItem.css');
+
 var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Alert = ReactBS.Alert;
@@ -11,10 +13,12 @@ var FormGroup = ReactBS.FormGroup;
 var Glyphicon = ReactBS.Glyphicon;
 var Modal = ReactBS.Modal;
 
-var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
-var GenusTypes = require('../constants/AuthoringConstants').GenusTypes;
-var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
-var LibraryItemsStore = require('../stores/LibraryItemsStore');
+var $s = require('scriptjs');
+
+var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
+var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 
 var questionFile;
 
@@ -52,12 +56,16 @@ var AddItem = React.createClass({
         this.setState({showModal: false});
     },
     create: function (e) {
+        // With CKEditor, need to get the data from CKEditor,
+        // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
+        // var data = CKEDITOR.instances.correctAnswer.getData();
         var payload = {
             libraryId: this.props.libraryId
-        };
+        },
+            correctAnswer = CKEDITOR.instances.correctAnswer.getData();
 
         if (this.state.itemDisplayName === '' ||
-            this.state.correctAnswer === '' ||
+            correctAnswer === '' ||
             this.state.questionString === '' ||
             this.state.wrongAnswer1 === '' ||
             this.state.wrongAnswer2 === '' ||
@@ -65,17 +73,18 @@ var AddItem = React.createClass({
             this.setState({ showAlert: true });
 
             this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
-            this.setState({ correctAnswerError: this.state.correctAnswer === '' });
+            this.setState({ correctAnswerError: correctAnswer === '' });
             this.setState({ questionStringError: this.state.questionString === '' });
             this.setState({ wrongAnswer1Error: this.state.wrongAnswer1 === '' });
             this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
             this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
         } else {
+
             payload['displayName'] = this.state.itemDisplayName;
             payload['description'] = this.state.itemDescription;
             payload['question'] = {
                 text: this.state.questionString,
-                choices: [this.state.correctAnswer,
+                choices: [correctAnswer,
                           this.state.wrongAnswer1,
                           this.state.wrongAnswer2,
                           this.state.wrongAnswer3]
@@ -107,6 +116,15 @@ var AddItem = React.createClass({
             });
             this.close();
         }
+    },
+    initializeEditors: function (e) {
+        // CKEditor
+        // Instructions from here
+        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
+
+        $s('../static/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+            CKEDITOR.replace('correctAnswer');
+        });
     },
     onChange: function(e) {
         var inputId = e.currentTarget.id,
@@ -156,7 +174,7 @@ var AddItem = React.createClass({
             correctAnswer = <FormGroup controlId="correctAnswer"
                                        validationState="error">
                 <ControlLabel>Correct Answer</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.correctAnswer}
                              onChange={this.onChange}
                              placeholder="The correct answer"/>
@@ -165,7 +183,7 @@ var AddItem = React.createClass({
         } else {
             correctAnswer = <FormGroup controlId="correctAnswer">
                 <ControlLabel>Correct Answer</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.correctAnswer}
                              onChange={this.onChange}
                              placeholder="The correct answer"/>
@@ -277,7 +295,10 @@ var AddItem = React.createClass({
                 <Glyphicon glyph="plus" />
                 New Question
             </Button>
-            <Modal bsSize="lg" show={this.state.showModal} onHide={this.close}>
+            <Modal bsSize="lg"
+                   show={this.state.showModal}
+                   onHide={this.close}
+                   onEntered={this.initializeEditors}>
                 <Modal.Header closeButton>
                     <Modal.Title>New Question</Modal.Title>
                 </Modal.Header>
