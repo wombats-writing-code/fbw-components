@@ -9,6 +9,7 @@
   "main": "index.js",
   "dependencies": {
     "classnames": "^2.2.3",
+    "commonjs-jquery": "^1.7.1",
     "flux": "^2.0.0",
     "keymirror": "0.1.1",
     "lodash": "4.11.1",

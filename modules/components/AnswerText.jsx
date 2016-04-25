@@ -72,6 +72,9 @@ var AnswerText = React.createClass({
         });
         this.close();
     },
+    wrapHTML: function (str) {
+        return '<h1>Hi!</h1>';
+    },
     render: function () {
         var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
             return {
@@ -79,7 +82,9 @@ var AnswerText = React.createClass({
                 label: outcome.displayName.text
             };
         }),
-            linkButton = '';
+            linkButton = '',
+//            answerHTML = this.wrapHTML(this.props.answerText);
+            answerHTML = this.props.answerText;
 
         if (!this.props.hideLinkBtn) {
             if (this.props.enableClickthrough) {
@@ -122,7 +127,12 @@ var AnswerText = React.createClass({
 
         return <div className="taggable-text">
             <div className="text-blob">
-                {this.props.answerText}
+                <iframe srcDoc={answerHTML}
+                        frameBorder={0}
+                        height="100%"
+                        width="100%"
+                        sandbox=""
+                        ></iframe>
             </div>
             {linkButton}
         </div>

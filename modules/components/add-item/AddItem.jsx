@@ -16,6 +16,7 @@ var Modal = ReactBS.Modal;
 var $s = require('scriptjs');
 
 var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+var CKEditorModalHack = require('../../utilities/CKEditorModalHack');
 var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
 var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
 var LibraryItemsStore = require('../../stores/LibraryItemsStore');
@@ -121,7 +122,7 @@ var AddItem = React.createClass({
         // CKEditor
         // Instructions from here
         // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
-
+        CKEditorModalHack();
         $s('../static/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
             CKEDITOR.replace('correctAnswer');
         });
