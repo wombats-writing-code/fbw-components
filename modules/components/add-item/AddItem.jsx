@@ -36,6 +36,7 @@ var AddItem = React.createClass({
             questionString: '',
             questionStringError: false,
             showAlert: false,
+            showImagePreviewDeleteBtn: false,
             showModal: false,
             wrongAnswer1: '',
             wrongAnswer1Error: false,
@@ -58,7 +59,6 @@ var AddItem = React.createClass({
         this.reset();
     },
     create: function (e) {
-        // TODO: deal with feedback
         // With CKEditor, need to get the data from CKEditor,
         // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
         // var data = CKEDITOR.instances.correctAnswer.getData();
@@ -147,9 +147,12 @@ var AddItem = React.createClass({
     },
     onChange: function(e) {
         var inputId = e.currentTarget.id,
-            inputValue = e.target.value;
+            inputValue = e.target.value,
+            URL = window.webkitURL || window.URL;
         if (inputId === "questionFile") {
             questionFile = e.target.files[0];
+            this.setState({ showImagePreviewDeleteBtn: true });
+            this.refs.imagePreview.src = URL.createObjectURL(questionFile);
         } else {
             var update = {};
             update[inputId] = inputValue;
@@ -159,8 +162,15 @@ var AddItem = React.createClass({
     open: function () {
         this.setState({showModal: true});
     },
+    removeImage: function () {
+        this.refs.imagePreview.src = '';
+        this.refs.imageFileInput.value = '';
+        this.setState({ showImagePreviewDeleteBtn: false });
+        questionFile = null;
+    },
     reset: function() {
         questionFile = null;
+        this.refs.imagePreview.src = '';
         this.setState({ correctAnswer: '' });
         this.setState({ correctAnswerError: false });
         this.setState({ correctAnswerFeedback: '' });
@@ -180,11 +190,10 @@ var AddItem = React.createClass({
         this.setState({ wrongAnswer3Feedback: '' });
     },
     render: function () {
-        // TODO: Add WYSIWYG editor so can add tables to questions / answers?
-        // TODO: render a preview of any uploaded image file
+        // TODO: allow choices to be image files (i.e. graphs)
         var alert = '',
             correctAnswer, itemDisplayName, questionString, wrongAnswer1,
-            wrongAnswer2, wrongAnswer3;
+            wrongAnswer2, wrongAnswer3, imagePreviewDeleteBtn;
 
         if (this.state.showAlert) {
             alert = <Alert bsStyle="danger">You are missing some required fields</Alert>
@@ -310,6 +319,16 @@ var AddItem = React.createClass({
             </FormGroup>
         }
 
+        if (this.state.showImagePreviewDeleteBtn) {
+            imagePreviewDeleteBtn = <Button onClick={this.removeImage}
+                                   className="remove-image-button"
+                                   title="Remove the image">
+                <Glyphicon glyph="trash" />
+            </Button>
+        } else {
+            imagePreviewDeleteBtn = '';
+        }
+
         return <div>
             <Button onClick={this.open}>
                 <Glyphicon glyph="plus" />
@@ -334,11 +353,17 @@ var AddItem = React.createClass({
                                          placeholder="A description for this item" />
                         </FormGroup>
                         {questionString}
-                        <FormGroup controlId="questionFile">
-                            <ControlLabel>Image File (optional)</ControlLabel>
-                            <FormControl type="file"
-                                         onChange={this.onChange} />
-                        </FormGroup>
+                        <div className="image-preview">
+                            <FormGroup controlId="questionFile">
+                                <ControlLabel>Image File (optional)</ControlLabel>
+                                <FormControl type="file"
+                                             ref="imageFileInput"
+                                             onChange={this.onChange} />
+                            </FormGroup>
+                            <img ref="imagePreview"
+                                 src="" />
+                            {imagePreviewDeleteBtn}
+                        </div>
                         {correctAnswer}
                         <FormGroup controlId="correctAnswerFeedback">
                             <ControlLabel>Correct Answer Feedback (recommended)</ControlLabel>

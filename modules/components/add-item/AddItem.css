@@ -1,3 +1,16 @@
 .has-error > .cke_chrome {
     border-color: #a94442;
 }
+
+.image-preview {
+    display: flex;
+}
+
+.image-preview img {
+    max-width: 400px;
+    max-height: 300px;
+}
+
+.remove-image-button {
+    height: 34px;
+}

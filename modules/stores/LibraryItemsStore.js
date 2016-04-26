@@ -1,17 +1,18 @@
 // LibraryItemsStore.js
 'use strict';
 
-var LibraryItemsDispatcher = require('../dispatcher/LibraryItemsDispatcher');
-var AuthoringConstants = require('../constants/AuthoringConstants');
-var EventEmitter = require('events').EventEmitter;
+let LibraryItemsDispatcher = require('../dispatcher/LibraryItemsDispatcher');
+let AuthoringConstants = require('../constants/AuthoringConstants');
+let EventEmitter = require('events').EventEmitter;
 let MiddlewareService = require('../services/middleware.service.js');
+let _ = require('lodash');
 
-var ActionTypes = AuthoringConstants.ActionTypes;
-var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+let ActionTypes = AuthoringConstants.ActionTypes;
+let CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
-var _items = [];
+let _items = [];
 
-var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
+let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
     emitChange: function () {
         this.emit(CHANGE_EVENT, _items);
     },
@@ -22,7 +23,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         this.removeListener(CHANGE_EVENT, callback);
     },
     createNewItem: function (payload) {
-        var url = this.url() + payload.libraryId + '/items',
+        let url = this.url() + payload.libraryId + '/items',
             _this = this,
             data = new FormData();
 
@@ -58,7 +59,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     deleteItem: function (data) {
-        var url = this.url() + data.libraryId + '/items/' + data.itemId,
+        let url = this.url() + data.libraryId + '/items/' + data.itemId,
             _this = this;
 
         fetch(url, {
@@ -80,12 +81,30 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             console.log('Problem with deleting item: ' + error.message);
         });
     },
-    getItems: function (id) {
+    getItemDetails: function (libraryId, itemId, callback) {
+        let url;
 
+        if (MiddlewareService.shouldReturnStatic()) {
+          url = '/raw_data/CAD_item_with_file_url.json';
+        } else {
+          url = this.url() + libraryId + '/items/' + itemId;
+        }
+
+        fetch(url, {
+            credentials: "same-origin"
+        }).then(function (response) {
+            response.json().then(function (data) {
+                callback(data);
+            });
+        }).catch(function (error) {
+            console.log('Problem with getting specific item: ' + error.message);
+        });
+    },
+    getItems: function (id) {
         let url, _this = this;
+
         if (MiddlewareService.shouldReturnStatic()) {
           url = '/raw_data/CAD_items.json';
-
         } else {
           url = this.url() + id + '/items?wronganswers';
         }
@@ -102,7 +121,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     linkAnswerToLO: function (payload) {
-        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
             _this = this,
             data = new FormData();
 
@@ -134,7 +153,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     linkItemToLO: function (payload) {
-        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
             _this = this,
             data = new FormData();
 
@@ -163,7 +182,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     updateItem: function (payload) {
-        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
             _this = this,
             data = new FormData();
 

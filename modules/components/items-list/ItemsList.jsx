@@ -52,7 +52,6 @@ var ItemsList = React.createClass({
         }
     },
     renderItems: function () {
-        //TODO: Need to map the LOs to their displayNames...IDs are not useful
         var _this = this,
         // map the choiceIds, etc., in answers back to choices in questions
             items = [];

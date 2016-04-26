@@ -35415,20 +35415,21 @@
 /* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(_) {// LibraryItemsStore.js
+	// LibraryItemsStore.js
 	'use strict';
 
-	var LibraryItemsDispatcher = __webpack_require__(9);
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(16).EventEmitter;
+	let LibraryItemsDispatcher = __webpack_require__(9);
+	let AuthoringConstants = __webpack_require__(14);
+	let EventEmitter = __webpack_require__(16).EventEmitter;
 	let MiddlewareService = __webpack_require__(17);
+	let _ = __webpack_require__(5);
 
-	var ActionTypes = AuthoringConstants.ActionTypes;
-	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+	let ActionTypes = AuthoringConstants.ActionTypes;
+	let CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
-	var _items = [];
+	let _items = [];
 
-	var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
+	let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
 	    emitChange: function () {
 	        this.emit(CHANGE_EVENT, _items);
 	    },
@@ -35439,7 +35440,7 @@
 	        this.removeListener(CHANGE_EVENT, callback);
 	    },
 	    createNewItem: function (payload) {
-	        var url = this.url() + payload.libraryId + '/items',
+	        let url = this.url() + payload.libraryId + '/items',
 	            _this = this,
 	            data = new FormData();
 
@@ -35475,7 +35476,7 @@
 	        });
 	    },
 	    deleteItem: function (data) {
-	        var url = this.url() + data.libraryId + '/items/' + data.itemId,
+	        let url = this.url() + data.libraryId + '/items/' + data.itemId,
 	            _this = this;
 
 	        fetch(url, {
@@ -35497,12 +35498,30 @@
 	            console.log('Problem with deleting item: ' + error.message);
 	        });
 	    },
-	    getItems: function (id) {
+	    getItemDetails: function (libraryId, itemId, callback) {
+	        let url;
 
+	        if (MiddlewareService.shouldReturnStatic()) {
+	          url = '/raw_data/CAD_item_with_file_url.json';
+	        } else {
+	          url = this.url() + libraryId + '/items/' + itemId;
+	        }
+
+	        fetch(url, {
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                callback(data);
+	            });
+	        }).catch(function (error) {
+	            console.log('Problem with getting specific item: ' + error.message);
+	        });
+	    },
+	    getItems: function (id) {
 	        let url, _this = this;
+
 	        if (MiddlewareService.shouldReturnStatic()) {
 	          url = '/raw_data/CAD_items.json';
-
 	        } else {
 	          url = this.url() + id + '/items?wronganswers';
 	        }
@@ -35519,7 +35538,7 @@
 	        });
 	    },
 	    linkAnswerToLO: function (payload) {
-	        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+	        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
 	            _this = this,
 	            data = new FormData();
 
@@ -35551,7 +35570,7 @@
 	        });
 	    },
 	    linkItemToLO: function (payload) {
-	        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+	        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
 	            _this = this,
 	            data = new FormData();
 
@@ -35580,7 +35599,7 @@
 	        });
 	    },
 	    updateItem: function (payload) {
-	        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+	        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
 	            _this = this,
 	            data = new FormData();
 
@@ -35644,7 +35663,6 @@
 
 	module.exports = LibraryItemsStore;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
 /* 9 */
@@ -39168,7 +39186,6 @@
 	        }
 	    },
 	    renderItems: function renderItems() {
-	        //TODO: Need to map the LOs to their displayNames...IDs are not useful
 	        var _this = this,
 
 	        // map the choiceIds, etc., in answers back to choices in questions
@@ -39622,6 +39639,7 @@
 	            questionString: '',
 	            questionStringError: false,
 	            showAlert: false,
+	            showImagePreviewDeleteBtn: false,
 	            showModal: false,
 	            wrongAnswer1: '',
 	            wrongAnswer1Error: false,
@@ -39641,7 +39659,6 @@
 	        this.reset();
 	    },
 	    create: function create(e) {
-	        // TODO: deal with feedback
 	        // With CKEditor, need to get the data from CKEditor,
 	        // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
 	        // var data = CKEDITOR.instances.correctAnswer.getData();
@@ -39722,9 +39739,12 @@
 	    },
 	    onChange: function onChange(e) {
 	        var inputId = e.currentTarget.id,
-	            inputValue = e.target.value;
+	            inputValue = e.target.value,
+	            URL = window.webkitURL || window.URL;
 	        if (inputId === "questionFile") {
 	            questionFile = e.target.files[0];
+	            this.setState({ showImagePreviewDeleteBtn: true });
+	            this.refs.imagePreview.src = URL.createObjectURL(questionFile);
 	        } else {
 	            var update = {};
 	            update[inputId] = inputValue;
@@ -39734,8 +39754,15 @@
 	    open: function open() {
 	        this.setState({ showModal: true });
 	    },
+	    removeImage: function removeImage() {
+	        this.refs.imagePreview.src = '';
+	        this.refs.imageFileInput.value = '';
+	        this.setState({ showImagePreviewDeleteBtn: false });
+	        questionFile = null;
+	    },
 	    reset: function reset() {
 	        questionFile = null;
+	        this.refs.imagePreview.src = '';
 	        this.setState({ correctAnswer: '' });
 	        this.setState({ correctAnswerError: false });
 	        this.setState({ correctAnswerFeedback: '' });
@@ -39755,15 +39782,15 @@
 	        this.setState({ wrongAnswer3Feedback: '' });
 	    },
 	    render: function render() {
-	        // TODO: Add WYSIWYG editor so can add tables to questions / answers?
-	        // TODO: render a preview of any uploaded image file
+	        // TODO: allow choices to be image files (i.e. graphs)
 	        var alert = '',
 	            correctAnswer,
 	            itemDisplayName,
 	            questionString,
 	            wrongAnswer1,
 	            wrongAnswer2,
-	            wrongAnswer3;
+	            wrongAnswer3,
+	            imagePreviewDeleteBtn;
 
 	        if (this.state.showAlert) {
 	            alert = React.createElement(
@@ -39965,6 +39992,18 @@
 	            );
 	        }
 
+	        if (this.state.showImagePreviewDeleteBtn) {
+	            imagePreviewDeleteBtn = React.createElement(
+	                Button,
+	                { onClick: this.removeImage,
+	                    className: 'remove-image-button',
+	                    title: 'Remove the image' },
+	                React.createElement(Glyphicon, { glyph: 'trash' })
+	            );
+	        } else {
+	            imagePreviewDeleteBtn = '';
+	        }
+
 	        return React.createElement(
 	            'div',
 	            null,
@@ -40012,15 +40051,23 @@
 	                        ),
 	                        questionString,
 	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'questionFile' },
+	                            'div',
+	                            { className: 'image-preview' },
 	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Image File (optional)'
+	                                FormGroup,
+	                                { controlId: 'questionFile' },
+	                                React.createElement(
+	                                    ControlLabel,
+	                                    null,
+	                                    'Image File (optional)'
+	                                ),
+	                                React.createElement(FormControl, { type: 'file',
+	                                    ref: 'imageFileInput',
+	                                    onChange: this.onChange })
 	                            ),
-	                            React.createElement(FormControl, { type: 'file',
-	                                onChange: this.onChange })
+	                            React.createElement('img', { ref: 'imagePreview',
+	                                src: '' }),
+	                            imagePreviewDeleteBtn
 	                        ),
 	                        correctAnswer,
 	                        React.createElement(
@@ -40136,7 +40183,7 @@
 
 
 	// module
-	exports.push([module.id, ".has-error > .cke_chrome {\n    border-color: #a94442;\n}", ""]);
+	exports.push([module.id, ".has-error > .cke_chrome {\n    border-color: #a94442;\n}\n\n.image-preview {\n    display: flex;\n}\n\n.image-preview img {\n    max-width: 400px;\n    max-height: 300px;\n}\n\n.remove-image-button {\n    height: 34px;\n}", ""]);
 
 	// exports
 
@@ -50001,8 +50048,9 @@
 	var CKEditorModalHack = __webpack_require__(64);
 	var Dispatcher = __webpack_require__(9);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var LibraryItemsStore = __webpack_require__(8);
 
-	var questionFile;
+	var questionFile = void 0;
 
 	var EditItem = React.createClass({
 	    displayName: 'EditItem',
@@ -50020,11 +50068,15 @@
 	            itemDescription: me.description.text,
 	            itemDisplayName: me.displayName.text,
 	            itemDisplayNameError: false,
+	            originalQuestionFileURL: currentImage,
 	            questionFile: currentImage,
 	            questionString: me.question.text.text,
 	            questionStringError: false,
+	            removeImageFile: false,
 	            showAlert: false,
+	            showDeleteImageBtn: false,
 	            showModal: false,
+	            showRevertImageBtn: false,
 	            wrongAnswer1: answers.wrongAnswerTexts[0].text,
 	            wrongAnswer1Error: false,
 	            wrongAnswer1Id: answers.wrongAnswerIds[0],
@@ -50039,8 +50091,11 @@
 	            wrongAnswer3Feedback: answers.wrongAnswerFeedbacks[2]
 	        };
 	    },
+	    componentWillMount: function componentWillMount() {},
 	    close: function close() {
 	        this.setState({ showModal: false });
+	        this.setState({ showDeleteImageBtn: false });
+	        this.setState({ showRevertImageBtn: false });
 	    },
 	    closeAndReset: function closeAndReset() {
 	        this.setState({ showModal: false });
@@ -50065,9 +50120,12 @@
 	    },
 	    onChange: function onChange(e) {
 	        var inputId = e.currentTarget.id,
-	            inputValue = e.target.value;
+	            inputValue = e.target.value,
+	            URL = window.webkitURL || window.URL;
 	        if (inputId === "questionFile") {
 	            questionFile = e.target.files[0];
+	            this.setState({ showRevertImageBtn: true });
+	            this.refs.imagePreview.src = URL.createObjectURL(questionFile);
 	        } else {
 	            var update = {};
 	            update[inputId] = inputValue;
@@ -50075,11 +50133,34 @@
 	        }
 	    },
 	    open: function open(e) {
-	        this.setState({ showModal: true }, function () {});
+	        // This seems un-React-like (i.e. should do it via a Store?),
+	        // but if we attach an event listener in componentWillMount,
+	        // that leads to an event emitter memory leak warning. Because
+	        // every single item on the page would attach an event...
+
+	        var _this = this;
+	        this.setState({ showModal: true }, function () {
+	            LibraryItemsStore.getItemDetails(_this.props.libraryId, _this.props.item.id, function (item) {
+	                var fileURL = item.question.hasOwnProperty('files') ? item.question.files.imageFile : '';
+	                _this.setState({ originalQuestionFileURL: fileURL });
+	                _this.setState({ questionFile: fileURL });
+	                if (fileURL != '') {
+	                    _this.setState({ showDeleteImageBtn: true });
+	                }
+	            });
+	        });
+	    },
+	    removeImage: function removeImage() {
+	        questionFile = null;
+	        this.setState({ removeImageFile: true });
+	        this.setState({ showDeleteImageBtn: false });
+	        this.setState({ showRevertImageBtn: true });
+	        this.refs.imagePreview.src = '';
 	    },
 	    reset: function reset() {
 	        var me = this.props.item,
 	            answers = AnswerExtraction(me);
+
 	        questionFile = null;
 	        this.setState({ correctAnswer: answers.correctAnswerText.text });
 	        this.setState({ correctAnswerError: false });
@@ -50088,10 +50169,14 @@
 	        this.setState({ itemDescription: me.description.text });
 	        this.setState({ itemDisplayName: me.displayName.text });
 	        this.setState({ itemDisplayNameError: false });
+	        this.setState({ originalQuestionFileURL: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
 	        this.setState({ questionFile: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
 	        this.setState({ questionString: me.question.text.text });
 	        this.setState({ questionStringError: false });
+	        this.setState({ removeImageFile: false });
 	        this.setState({ showAlert: false });
+	        this.setState({ showDeleteImageBtn: false });
+	        this.setState({ showRevertImageBtn: false });
 	        this.setState({ wrongAnswer1: answers.wrongAnswerTexts[0].text });
 	        this.setState({ wrongAnswer1Error: false });
 	        this.setState({ wrongAnswer1Id: answers.wrongAnswerIds[0] });
@@ -50104,6 +50189,16 @@
 	        this.setState({ wrongAnswer3Error: false });
 	        this.setState({ wrongAnswer3Id: answers.wrongAnswerIds[2] });
 	        this.setState({ wrongAnswer3Feedback: '' });
+	    },
+	    revertImage: function revertImage() {
+	        // undo the image preview changes and show the
+	        // original image file
+	        this.refs.imagePreview.src = this.state.originalQuestionFileURL;
+	        this.setState({ removeImageFile: false });
+	        if (this.state.originalQuestionFileURL != '') {
+	            this.setState({ showDeleteImageBtn: true });
+	        }
+	        this.setState({ showRevertImageBtn: false });
 	    },
 	    save: function save(e) {
 	        var payload = {
@@ -50168,8 +50263,11 @@
 	                choiceId: choiceData.wrongChoiceIds[2],
 	                feedback: wrongAnswer3Feedback
 	            }];
-	            if (questionFile != null) {
+
+	            if (questionFile != null && !this.state.removeImageFile) {
 	                payload['questionFile'] = questionFile;
+	            } else if (this.state.removeImageFile) {
+	                payload['question']['removeImageFile'] = true;
 	            }
 
 	            Dispatcher.dispatch({
@@ -50180,14 +50278,15 @@
 	        }
 	    },
 	    render: function render() {
-	        // TODO: Add WYSIWYG editor so can add tables to questions / answers?
 	        var alert = '',
-	            correctAnswer,
-	            itemDisplayName,
-	            questionString,
-	            wrongAnswer1,
-	            wrongAnswer2,
-	            wrongAnswer3;
+	            deleteImageBtn = '',
+	            revertImageBtn = '',
+	            correctAnswer = void 0,
+	            itemDisplayName = void 0,
+	            questionString = void 0,
+	            wrongAnswer1 = void 0,
+	            wrongAnswer2 = void 0,
+	            wrongAnswer3 = void 0;
 
 	        if (this.state.showAlert) {
 	            alert = React.createElement(
@@ -50389,6 +50488,24 @@
 	            );
 	        }
 
+	        if (this.state.showRevertImageBtn) {
+	            revertImageBtn = React.createElement(
+	                Button,
+	                { onClick: this.revertImage,
+	                    title: 'Revert to original image' },
+	                React.createElement(Glyphicon, { glyph: 'refresh' })
+	            );
+	        }
+
+	        if (this.state.showDeleteImageBtn) {
+	            deleteImageBtn = React.createElement(
+	                Button,
+	                { onClick: this.removeImage,
+	                    title: 'Remove the image' },
+	                React.createElement(Glyphicon, { glyph: 'trash' })
+	            );
+	        }
+
 	        return React.createElement(
 	            'div',
 	            null,
@@ -50437,15 +50554,28 @@
 	                        ),
 	                        questionString,
 	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'questionFile' },
+	                            'div',
+	                            { className: 'image-preview' },
 	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Image File (optional)'
+	                                FormGroup,
+	                                { controlId: 'questionFile' },
+	                                React.createElement(
+	                                    ControlLabel,
+	                                    null,
+	                                    'Image File (optional)'
+	                                ),
+	                                React.createElement(FormControl, { type: 'file',
+	                                    ref: 'imageFileInput',
+	                                    onChange: this.onChange })
 	                            ),
-	                            React.createElement(FormControl, { type: 'file',
-	                                onChange: this.onChange })
+	                            React.createElement('img', { ref: 'imagePreview',
+	                                src: this.state.questionFile }),
+	                            React.createElement(
+	                                'div',
+	                                { className: 'image-controls' },
+	                                deleteImageBtn,
+	                                revertImageBtn
+	                            )
 	                        ),
 	                        correctAnswer,
 	                        React.createElement(
@@ -50554,7 +50684,19 @@
 
 /***/ },
 /* 77 */
-62,
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(25)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".has-error > .cke_chrome {\n    border-color: #a94442;\n}\n\n.image-preview {\n    display: flex;\n}\n\n.image-preview img {\n    max-width: 400px;\n    max-height: 300px;\n}\n\n.image-controls {\n    display: flex;\n    flex-direction: column;\n}\n\n.image-controls button {\n    height: 34px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
 /* 78 */
 /***/ function(module, exports, __webpack_require__) {
 

@@ -1,0 +1,128 @@
+{
+    "minStringLength": null,
+    "displayName": {
+        "text": "ImageTest",
+        "languageTypeId": "639-2%3AENG%40ISO",
+        "scriptTypeId": "15924%3ALATN%40ISO",
+        "formatTypeId": "TextFormats%3APLAIN%40okapia.net"
+    },
+    "description": {
+        "text": "",
+        "languageTypeId": "639-2%3AENG%40ISO",
+        "scriptTypeId": "15924%3ALATN%40ISO",
+        "formatTypeId": "TextFormats%3APLAIN%40okapia.net"
+    },
+    "recordTypeIds": [
+        "item-record-type%3Awrong-answer%40ODL.MIT.EDU"
+    ],
+    "bankId": "assessment.Bank%3A5717dc6f4a40452eb849eaaf%40bazzim.MIT.EDU",
+    "question": {
+        "files": {
+            "imageFile": "https://d3gllkdydocoif.cloudfront.net/5717dc6f4a40452eb849eaaf/Captura_de_pantalla_2015_12_15_a_la_s__4.00.10_PM.png?Expires=1461698683&Signature=HOjEmkJ5Dl7~8VEClDd7wk0kEdYrPv3683WhxMcV--0jKbBdk~9sajHjeAzQZEu9ytVaEybZEIUfJg0sSUyIz6z728vANZmuDthuJ8F-f9U-j0BfAUEFrA6IYjOW26Im0rRN-7AnPfxZFoRssWbMjTK9l42EenwT0Z9QeIPqnmynzPBBvRYiejkZOAW6arepoUppb~CA584scURG-dO~b1ij-b6Bem6MXSNZWxHTRGrN92pmCkKEAvNJNHkph4k-z6IFf3eYYbfcHGDDE~9o7kAzdxXRVMWe~AOHYvd2T-9sIWtav-o5oYcoo81iENnMuyNErcuZF9vA1MvDiTEm-Q__&Key-Pair-Id=APKAIGRK7FPIAJR675NA"
+        },
+        "displayName": {
+            "text": "ImageTest",
+            "languageTypeId": "639-2%3AENG%40ISO",
+            "formatTypeId": "TextFormats%3APLAIN%40okapia.net",
+            "scriptTypeId": "15924%3ALATN%40ISO"
+        },
+        "description": {
+            "text": "",
+            "languageTypeId": "639-2%3AENG%40ISO",
+            "formatTypeId": "TextFormats%3APLAIN%40okapia.net",
+            "scriptTypeId": "15924%3ALATN%40ISO"
+        },
+        "recordTypeIds": [
+            "question-record-type%3Amulti-choice-with-text-and-files%40ODL.MIT.EDU",
+            "question-record-type%3Amulti-choice-randomized%40ODL.MIT.EDU"
+        ],
+        "text": {
+            "text": "<p>with an image</p>\n",
+            "languageTypeId": "639-2%3AENG%40ISO",
+            "scriptTypeId": "15924%3ALATN%40ISO",
+            "formatTypeId": "TextFormats%3APLAIN%40okapia.net"
+        },
+        "bankId": "assessment.Bank%3A5717dc6f4a40452eb849eaaf%40bazzim.MIT.EDU",
+        "learningObjectiveIds": [],
+        "choices": [
+            {
+                "text": "<p>yes</p>\n",
+                "id": "571faaea04859459f1301256",
+                "name": "Choice 1"
+            },
+            {
+                "text": "<p>right?</p>\n",
+                "id": "571faaea04859459f1301255",
+                "name": "Choice 0"
+            },
+            {
+                "text": "<p>maybe</p>\n",
+                "id": "571faaea04859459f1301257",
+                "name": "Choice 2"
+            },
+            {
+                "text": "<p>no</p>\n",
+                "id": "571faaea04859459f1301258",
+                "name": "Choice 3"
+            }
+        ],
+        "genusTypeId": "GenusType%3ADEFAULT%40DLKIT.MIT.EDU",
+        "assignedBankIds": [
+            "assessment.Bank%3A5717dc6f4a40452eb849eaaf%40bazzim.MIT.EDU"
+        ],
+        "type": "Question",
+        "id": "assessment.Item%3A571faaea04859459f130124a%40bazzim.MIT.EDU",
+        "multiAnswer": false,
+        "fileIds": {
+            "imageFile": {
+                "assetId": "repository.Asset%3A571faaed04859459f1301259%40bazzim.MIT.EDU",
+                "assetContentTypeId": ""
+            }
+        }
+    },
+    "answers": [
+        {
+            "minStringLength": null,
+            "displayName": {
+                "text": "",
+                "languageTypeId": "639-2%3AENG%40ISO",
+                "scriptTypeId": "15924%3ALATN%40ISO",
+                "formatTypeId": "TextFormats%3APLAIN%40okapia.net"
+            },
+            "description": {
+                "text": "",
+                "languageTypeId": "639-2%3AENG%40ISO",
+                "scriptTypeId": "15924%3ALATN%40ISO",
+                "formatTypeId": "TextFormats%3APLAIN%40okapia.net"
+            },
+            "recordTypeIds": [
+                "answer-record-type%3Amulti-choice-with-files-and-feedback%40ODL.MIT.EDU"
+            ],
+            "bankId": "assessment.Bank%3A5717dc6f4a40452eb849eaaf%40bazzim.MIT.EDU",
+            "choiceIds": [
+                "571faaea04859459f1301255"
+            ],
+            "texts": {
+                "feedback": ""
+            },
+            "confusedLearningObjectiveIds": [],
+            "genusTypeId": "answer-type%3Aright-answer%40ODL.MIT.EDU",
+            "assignedBankIds": [
+                "assessment.Bank%3A5717dc6f4a40452eb849eaaf%40bazzim.MIT.EDU"
+            ],
+            "maxStringLength": null,
+            "type": "Answer",
+            "id": "assessment.Answer%3A571faaee04859459f1301267%40bazzim.MIT.EDU",
+            "fileIds": {}
+        }
+    ],
+    "texts": {},
+    "genusTypeId": "item-genus-type%3Afbw-multi-choice-problem-type%40ODL.MIT.EDU",
+    "assignedBankIds": [
+        "assessment.Bank%3A5717dc6f4a40452eb849eaaf%40bazzim.MIT.EDU"
+    ],
+    "maxStringLength": null,
+    "type": "Item",
+    "id": "assessment.Item%3A571faaea04859459f130124a%40bazzim.MIT.EDU",
+    "learningObjectiveIds": []
+}

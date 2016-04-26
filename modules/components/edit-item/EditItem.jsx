@@ -3,29 +3,30 @@
 
 require('./EditItem.css');
 
-var React = require('react');
-var ReactBS = require('react-bootstrap');
-var Alert = ReactBS.Alert;
-var Button = ReactBS.Button;
-var ControlLabel = ReactBS.ControlLabel;
-var FormControl = ReactBS.FormControl;
-var FormGroup = ReactBS.FormGroup;
-var Glyphicon = ReactBS.Glyphicon;
-var Modal = ReactBS.Modal;
+let React = require('react');
+let ReactBS = require('react-bootstrap');
+let Alert = ReactBS.Alert;
+let Button = ReactBS.Button;
+let ControlLabel = ReactBS.ControlLabel;
+let FormControl = ReactBS.FormControl;
+let FormGroup = ReactBS.FormGroup;
+let Glyphicon = ReactBS.Glyphicon;
+let Modal = ReactBS.Modal;
 
-var $s = require('scriptjs');
+let $s = require('scriptjs');
 
-var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
-var AnswerExtraction = require('../../utilities/AnswerExtraction');
-var CKEditorModalHack = require('../../utilities/CKEditorModalHack');
-var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
-var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
+let ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+let AnswerExtraction = require('../../utilities/AnswerExtraction');
+let CKEditorModalHack = require('../../utilities/CKEditorModalHack');
+let Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+let GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
+let LibraryItemsStore = require('../../stores/LibraryItemsStore');
 
-var questionFile;
+let questionFile;
 
-var EditItem = React.createClass({
+let EditItem = React.createClass({
     getInitialState: function () {
-        var me = this.props.item,
+        let me = this.props.item,
             answers = AnswerExtraction(me),
             currentImage = me.question.hasOwnProperty('files') ? me.question.files.imageFile : '';
 
@@ -37,11 +38,15 @@ var EditItem = React.createClass({
             itemDescription: me.description.text,
             itemDisplayName: me.displayName.text,
             itemDisplayNameError: false,
+            originalQuestionFileURL: currentImage,
             questionFile: currentImage,
             questionString: me.question.text.text,
             questionStringError: false,
+            removeImageFile: false,
             showAlert: false,
+            showDeleteImageBtn: false,
             showModal: false,
+            showRevertImageBtn: false,
             wrongAnswer1: answers.wrongAnswerTexts[0].text,
             wrongAnswer1Error: false,
             wrongAnswer1Id: answers.wrongAnswerIds[0],
@@ -56,8 +61,13 @@ var EditItem = React.createClass({
             wrongAnswer3Feedback: answers.wrongAnswerFeedbacks[2]
         };
     },
+    componentWillMount: function () {
+
+    },
     close: function () {
         this.setState({showModal: false});
+        this.setState({ showDeleteImageBtn: false });
+        this.setState({ showRevertImageBtn: false });
     },
     closeAndReset: function () {
         this.setState({showModal: false});
@@ -81,24 +91,50 @@ var EditItem = React.createClass({
         });
     },
     onChange: function(e) {
-        var inputId = e.currentTarget.id,
-            inputValue = e.target.value;
+        let inputId = e.currentTarget.id,
+            inputValue = e.target.value,
+            URL = window.webkitURL || window.URL;
         if (inputId === "questionFile") {
             questionFile = e.target.files[0];
+            this.setState({ showRevertImageBtn: true });
+            this.refs.imagePreview.src = URL.createObjectURL(questionFile);
         } else {
-            var update = {};
+            let update = {};
             update[inputId] = inputValue;
             this.setState(update);
         }
     },
     open: function (e) {
-        this.setState({showModal: true}, function () {
+        // This seems un-React-like (i.e. should do it via a Store?),
+        // but if we attach an event listener in componentWillMount,
+        // that leads to an event emitter memory leak warning. Because
+        // every single item on the page would attach an event...
 
+        let _this = this;
+        this.setState({showModal: true}, function () {
+            LibraryItemsStore.getItemDetails(_this.props.libraryId,
+                                             _this.props.item.id,
+                                             function (item) {
+                let fileURL = item.question.hasOwnProperty('files') ? item.question.files.imageFile : '';
+                _this.setState({ originalQuestionFileURL: fileURL });
+                _this.setState({ questionFile: fileURL });
+                if (fileURL != '') {
+                    _this.setState({ showDeleteImageBtn: true });
+                }
+            });
         });
     },
+    removeImage: function () {
+        questionFile = null;
+        this.setState({ removeImageFile: true });
+        this.setState({ showDeleteImageBtn: false });
+        this.setState({ showRevertImageBtn: true });
+        this.refs.imagePreview.src = '';
+    },
     reset: function() {
-        var me = this.props.item,
+        let me = this.props.item,
             answers = AnswerExtraction(me);
+
         questionFile = null;
         this.setState({ correctAnswer: answers.correctAnswerText.text });
         this.setState({ correctAnswerError: false });
@@ -107,10 +143,14 @@ var EditItem = React.createClass({
         this.setState({ itemDescription: me.description.text });
         this.setState({ itemDisplayName: me.displayName.text });
         this.setState({ itemDisplayNameError: false });
+        this.setState({ originalQuestionFileURL: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
         this.setState({ questionFile: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
         this.setState({ questionString: me.question.text.text });
         this.setState({ questionStringError: false });
+        this.setState({ removeImageFile: false });
         this.setState({ showAlert: false });
+        this.setState({ showDeleteImageBtn: false });
+        this.setState({ showRevertImageBtn: false });
         this.setState({ wrongAnswer1: answers.wrongAnswerTexts[0].text });
         this.setState({ wrongAnswer1Error: false });
         this.setState({ wrongAnswer1Id: answers.wrongAnswerIds[0] });
@@ -124,8 +164,18 @@ var EditItem = React.createClass({
         this.setState({ wrongAnswer3Id: answers.wrongAnswerIds[2] });
         this.setState({ wrongAnswer3Feedback: '' });
     },
+    revertImage: function () {
+        // undo the image preview changes and show the
+        // original image file
+        this.refs.imagePreview.src = this.state.originalQuestionFileURL;
+        this.setState({ removeImageFile: false });
+        if (this.state.originalQuestionFileURL != '') {
+            this.setState({ showDeleteImageBtn: true });
+        }
+        this.setState({ showRevertImageBtn: false });
+    },
     save: function (e) {
-        var payload = {
+        let payload = {
             itemId: this.props.item.id,
             libraryId: this.props.libraryId
         },
@@ -154,7 +204,7 @@ var EditItem = React.createClass({
             this.setState({ wrongAnswer2Error: wrongAnswer2 === '' });
             this.setState({ wrongAnswer3Error: wrongAnswer3 === '' });
         } else {
-            var choiceData = AnswerExtraction(this.props.item);
+            let choiceData = AnswerExtraction(this.props.item);
 
             payload['displayName'] = this.state.itemDisplayName;
             payload['description'] = this.state.itemDescription;
@@ -192,8 +242,11 @@ var EditItem = React.createClass({
                 choiceId: choiceData.wrongChoiceIds[2],
                 feedback: wrongAnswer3Feedback
             }];
-            if (questionFile != null) {
+
+            if (questionFile != null && !this.state.removeImageFile) {
                 payload['questionFile'] = questionFile;
+            } else if (this.state.removeImageFile) {
+                payload['question']['removeImageFile'] = true;
             }
 
             Dispatcher.dispatch({
@@ -204,8 +257,9 @@ var EditItem = React.createClass({
         }
     },
     render: function () {
-        // TODO: Add WYSIWYG editor so can add tables to questions / answers?
-        var alert = '',
+        let alert = '',
+            deleteImageBtn = '',
+            revertImageBtn = '',
             correctAnswer, itemDisplayName, questionString, wrongAnswer1,
             wrongAnswer2, wrongAnswer3;
 
@@ -333,6 +387,20 @@ var EditItem = React.createClass({
             </FormGroup>
         }
 
+        if (this.state.showRevertImageBtn) {
+            revertImageBtn = <Button onClick={this.revertImage}
+                                     title="Revert to original image">
+                <Glyphicon glyph="refresh" />
+            </Button>
+        }
+
+        if (this.state.showDeleteImageBtn) {
+            deleteImageBtn = <Button onClick={this.removeImage}
+                                     title="Remove the image">
+                <Glyphicon glyph="trash" />
+            </Button>
+        }
+
         return <div>
             <Button onClick={this.open}
                     bsSize="large"
@@ -358,11 +426,20 @@ var EditItem = React.createClass({
                                          placeholder="A description for this item" />
                         </FormGroup>
                         {questionString}
-                        <FormGroup controlId="questionFile">
-                            <ControlLabel>Image File (optional)</ControlLabel>
-                            <FormControl type="file"
-                                         onChange={this.onChange} />
-                        </FormGroup>
+                        <div className="image-preview">
+                            <FormGroup controlId="questionFile">
+                                <ControlLabel>Image File (optional)</ControlLabel>
+                                <FormControl type="file"
+                                             ref="imageFileInput"
+                                             onChange={this.onChange} />
+                            </FormGroup>
+                            <img ref="imagePreview"
+                                 src={this.state.questionFile} />
+                            <div className="image-controls">
+                                {deleteImageBtn}
+                                {revertImageBtn}
+                            </div>
+                        </div>
                         {correctAnswer}
                         <FormGroup controlId="correctAnswerFeedback">
                             <ControlLabel>Correct Answer Feedback (recommended)</ControlLabel>
