@@ -1,6 +1,8 @@
 // EditItem.jsx
 'use strict';
 
+require('./EditItem.css');
+
 var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Alert = ReactBS.Alert;
@@ -11,10 +13,13 @@ var FormGroup = ReactBS.FormGroup;
 var Glyphicon = ReactBS.Glyphicon;
 var Modal = ReactBS.Modal;
 
-var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
-var AnswerExtraction = require('../utilities/AnswerExtraction');
-var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
-var GenusTypes = require('../constants/AuthoringConstants').GenusTypes;
+var $s = require('scriptjs');
+
+var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+var AnswerExtraction = require('../../utilities/AnswerExtraction');
+var CKEditorModalHack = require('../../utilities/CKEditorModalHack');
+var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
 
 var questionFile;
 
@@ -57,6 +62,23 @@ var EditItem = React.createClass({
     closeAndReset: function () {
         this.setState({showModal: false});
         this.reset();
+    },
+    initializeEditors: function (e) {
+        // CKEditor
+        // Instructions from here
+        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
+        CKEditorModalHack();
+        $s('../static/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+            CKEDITOR.replace('correctAnswer');
+            CKEDITOR.replace('correctAnswerFeedback');
+            CKEDITOR.replace('questionString');
+            CKEDITOR.replace('wrongAnswer1');
+            CKEDITOR.replace('wrongAnswer1Feedback');
+            CKEDITOR.replace('wrongAnswer2');
+            CKEDITOR.replace('wrongAnswer2Feedback');
+            CKEDITOR.replace('wrongAnswer3');
+            CKEDITOR.replace('wrongAnswer3Feedback');
+        });
     },
     onChange: function(e) {
         var inputId = e.currentTarget.id,
@@ -106,22 +128,27 @@ var EditItem = React.createClass({
         var payload = {
             itemId: this.props.item.id,
             libraryId: this.props.libraryId
-        };
+        },
+            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
+            questionString = CKEDITOR.instances.questionString.getData(),
+            wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
+            wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
+            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData();
 
         if (this.state.itemDisplayName === '' ||
-            this.state.correctAnswer === '' ||
-            this.state.questionString === '' ||
-            this.state.wrongAnswer1 === '' ||
-            this.state.wrongAnswer2 === '' ||
-            this.state.wrongAnswer3 === '') {
+            correctAnswer === '' ||
+            questionString === '' ||
+            wrongAnswer1 === '' ||
+            wrongAnswer2 === '' ||
+            wrongAnswer3 === '') {
             this.setState({ showAlert: true });
 
             this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
-            this.setState({ correctAnswerError: this.state.correctAnswer === '' });
-            this.setState({ questionStringError: this.state.questionString === '' });
-            this.setState({ wrongAnswer1Error: this.state.wrongAnswer1 === '' });
-            this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
-            this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
+            this.setState({ correctAnswerError: correctAnswer === '' });
+            this.setState({ questionStringError: questionString === '' });
+            this.setState({ wrongAnswer1Error: wrongAnswer1 === '' });
+            this.setState({ wrongAnswer2Error: wrongAnswer2 === '' });
+            this.setState({ wrongAnswer3Error: wrongAnswer3 === '' });
         } else {
             var choiceData = AnswerExtraction(this.props.item);
 
@@ -129,19 +156,19 @@ var EditItem = React.createClass({
             payload['description'] = this.state.itemDescription;
 
             payload['question'] = {
-                text: this.state.questionString,
+                text: questionString,
                 choices: [{
                     choiceId: choiceData.correctChoiceId,
-                    text: this.state.correctAnswer
+                    text: correctAnswer
                 },{
                     choiceId: choiceData.wrongChoiceIds[0],
-                    text: this.state.wrongAnswer1
+                    text: wrongAnswer1
                 },{
                     choiceId: choiceData.wrongChoiceIds[1],
-                    text: this.state.wrongAnswer2
+                    text: wrongAnswer2
                 },{
                     choiceId: choiceData.wrongChoiceIds[2],
-                    text: this.state.wrongAnswer3
+                    text: wrongAnswer3
                 }]
             };
             payload['answers'] = [{
@@ -186,7 +213,7 @@ var EditItem = React.createClass({
             correctAnswer = <FormGroup controlId="correctAnswer"
                                        validationState="error">
                 <ControlLabel>Correct Answer</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.correctAnswer}
                              onChange={this.onChange}
                              placeholder="The correct answer"/>
@@ -195,7 +222,7 @@ var EditItem = React.createClass({
         } else {
             correctAnswer = <FormGroup controlId="correctAnswer">
                 <ControlLabel>Correct Answer</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.correctAnswer}
                              onChange={this.onChange}
                              placeholder="The correct answer"/>
@@ -246,7 +273,7 @@ var EditItem = React.createClass({
             wrongAnswer1 = <FormGroup controlId="wrongAnswer1"
                                       validationState="error">
                 <ControlLabel>Wrong Answer 1</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.wrongAnswer1}
                              onChange={this.onChange}
                              placeholder="The first mis-direction answer" />
@@ -255,7 +282,7 @@ var EditItem = React.createClass({
         } else {
             wrongAnswer1 = <FormGroup controlId="wrongAnswer1">
                 <ControlLabel>Wrong Answer 1</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.wrongAnswer1}
                              onChange={this.onChange}
                              placeholder="The first mis-direction answer" />
@@ -266,7 +293,7 @@ var EditItem = React.createClass({
             wrongAnswer2 = <FormGroup controlId="wrongAnswer2"
                                       validationState="error">
                 <ControlLabel>Wrong Answer 2</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.wrongAnswer2}
                              onChange={this.onChange}
                              placeholder="The second mis-direction answer" />
@@ -275,7 +302,7 @@ var EditItem = React.createClass({
         } else {
             wrongAnswer2 = <FormGroup controlId="wrongAnswer2">
                 <ControlLabel>Wrong Answer 2</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.wrongAnswer2}
                              onChange={this.onChange}
                              placeholder="The second mis-direction answer" />
@@ -286,7 +313,7 @@ var EditItem = React.createClass({
             wrongAnswer3 = <FormGroup controlId="wrongAnswer3"
                                       validationState="error">
                 <ControlLabel>Wrong Answer 3</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.wrongAnswer3}
                              onChange={this.onChange}
                              placeholder="The third mis-direction answer" />
@@ -295,7 +322,7 @@ var EditItem = React.createClass({
         } else {
             wrongAnswer3 = <FormGroup controlId="wrongAnswer3">
                 <ControlLabel>Wrong Answer 3</ControlLabel>
-                <FormControl type="text"
+                <FormControl componentClass="textarea"
                              value={this.state.wrongAnswer3}
                              onChange={this.onChange}
                              placeholder="The third mis-direction answer" />
@@ -306,7 +333,10 @@ var EditItem = React.createClass({
             <Button onClick={this.open} bsSize="large">
                 <Glyphicon glyph="pencil" />
             </Button>
-            <Modal bsSize="lg" show={this.state.showModal} onHide={this.close}>
+            <Modal bsSize="lg"
+                   show={this.state.showModal}
+                   onHide={this.close}
+                   onEntered={this.initializeEditors}>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Question</Modal.Title>
                 </Modal.Header>

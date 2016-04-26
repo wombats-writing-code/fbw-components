@@ -38724,7 +38724,7 @@
 	var React = __webpack_require__(1);
 
 	var DeleteItem = __webpack_require__(42);
-	var EditItem = __webpack_require__(43);
+	var EditItem = __webpack_require__(75);
 
 	var ItemControls = React.createClass({
 	    displayName: 'ItemControls',
@@ -38857,521 +38857,7 @@
 	module.exports = DeleteItem;
 
 /***/ },
-/* 43 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// EditItem.jsx
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Alert = ReactBS.Alert;
-	var Button = ReactBS.Button;
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormControl = ReactBS.FormControl;
-	var FormGroup = ReactBS.FormGroup;
-	var Glyphicon = ReactBS.Glyphicon;
-	var Modal = ReactBS.Modal;
-
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(27);
-	var Dispatcher = __webpack_require__(9);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-
-	var questionFile;
-
-	var EditItem = React.createClass({
-	    displayName: 'EditItem',
-
-	    getInitialState: function getInitialState() {
-	        var me = this.props.item,
-	            answers = AnswerExtraction(me),
-	            currentImage = me.question.hasOwnProperty('files') ? me.question.files.imageFile : '';
-
-	        return {
-	            correctAnswer: answers.correctAnswerText.text,
-	            correctAnswerError: false,
-	            correctAnswerId: answers.correctAnswerId,
-	            correctAnswerFeedback: '',
-	            itemDescription: me.description.text,
-	            itemDisplayName: me.displayName.text,
-	            itemDisplayNameError: false,
-	            questionFile: currentImage,
-	            questionString: me.question.text.text,
-	            questionStringError: false,
-	            showAlert: false,
-	            showModal: false,
-	            wrongAnswer1: answers.wrongAnswerTexts[0].text,
-	            wrongAnswer1Error: false,
-	            wrongAnswer1Id: answers.wrongAnswerIds[0],
-	            wrongAnswer1Feedback: '',
-	            wrongAnswer2: answers.wrongAnswerTexts[1].text,
-	            wrongAnswer2Error: false,
-	            wrongAnswer2Id: answers.wrongAnswerIds[1],
-	            wrongAnswer2Feedback: '',
-	            wrongAnswer3: answers.wrongAnswerTexts[2].text,
-	            wrongAnswer3Error: false,
-	            wrongAnswer3Id: answers.wrongAnswerIds[2],
-	            wrongAnswer3Feedback: ''
-	        };
-	    },
-	    close: function close() {
-	        this.setState({ showModal: false });
-	    },
-	    closeAndReset: function closeAndReset() {
-	        this.setState({ showModal: false });
-	        this.reset();
-	    },
-	    onChange: function onChange(e) {
-	        var inputId = e.currentTarget.id,
-	            inputValue = e.target.value;
-	        if (inputId === "questionFile") {
-	            questionFile = e.target.files[0];
-	        } else {
-	            var update = {};
-	            update[inputId] = inputValue;
-	            this.setState(update);
-	        }
-	    },
-	    open: function open(e) {
-	        this.setState({ showModal: true }, function () {});
-	    },
-	    reset: function reset() {
-	        var me = this.props.item,
-	            answers = AnswerExtraction(me);
-	        questionFile = null;
-	        this.setState({ correctAnswer: answers.correctAnswerText.text });
-	        this.setState({ correctAnswerError: false });
-	        this.setState({ correctAnswerId: answers.correctAnswerId });
-	        this.setState({ correctAnswerFeedback: '' });
-	        this.setState({ itemDescription: me.description.text });
-	        this.setState({ itemDisplayName: me.displayName.text });
-	        this.setState({ itemDisplayNameError: false });
-	        this.setState({ questionFile: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
-	        this.setState({ questionString: me.question.text.text });
-	        this.setState({ questionStringError: false });
-	        this.setState({ showAlert: false });
-	        this.setState({ wrongAnswer1: answers.wrongAnswerTexts[0].text });
-	        this.setState({ wrongAnswer1Error: false });
-	        this.setState({ wrongAnswer1Id: answers.wrongAnswerIds[0] });
-	        this.setState({ wrongAnswer1Feedback: '' });
-	        this.setState({ wrongAnswer2: answers.wrongAnswerTexts[1].text });
-	        this.setState({ wrongAnswer2Error: false });
-	        this.setState({ wrongAnswer2Id: answers.wrongAnswerIds[1] });
-	        this.setState({ wrongAnswer2Feedback: '' });
-	        this.setState({ wrongAnswer3: answers.wrongAnswerTexts[2].text });
-	        this.setState({ wrongAnswer3Error: false });
-	        this.setState({ wrongAnswer3Id: answers.wrongAnswerIds[2] });
-	        this.setState({ wrongAnswer3Feedback: '' });
-	    },
-	    save: function save(e) {
-	        var payload = {
-	            itemId: this.props.item.id,
-	            libraryId: this.props.libraryId
-	        };
-
-	        if (this.state.itemDisplayName === '' || this.state.correctAnswer === '' || this.state.questionString === '' || this.state.wrongAnswer1 === '' || this.state.wrongAnswer2 === '' || this.state.wrongAnswer3 === '') {
-	            this.setState({ showAlert: true });
-
-	            this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
-	            this.setState({ correctAnswerError: this.state.correctAnswer === '' });
-	            this.setState({ questionStringError: this.state.questionString === '' });
-	            this.setState({ wrongAnswer1Error: this.state.wrongAnswer1 === '' });
-	            this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
-	            this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
-	        } else {
-	            var choiceData = AnswerExtraction(this.props.item);
-
-	            payload['displayName'] = this.state.itemDisplayName;
-	            payload['description'] = this.state.itemDescription;
-
-	            payload['question'] = {
-	                text: this.state.questionString,
-	                choices: [{
-	                    choiceId: choiceData.correctChoiceId,
-	                    text: this.state.correctAnswer
-	                }, {
-	                    choiceId: choiceData.wrongChoiceIds[0],
-	                    text: this.state.wrongAnswer1
-	                }, {
-	                    choiceId: choiceData.wrongChoiceIds[1],
-	                    text: this.state.wrongAnswer2
-	                }, {
-	                    choiceId: choiceData.wrongChoiceIds[2],
-	                    text: this.state.wrongAnswer3
-	                }]
-	            };
-	            payload['answers'] = [{
-	                answerId: this.state.correctAnswerId,
-	                choiceId: choiceData.correctChoiceId,
-	                feedback: this.state.correctAnswerFeedback
-	            }, {
-	                answerId: this.state.wrongAnswer1Id,
-	                choiceId: choiceData.wrongChoiceIds[0],
-	                feedback: this.state.wrongAnswer1Feedback
-	            }, {
-	                answerId: this.state.wrongAnswer2Id,
-	                choiceId: choiceData.wrongChoiceIds[1],
-	                feedback: this.state.wrongAnswer2Feedback
-	            }, {
-	                answerId: this.state.wrongAnswer3Id,
-	                choiceId: choiceData.wrongChoiceIds[2],
-	                feedback: this.state.wrongAnswer3Feedback
-	            }];
-	            if (questionFile != null) {
-	                payload['questionFile'] = questionFile;
-	            }
-
-	            Dispatcher.dispatch({
-	                type: ActionTypes.UPDATE_ITEM,
-	                content: payload
-	            });
-	            this.close();
-	        }
-	    },
-	    render: function render() {
-	        // TODO: Add WYSIWYG editor so can add tables to questions / answers?
-	        var alert = '',
-	            correctAnswer,
-	            itemDisplayName,
-	            questionString,
-	            wrongAnswer1,
-	            wrongAnswer2,
-	            wrongAnswer3;
-
-	        if (this.state.showAlert) {
-	            alert = React.createElement(
-	                Alert,
-	                { bsStyle: 'danger' },
-	                'You are missing some required fields'
-	            );
-	        }
-
-	        if (this.state.correctAnswerError) {
-	            correctAnswer = React.createElement(
-	                FormGroup,
-	                { controlId: 'correctAnswer',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Correct Answer'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.correctAnswer,
-	                    onChange: this.onChange,
-	                    placeholder: 'The correct answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            correctAnswer = React.createElement(
-	                FormGroup,
-	                { controlId: 'correctAnswer' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Correct Answer'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.correctAnswer,
-	                    onChange: this.onChange,
-	                    placeholder: 'The correct answer' })
-	            );
-	        }
-
-	        if (this.state.itemDisplayNameError) {
-	            itemDisplayName = React.createElement(
-	                FormGroup,
-	                { controlId: 'itemDisplayName',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Item Name'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.itemDisplayName,
-	                    onChange: this.onChange,
-	                    placeholder: 'A name for the item' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            itemDisplayName = React.createElement(
-	                FormGroup,
-	                { controlId: 'itemDisplayName' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Item Name'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.itemDisplayName,
-	                    onChange: this.onChange,
-	                    placeholder: 'A name for the item' })
-	            );
-	        }
-
-	        if (this.state.questionStringError) {
-	            questionString = React.createElement(
-	                FormGroup,
-	                { controlId: 'questionString',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Question'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.questionString,
-	                    onChange: this.onChange,
-	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            questionString = React.createElement(
-	                FormGroup,
-	                { controlId: 'questionString' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Question'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.questionString,
-	                    onChange: this.onChange,
-	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' })
-	            );
-	        }
-
-	        if (this.state.wrongAnswer1Error) {
-	            wrongAnswer1 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer1',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 1'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer1,
-	                    onChange: this.onChange,
-	                    placeholder: 'The first mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer1 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer1' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 1'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer1,
-	                    onChange: this.onChange,
-	                    placeholder: 'The first mis-direction answer' })
-	            );
-	        }
-
-	        if (this.state.wrongAnswer2Error) {
-	            wrongAnswer2 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer2',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 2'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer2,
-	                    onChange: this.onChange,
-	                    placeholder: 'The second mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer2 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer2' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 2'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer2,
-	                    onChange: this.onChange,
-	                    placeholder: 'The second mis-direction answer' })
-	            );
-	        }
-
-	        if (this.state.wrongAnswer3Error) {
-	            wrongAnswer3 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer3',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 3'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer3,
-	                    onChange: this.onChange,
-	                    placeholder: 'The third mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer3 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer3' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 3'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer3,
-	                    onChange: this.onChange,
-	                    placeholder: 'The third mis-direction answer' })
-	            );
-	        }
-
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                Button,
-	                { onClick: this.open, bsSize: 'large' },
-	                React.createElement(Glyphicon, { glyph: 'pencil' })
-	            ),
-	            React.createElement(
-	                Modal,
-	                { bsSize: 'lg', show: this.state.showModal, onHide: this.close },
-	                React.createElement(
-	                    Modal.Header,
-	                    { closeButton: true },
-	                    React.createElement(
-	                        Modal.Title,
-	                        null,
-	                        'Edit Question'
-	                    )
-	                ),
-	                React.createElement(
-	                    Modal.Body,
-	                    null,
-	                    alert,
-	                    React.createElement(
-	                        'form',
-	                        null,
-	                        itemDisplayName,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'itemDescription' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Item Description (optional)'
-	                            ),
-	                            React.createElement(FormControl, { type: 'text',
-	                                value: this.state.itemDescription,
-	                                onChange: this.onChange,
-	                                placeholder: 'A description for this item' })
-	                        ),
-	                        questionString,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'questionFile' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Image File (optional)'
-	                            ),
-	                            React.createElement(FormControl, { type: 'file',
-	                                onChange: this.onChange })
-	                        ),
-	                        correctAnswer,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'correctAnswerFeedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Correct Answer Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.correctAnswerFeedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the correct answer' })
-	                        ),
-	                        wrongAnswer1,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer1Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 1 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer1Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the first mis-direction answer' })
-	                        ),
-	                        wrongAnswer2,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer2Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 2 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer2Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the second mis-direction answer' })
-	                        ),
-	                        wrongAnswer3,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer3Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 3 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer3Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the third mis-direction answer' })
-	                        )
-	                    )
-	                ),
-	                React.createElement(
-	                    Modal.Footer,
-	                    null,
-	                    React.createElement(
-	                        Button,
-	                        { onClick: this.closeAndReset },
-	                        'Close'
-	                    ),
-	                    React.createElement(
-	                        Button,
-	                        { bsStyle: 'success', onClick: this.save },
-	                        'Save'
-	                    )
-	                )
-	            )
-	        );
-	    }
-	});
-
-	module.exports = EditItem;
-
-/***/ },
+/* 43 */,
 /* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -50464,5 +49950,578 @@
 
 	module.exports = SetIFrameHeight;
 
-/***/ }
+/***/ },
+/* 75 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// EditItem.jsx
+	'use strict';
+
+	__webpack_require__(76);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Alert = ReactBS.Alert;
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var $s = __webpack_require__(59);
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var AnswerExtraction = __webpack_require__(27);
+	var CKEditorModalHack = __webpack_require__(64);
+	var Dispatcher = __webpack_require__(9);
+	var GenusTypes = __webpack_require__(14).GenusTypes;
+
+	var questionFile;
+
+	var EditItem = React.createClass({
+	    displayName: 'EditItem',
+
+	    getInitialState: function getInitialState() {
+	        var me = this.props.item,
+	            answers = AnswerExtraction(me),
+	            currentImage = me.question.hasOwnProperty('files') ? me.question.files.imageFile : '';
+
+	        return {
+	            correctAnswer: answers.correctAnswerText.text,
+	            correctAnswerError: false,
+	            correctAnswerId: answers.correctAnswerId,
+	            correctAnswerFeedback: '',
+	            itemDescription: me.description.text,
+	            itemDisplayName: me.displayName.text,
+	            itemDisplayNameError: false,
+	            questionFile: currentImage,
+	            questionString: me.question.text.text,
+	            questionStringError: false,
+	            showAlert: false,
+	            showModal: false,
+	            wrongAnswer1: answers.wrongAnswerTexts[0].text,
+	            wrongAnswer1Error: false,
+	            wrongAnswer1Id: answers.wrongAnswerIds[0],
+	            wrongAnswer1Feedback: '',
+	            wrongAnswer2: answers.wrongAnswerTexts[1].text,
+	            wrongAnswer2Error: false,
+	            wrongAnswer2Id: answers.wrongAnswerIds[1],
+	            wrongAnswer2Feedback: '',
+	            wrongAnswer3: answers.wrongAnswerTexts[2].text,
+	            wrongAnswer3Error: false,
+	            wrongAnswer3Id: answers.wrongAnswerIds[2],
+	            wrongAnswer3Feedback: ''
+	        };
+	    },
+	    close: function close() {
+	        this.setState({ showModal: false });
+	    },
+	    closeAndReset: function closeAndReset() {
+	        this.setState({ showModal: false });
+	        this.reset();
+	    },
+	    initializeEditors: function initializeEditors(e) {
+	        // CKEditor
+	        // Instructions from here
+	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
+	        CKEditorModalHack();
+	        $s('../static/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.replace('correctAnswer');
+	            CKEDITOR.replace('correctAnswerFeedback');
+	            CKEDITOR.replace('questionString');
+	            CKEDITOR.replace('wrongAnswer1');
+	            CKEDITOR.replace('wrongAnswer1Feedback');
+	            CKEDITOR.replace('wrongAnswer2');
+	            CKEDITOR.replace('wrongAnswer2Feedback');
+	            CKEDITOR.replace('wrongAnswer3');
+	            CKEDITOR.replace('wrongAnswer3Feedback');
+	        });
+	    },
+	    onChange: function onChange(e) {
+	        var inputId = e.currentTarget.id,
+	            inputValue = e.target.value;
+	        if (inputId === "questionFile") {
+	            questionFile = e.target.files[0];
+	        } else {
+	            var update = {};
+	            update[inputId] = inputValue;
+	            this.setState(update);
+	        }
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    reset: function reset() {
+	        var me = this.props.item,
+	            answers = AnswerExtraction(me);
+	        questionFile = null;
+	        this.setState({ correctAnswer: answers.correctAnswerText.text });
+	        this.setState({ correctAnswerError: false });
+	        this.setState({ correctAnswerId: answers.correctAnswerId });
+	        this.setState({ correctAnswerFeedback: '' });
+	        this.setState({ itemDescription: me.description.text });
+	        this.setState({ itemDisplayName: me.displayName.text });
+	        this.setState({ itemDisplayNameError: false });
+	        this.setState({ questionFile: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
+	        this.setState({ questionString: me.question.text.text });
+	        this.setState({ questionStringError: false });
+	        this.setState({ showAlert: false });
+	        this.setState({ wrongAnswer1: answers.wrongAnswerTexts[0].text });
+	        this.setState({ wrongAnswer1Error: false });
+	        this.setState({ wrongAnswer1Id: answers.wrongAnswerIds[0] });
+	        this.setState({ wrongAnswer1Feedback: '' });
+	        this.setState({ wrongAnswer2: answers.wrongAnswerTexts[1].text });
+	        this.setState({ wrongAnswer2Error: false });
+	        this.setState({ wrongAnswer2Id: answers.wrongAnswerIds[1] });
+	        this.setState({ wrongAnswer2Feedback: '' });
+	        this.setState({ wrongAnswer3: answers.wrongAnswerTexts[2].text });
+	        this.setState({ wrongAnswer3Error: false });
+	        this.setState({ wrongAnswer3Id: answers.wrongAnswerIds[2] });
+	        this.setState({ wrongAnswer3Feedback: '' });
+	    },
+	    save: function save(e) {
+	        var payload = {
+	            itemId: this.props.item.id,
+	            libraryId: this.props.libraryId
+	        },
+	            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
+	            questionString = CKEDITOR.instances.questionString.getData(),
+	            wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
+	            wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
+	            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData();
+
+	        if (this.state.itemDisplayName === '' || correctAnswer === '' || questionString === '' || wrongAnswer1 === '' || wrongAnswer2 === '' || wrongAnswer3 === '') {
+	            this.setState({ showAlert: true });
+
+	            this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
+	            this.setState({ correctAnswerError: correctAnswer === '' });
+	            this.setState({ questionStringError: questionString === '' });
+	            this.setState({ wrongAnswer1Error: wrongAnswer1 === '' });
+	            this.setState({ wrongAnswer2Error: wrongAnswer2 === '' });
+	            this.setState({ wrongAnswer3Error: wrongAnswer3 === '' });
+	        } else {
+	            var choiceData = AnswerExtraction(this.props.item);
+
+	            payload['displayName'] = this.state.itemDisplayName;
+	            payload['description'] = this.state.itemDescription;
+
+	            payload['question'] = {
+	                text: questionString,
+	                choices: [{
+	                    choiceId: choiceData.correctChoiceId,
+	                    text: correctAnswer
+	                }, {
+	                    choiceId: choiceData.wrongChoiceIds[0],
+	                    text: wrongAnswer1
+	                }, {
+	                    choiceId: choiceData.wrongChoiceIds[1],
+	                    text: wrongAnswer2
+	                }, {
+	                    choiceId: choiceData.wrongChoiceIds[2],
+	                    text: wrongAnswer3
+	                }]
+	            };
+	            payload['answers'] = [{
+	                answerId: this.state.correctAnswerId,
+	                choiceId: choiceData.correctChoiceId,
+	                feedback: this.state.correctAnswerFeedback
+	            }, {
+	                answerId: this.state.wrongAnswer1Id,
+	                choiceId: choiceData.wrongChoiceIds[0],
+	                feedback: this.state.wrongAnswer1Feedback
+	            }, {
+	                answerId: this.state.wrongAnswer2Id,
+	                choiceId: choiceData.wrongChoiceIds[1],
+	                feedback: this.state.wrongAnswer2Feedback
+	            }, {
+	                answerId: this.state.wrongAnswer3Id,
+	                choiceId: choiceData.wrongChoiceIds[2],
+	                feedback: this.state.wrongAnswer3Feedback
+	            }];
+	            if (questionFile != null) {
+	                payload['questionFile'] = questionFile;
+	            }
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.UPDATE_ITEM,
+	                content: payload
+	            });
+	            this.close();
+	        }
+	    },
+	    render: function render() {
+	        // TODO: Add WYSIWYG editor so can add tables to questions / answers?
+	        var alert = '',
+	            correctAnswer,
+	            itemDisplayName,
+	            questionString,
+	            wrongAnswer1,
+	            wrongAnswer2,
+	            wrongAnswer3;
+
+	        if (this.state.showAlert) {
+	            alert = React.createElement(
+	                Alert,
+	                { bsStyle: 'danger' },
+	                'You are missing some required fields'
+	            );
+	        }
+
+	        if (this.state.correctAnswerError) {
+	            correctAnswer = React.createElement(
+	                FormGroup,
+	                { controlId: 'correctAnswer',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Correct Answer'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.correctAnswer,
+	                    onChange: this.onChange,
+	                    placeholder: 'The correct answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            correctAnswer = React.createElement(
+	                FormGroup,
+	                { controlId: 'correctAnswer' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Correct Answer'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.correctAnswer,
+	                    onChange: this.onChange,
+	                    placeholder: 'The correct answer' })
+	            );
+	        }
+
+	        if (this.state.itemDisplayNameError) {
+	            itemDisplayName = React.createElement(
+	                FormGroup,
+	                { controlId: 'itemDisplayName',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Item Name'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.itemDisplayName,
+	                    onChange: this.onChange,
+	                    placeholder: 'A name for the item' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            itemDisplayName = React.createElement(
+	                FormGroup,
+	                { controlId: 'itemDisplayName' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Item Name'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.itemDisplayName,
+	                    onChange: this.onChange,
+	                    placeholder: 'A name for the item' })
+	            );
+	        }
+
+	        if (this.state.questionStringError) {
+	            questionString = React.createElement(
+	                FormGroup,
+	                { controlId: 'questionString',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Question'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.questionString,
+	                    onChange: this.onChange,
+	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            questionString = React.createElement(
+	                FormGroup,
+	                { controlId: 'questionString' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Question'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.questionString,
+	                    onChange: this.onChange,
+	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' })
+	            );
+	        }
+
+	        if (this.state.wrongAnswer1Error) {
+	            wrongAnswer1 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer1',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 1'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswer1,
+	                    onChange: this.onChange,
+	                    placeholder: 'The first mis-direction answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            wrongAnswer1 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer1' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 1'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswer1,
+	                    onChange: this.onChange,
+	                    placeholder: 'The first mis-direction answer' })
+	            );
+	        }
+
+	        if (this.state.wrongAnswer2Error) {
+	            wrongAnswer2 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer2',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 2'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswer2,
+	                    onChange: this.onChange,
+	                    placeholder: 'The second mis-direction answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            wrongAnswer2 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer2' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 2'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswer2,
+	                    onChange: this.onChange,
+	                    placeholder: 'The second mis-direction answer' })
+	            );
+	        }
+
+	        if (this.state.wrongAnswer3Error) {
+	            wrongAnswer3 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer3',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 3'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswer3,
+	                    onChange: this.onChange,
+	                    placeholder: 'The third mis-direction answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            wrongAnswer3 = React.createElement(
+	                FormGroup,
+	                { controlId: 'wrongAnswer3' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer 3'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswer3,
+	                    onChange: this.onChange,
+	                    placeholder: 'The third mis-direction answer' })
+	            );
+	        }
+
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open, bsSize: 'large' },
+	                React.createElement(Glyphicon, { glyph: 'pencil' })
+	            ),
+	            React.createElement(
+	                Modal,
+	                { bsSize: 'lg',
+	                    show: this.state.showModal,
+	                    onHide: this.close,
+	                    onEntered: this.initializeEditors },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Edit Question'
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    alert,
+	                    React.createElement(
+	                        'form',
+	                        null,
+	                        itemDisplayName,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'itemDescription' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Item Description (optional)'
+	                            ),
+	                            React.createElement(FormControl, { type: 'text',
+	                                value: this.state.itemDescription,
+	                                onChange: this.onChange,
+	                                placeholder: 'A description for this item' })
+	                        ),
+	                        questionString,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'questionFile' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Image File (optional)'
+	                            ),
+	                            React.createElement(FormControl, { type: 'file',
+	                                onChange: this.onChange })
+	                        ),
+	                        correctAnswer,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'correctAnswerFeedback' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Correct Answer Feedback (recommended)'
+	                            ),
+	                            React.createElement(FormControl, { componentClass: 'textarea',
+	                                value: this.state.correctAnswerFeedback,
+	                                onChange: this.onChange,
+	                                placeholder: 'Feedback for the correct answer' })
+	                        ),
+	                        wrongAnswer1,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'wrongAnswer1Feedback' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Wrong Answer 1 Feedback (recommended)'
+	                            ),
+	                            React.createElement(FormControl, { componentClass: 'textarea',
+	                                value: this.state.wrongAnswer1Feedback,
+	                                onChange: this.onChange,
+	                                placeholder: 'Feedback for the first mis-direction answer' })
+	                        ),
+	                        wrongAnswer2,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'wrongAnswer2Feedback' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Wrong Answer 2 Feedback (recommended)'
+	                            ),
+	                            React.createElement(FormControl, { componentClass: 'textarea',
+	                                value: this.state.wrongAnswer2Feedback,
+	                                onChange: this.onChange,
+	                                placeholder: 'Feedback for the second mis-direction answer' })
+	                        ),
+	                        wrongAnswer3,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'wrongAnswer3Feedback' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Wrong Answer 3 Feedback (recommended)'
+	                            ),
+	                            React.createElement(FormControl, { componentClass: 'textarea',
+	                                value: this.state.wrongAnswer3Feedback,
+	                                onChange: this.onChange,
+	                                placeholder: 'Feedback for the third mis-direction answer' })
+	                        )
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.closeAndReset },
+	                        'Close'
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { bsStyle: 'success', onClick: this.save },
+	                        'Save'
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = EditItem;
+
+/***/ },
+/* 76 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(77);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(26)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./EditItem.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./EditItem.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 77 */
+62
 /******/ ])));

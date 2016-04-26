@@ -5,7 +5,7 @@
 var React = require('react');
 
 var DeleteItem = require('./DeleteItem');
-var EditItem = require('./EditItem');
+var EditItem = require('./edit-item/EditItem');
 
 var ItemControls = React.createClass({
     getInitialState: function () {
