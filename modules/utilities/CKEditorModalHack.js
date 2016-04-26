@@ -1,7 +1,7 @@
 // CKEditorModalHack.js
 // Needed because stacking a CKEditor dialog window (i.e. for table definition) on
 // top of a Bootstrap / ReactBS modal conflicts, due to the tabindex="-1" setting
-// on the Bootstrap modal.
+// on the Bootstrap modal backdrop.
 // http://stackoverflow.com/questions/19570661/ckeditor-plugin-text-fields-not-editable
 
 

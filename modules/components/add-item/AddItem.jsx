@@ -55,40 +55,46 @@ var AddItem = React.createClass({
     },
     close: function () {
         this.setState({showModal: false});
+        this.reset();
     },
     create: function (e) {
+        // TODO: deal with feedback
         // With CKEditor, need to get the data from CKEditor,
         // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
         // var data = CKEDITOR.instances.correctAnswer.getData();
         var payload = {
             libraryId: this.props.libraryId
         },
-            correctAnswer = CKEDITOR.instances.correctAnswer.getData();
+            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
+            questionString = CKEDITOR.instances.questionString.getData(),
+            wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
+            wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
+            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData();
 
         if (this.state.itemDisplayName === '' ||
             correctAnswer === '' ||
-            this.state.questionString === '' ||
-            this.state.wrongAnswer1 === '' ||
-            this.state.wrongAnswer2 === '' ||
-            this.state.wrongAnswer3 === '') {
+            questionString === '' ||
+            wrongAnswer1 === '' ||
+            wrongAnswer2 === '' ||
+            wrongAnswer3 === '') {
             this.setState({ showAlert: true });
 
             this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
             this.setState({ correctAnswerError: correctAnswer === '' });
-            this.setState({ questionStringError: this.state.questionString === '' });
-            this.setState({ wrongAnswer1Error: this.state.wrongAnswer1 === '' });
-            this.setState({ wrongAnswer2Error: this.state.wrongAnswer2 === '' });
-            this.setState({ wrongAnswer3Error: this.state.wrongAnswer3 === '' });
+            this.setState({ questionStringError: questionString === '' });
+            this.setState({ wrongAnswer1Error: wrongAnswer1 === '' });
+            this.setState({ wrongAnswer2Error: wrongAnswer2 === '' });
+            this.setState({ wrongAnswer3Error: wrongAnswer3 === '' });
         } else {
 
             payload['displayName'] = this.state.itemDisplayName;
             payload['description'] = this.state.itemDescription;
             payload['question'] = {
-                text: this.state.questionString,
+                text: questionString,
                 choices: [correctAnswer,
-                          this.state.wrongAnswer1,
-                          this.state.wrongAnswer2,
-                          this.state.wrongAnswer3]
+                          wrongAnswer1,
+                          wrongAnswer2,
+                          wrongAnswer3]
             };
             payload['answers'] = [{
                 genusTypeId: GenusTypes.CORRECT_ANSWER,
@@ -125,6 +131,14 @@ var AddItem = React.createClass({
         CKEditorModalHack();
         $s('../static/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
             CKEDITOR.replace('correctAnswer');
+            CKEDITOR.replace('correctAnswerFeedback');
+            CKEDITOR.replace('questionString');
+            CKEDITOR.replace('wrongAnswer1');
+            CKEDITOR.replace('wrongAnswer1Feedback');
+            CKEDITOR.replace('wrongAnswer2');
+            CKEDITOR.replace('wrongAnswer2Feedback');
+            CKEDITOR.replace('wrongAnswer3');
+            CKEDITOR.replace('wrongAnswer3Feedback');
         });
     },
     onChange: function(e) {
@@ -163,6 +177,7 @@ var AddItem = React.createClass({
     },
     render: function () {
         // TODO: Add WYSIWYG editor so can add tables to questions / answers?
+        // TODO: render a preview of any uploaded image file
         var alert = '',
             correctAnswer, itemDisplayName, questionString, wrongAnswer1,
             wrongAnswer2, wrongAnswer3;
