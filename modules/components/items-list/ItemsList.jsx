@@ -20,7 +20,7 @@ var ItemControls = require('../ItemControls');
 var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 var LORelatedItems = require('../../utilities/LORelatedItems');
 var OutcomesStore = require('../../stores/OutcomesStore');
-var QuestionText = require('../QuestionText');
+var QuestionText = require('../question-text/QuestionText');
 
 
 var ItemsList = React.createClass({

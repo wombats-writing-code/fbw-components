@@ -2,7 +2,8 @@
 
 'use strict';
 
-require('../../stylesheets/vendor/reactSelectOverride.css');
+require('./QuestionText.css');
+require('../../../stylesheets/vendor/reactSelectOverride.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
@@ -14,8 +15,10 @@ var FormGroup = ReactBS.FormGroup;
 var Glyphicon = ReactBS.Glyphicon;
 var Modal = ReactBS.Modal;
 
-var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
-var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
+var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
+var WrapHTML = require('../../utilities/WrapHTML');
 
 var QuestionText = React.createClass({
     getInitialState: function () {
@@ -28,6 +31,13 @@ var QuestionText = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
+        // this seems hacky...but without the timeout
+        // it sets the height before the iframe content
+        // has fully rendered, making the height 10px;
+        var _this = this;
+        window.setTimeout(function () {
+            SetIFrameHeight(_this.refs.myFrame);
+        }, 100);
     },
     close: function () {
         this.setState({showModal: false});
@@ -77,13 +87,16 @@ var QuestionText = React.createClass({
                 label: outcome.displayName.text
             };
         }),
-            linkButton = '';
+            linkButton = '',
+            questionText = WrapHTML(this.props.questionText);
 
         if (this.props.enableClickthrough) {
-            linkButton = <div className="pull-right">
-                <Button onClick={this.open} bsSize="small">
-                    <Glyphicon glyph="link" />
-                </Button>
+            linkButton = <div className="pull-right question-actions">
+                <div>
+                    <Button onClick={this.open} bsSize="small">
+                        <Glyphicon glyph="link" />
+                    </Button>
+                </div>
                 <Modal show={this.state.showModal} onHide={this.close}>
                     <Modal.Header closeButton>
                         <Modal.Title>Link Question to Outcome</Modal.Title>
@@ -111,7 +124,12 @@ var QuestionText = React.createClass({
 
         return <div className="taggable-text">
             <div className="text-blob">
-                {this.props.questionText}
+                <iframe ref="myFrame"
+                        srcDoc={questionText}
+                        frameBorder={0}
+                        width="100%"
+                        sandbox="allow-same-origin"
+                        ></iframe>
             </div>
             {linkButton}
         </div>
