@@ -15,7 +15,7 @@ var AuthoringConstants = require('../../constants/AuthoringConstants');
 var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
 
 var AnswerExtraction = require('../../utilities/AnswerExtraction');
-var AnswerText = require('../AnswerText');
+var AnswerText = require('../answer-text/AnswerText');
 var ItemControls = require('../ItemControls');
 var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 var LORelatedItems = require('../../utilities/LORelatedItems');
@@ -103,7 +103,7 @@ var ItemsList = React.createClass({
             }
 
             return <Row key={item.id}>
-                <Col sm={6} md={6} lg={6}>
+                <Col sm={8} md={8} lg={8}>
                     <Panel header={item.displayName.text}>
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
@@ -156,7 +156,7 @@ var ItemsList = React.createClass({
                         {itemControls}
                     </Panel>
                 </Col>
-                <Col sm={6} md={6} lg={6}>
+                <Col sm={4} md={4} lg={4}>
                     <Panel header="Learning Outcomes">
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>

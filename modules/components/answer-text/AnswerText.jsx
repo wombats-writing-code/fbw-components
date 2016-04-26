@@ -2,7 +2,8 @@
 
 'use strict';
 
-require('../../stylesheets/vendor/reactSelectOverride.css');
+require('./AnswerText.css');
+require('../../../stylesheets/vendor/reactSelectOverride.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
@@ -14,9 +15,9 @@ var FormGroup = ReactBS.FormGroup;
 var Glyphicon = ReactBS.Glyphicon;
 var Modal = ReactBS.Modal;
 
-var ActionTypes = require('../constants/AuthoringConstants').ActionTypes;
-var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
-var LORelatedItemsBadge = require('./lo-related-items-badge/LORelatedItemsBadge');
+var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+var LORelatedItemsBadge = require('../lo-related-items-badge/LORelatedItemsBadge');
 
 var AnswerText = React.createClass({
     getInitialState: function () {
@@ -29,6 +30,13 @@ var AnswerText = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
+        // this seems hacky...but without the timeout
+        // it sets the height before the iframe content
+        // has fully rendered, making the height 10px;
+        var _this = this;
+        window.setTimeout(function () {
+            _this.setFrameHeight(_this.refs.myFrame);
+        }, 100);
     },
     close: function () {
         this.setState({showModal: false});
@@ -72,8 +80,35 @@ var AnswerText = React.createClass({
         });
         this.close();
     },
+    setFrameHeight: function (frame) {
+        // fix iFrame height
+        // per http://www.dyn-web.com/tutorials/iframes/height/
+        function getDocHeight(doc) {
+            doc = doc || document;
+            // stackoverflow.com/questions/1145850/
+            var body = doc.body, html = doc.documentElement;
+            var height = Math.max( body.scrollHeight, body.offsetHeight,
+                html.clientHeight, html.scrollHeight, html.offsetHeight );
+            return height;
+        }
+        function setIframeHeight(ifrm) {
+            var doc = ifrm.contentDocument? ifrm.contentDocument:
+                ifrm.contentWindow.document;
+            ifrm.style.visibility = 'hidden';
+            ifrm.style.height = "10px"; // reset to minimal height ...
+            // IE opt. for bing/msn needs a bit added or scrollbar appears
+            ifrm.style.height = getDocHeight( doc ) + 4 + "px";
+            ifrm.style.visibility = 'visible';
+        }
+        setIframeHeight(frame);
+    },
     wrapHTML: function (str) {
-        return '<h1>Hi!</h1>';
+        return '<html>' +
+                '<head>' +
+                    '<style>body * {margin:0px;padding:4px;}</style>' +
+                '</head>' +
+                '<body style="margin:0px;">' + str + '</body' +
+            '</html>';
     },
     render: function () {
         var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
@@ -83,8 +118,8 @@ var AnswerText = React.createClass({
             };
         }),
             linkButton = '',
-//            answerHTML = this.wrapHTML(this.props.answerText);
-            answerHTML = this.props.answerText;
+            answerHTML = this.wrapHTML(this.props.answerText);
+//            answerHTML = this.props.answerText;
 
         if (!this.props.hideLinkBtn) {
             if (this.props.enableClickthrough) {
@@ -92,9 +127,11 @@ var AnswerText = React.createClass({
                     <LORelatedItemsBadge confusedLO={this.state.confusedLO}
                                          libraryId={this.props.libraryId}
                                          relatedItems={this.props.relatedItems} />
-                    <Button onClick={this.open} bsSize="small">
-                        <Glyphicon glyph="link" />
-                    </Button>
+                    <div>
+                        <Button onClick={this.open} bsSize="small">
+                            <Glyphicon glyph="link" />
+                        </Button>
+                    </div>
                     <Modal show={this.state.showModal} onHide={this.close}>
                         <Modal.Header closeButton>
                             <Modal.Title>Link Answer to Outcome</Modal.Title>
@@ -127,11 +164,11 @@ var AnswerText = React.createClass({
 
         return <div className="taggable-text">
             <div className="text-blob">
-                <iframe srcDoc={answerHTML}
+                <iframe ref="myFrame"
+                        srcDoc={answerHTML}
                         frameBorder={0}
-                        height="100%"
                         width="100%"
-                        sandbox=""
+                        sandbox="allow-same-origin"
                         ></iframe>
             </div>
             {linkButton}

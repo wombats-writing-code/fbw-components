@@ -69,7 +69,6 @@
 
 	// Filename: fbw_author/index.jsx
 	'use strict';
-	// require('../stylesheets/app.css');
 
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(2);
@@ -37024,190 +37023,7 @@
 	module.exports = AnswerExtraction;
 
 /***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
-
-	'use strict';
-
-	__webpack_require__(29);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(31);
-
-	var Button = ReactBS.Button;
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormGroup = ReactBS.FormGroup;
-	var Glyphicon = ReactBS.Glyphicon;
-	var Modal = ReactBS.Modal;
-
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-	var LORelatedItemsBadge = __webpack_require__(38);
-
-	var AnswerText = React.createClass({
-	    displayName: 'AnswerText',
-
-	    getInitialState: function getInitialState() {
-	        var confusedLO = this.props.confusedLO === 'None linked yet' ? '' : this.props.confusedLO;
-	        return {
-	            confusedLO: confusedLO,
-	            showModal: false
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    close: function close() {
-	        this.setState({ showModal: false });
-	        this.reset();
-	    },
-	    onChange: function onChange(e) {
-	        if (e == null) {
-	            this.setState({ confusedLO: '' });
-	        } else {
-	            this.setState({ confusedLO: e.value });
-	        }
-	    },
-	    open: function open(e) {
-	        this.setState({ showModal: true }, function () {});
-	    },
-	    renderOutcomes: function renderOutcomes() {
-	        return _.map(this.props.outcomes, function (outcome) {
-	            return React.createElement(
-	                'option',
-	                { value: outcome.id,
-	                    title: outcome.description.text,
-	                    key: outcome.id },
-	                outcome.displayName.text
-	            );
-	        });
-	    },
-	    reset: function reset() {},
-	    save: function save(e) {
-	        var payload = {
-	            answerId: this.props.answerId,
-	            confusedLearningObjectiveId: this.state.confusedLO,
-	            itemId: this.props.itemId,
-	            libraryId: this.props.libraryId
-	        };
-
-	        Dispatcher.dispatch({
-	            type: ActionTypes.LINK_ANSWER_LO,
-	            content: payload
-	        });
-	        this.close();
-	    },
-	    wrapHTML: function wrapHTML(str) {
-	        return '<h1>Hi!</h1>';
-	    },
-	    render: function render() {
-	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
-	            return {
-	                value: outcome.id,
-	                label: outcome.displayName.text
-	            };
-	        }),
-	            linkButton = '',
-
-	        //            answerHTML = this.wrapHTML(this.props.answerText);
-	        answerHTML = this.props.answerText;
-
-	        if (!this.props.hideLinkBtn) {
-	            if (this.props.enableClickthrough) {
-	                linkButton = React.createElement(
-	                    'div',
-	                    { className: 'wrong-answer-actions' },
-	                    React.createElement(LORelatedItemsBadge, { confusedLO: this.state.confusedLO,
-	                        libraryId: this.props.libraryId,
-	                        relatedItems: this.props.relatedItems }),
-	                    React.createElement(
-	                        Button,
-	                        { onClick: this.open, bsSize: 'small' },
-	                        React.createElement(Glyphicon, { glyph: 'link' })
-	                    ),
-	                    React.createElement(
-	                        Modal,
-	                        { show: this.state.showModal, onHide: this.close },
-	                        React.createElement(
-	                            Modal.Header,
-	                            { closeButton: true },
-	                            React.createElement(
-	                                Modal.Title,
-	                                null,
-	                                'Link Answer to Outcome'
-	                            )
-	                        ),
-	                        React.createElement(
-	                            Modal.Body,
-	                            null,
-	                            React.createElement(
-	                                'form',
-	                                null,
-	                                React.createElement(
-	                                    FormGroup,
-	                                    { controlId: 'outcomeSelector' },
-	                                    React.createElement(
-	                                        ControlLabel,
-	                                        null,
-	                                        'Select a learning outcome ...'
-	                                    ),
-	                                    React.createElement(Select, { name: 'confusedOutcomeSelector',
-	                                        placeholder: 'Select an outcome ... ',
-	                                        value: this.state.confusedLO,
-	                                        onChange: this.onChange,
-	                                        options: formattedOutcomes })
-	                                )
-	                            )
-	                        ),
-	                        React.createElement(
-	                            Modal.Footer,
-	                            null,
-	                            React.createElement(
-	                                Button,
-	                                { onClick: this.close },
-	                                'Close'
-	                            ),
-	                            React.createElement(
-	                                Button,
-	                                { bsStyle: 'success', onClick: this.save },
-	                                'Save'
-	                            )
-	                        )
-	                    )
-	                );
-	            }
-	        } else {
-	            linkButton = React.createElement(
-	                'div',
-	                { className: 'right-answer-check' },
-	                React.createElement(Glyphicon, { glyph: 'ok' })
-	            );
-	        }
-
-	        return React.createElement(
-	            'div',
-	            { className: 'taggable-text' },
-	            React.createElement(
-	                'div',
-	                { className: 'text-blob' },
-	                React.createElement('iframe', { srcDoc: answerHTML,
-	                    frameBorder: 0,
-	                    height: '100%',
-	                    width: '100%',
-	                    sandbox: ''
-	                })
-	            ),
-	            linkButton
-	        );
-	    }
-	});
-
-	module.exports = AnswerText;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
+/* 28 */,
 /* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -39978,7 +39794,7 @@
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 
 	var AnswerExtraction = __webpack_require__(27);
-	var AnswerText = __webpack_require__(28);
+	var AnswerText = __webpack_require__(67);
 	var ItemControls = __webpack_require__(41);
 	var LibraryItemsStore = __webpack_require__(8);
 	var LORelatedItems = __webpack_require__(44);
@@ -40078,7 +39894,7 @@
 	                { key: item.id },
 	                React.createElement(
 	                    Col,
-	                    { sm: 6, md: 6, lg: 6 },
+	                    { sm: 8, md: 8, lg: 8 },
 	                    React.createElement(
 	                        Panel,
 	                        { header: item.displayName.text },
@@ -40165,7 +39981,7 @@
 	                ),
 	                React.createElement(
 	                    Col,
-	                    { sm: 6, md: 6, lg: 6 },
+	                    { sm: 4, md: 4, lg: 4 },
 	                    React.createElement(
 	                        Panel,
 	                        { header: 'Learning Outcomes' },
@@ -50286,6 +50102,263 @@
 	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
 
 	/* WEBPACK VAR INJECTION */}.call(exports, {}))
+
+/***/ },
+/* 67 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
+
+	'use strict';
+
+	__webpack_require__(68);
+	__webpack_require__(29);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Select = __webpack_require__(31);
+
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var Dispatcher = __webpack_require__(9);
+	var LORelatedItemsBadge = __webpack_require__(38);
+
+	var AnswerText = React.createClass({
+	    displayName: 'AnswerText',
+
+	    getInitialState: function getInitialState() {
+	        var confusedLO = this.props.confusedLO === 'None linked yet' ? '' : this.props.confusedLO;
+	        return {
+	            confusedLO: confusedLO,
+	            showModal: false
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {
+	        // this seems hacky...but without the timeout
+	        // it sets the height before the iframe content
+	        // has fully rendered, making the height 10px;
+	        var _this = this;
+	        window.setTimeout(function () {
+	            _this.setFrameHeight(_this.refs.myFrame);
+	        }, 100);
+	    },
+	    close: function close() {
+	        this.setState({ showModal: false });
+	        this.reset();
+	    },
+	    onChange: function onChange(e) {
+	        if (e == null) {
+	            this.setState({ confusedLO: '' });
+	        } else {
+	            this.setState({ confusedLO: e.value });
+	        }
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    renderOutcomes: function renderOutcomes() {
+	        return _.map(this.props.outcomes, function (outcome) {
+	            return React.createElement(
+	                'option',
+	                { value: outcome.id,
+	                    title: outcome.description.text,
+	                    key: outcome.id },
+	                outcome.displayName.text
+	            );
+	        });
+	    },
+	    reset: function reset() {},
+	    save: function save(e) {
+	        var payload = {
+	            answerId: this.props.answerId,
+	            confusedLearningObjectiveId: this.state.confusedLO,
+	            itemId: this.props.itemId,
+	            libraryId: this.props.libraryId
+	        };
+
+	        Dispatcher.dispatch({
+	            type: ActionTypes.LINK_ANSWER_LO,
+	            content: payload
+	        });
+	        this.close();
+	    },
+	    setFrameHeight: function setFrameHeight(frame) {
+	        // fix iFrame height
+	        // per http://www.dyn-web.com/tutorials/iframes/height/
+	        function getDocHeight(doc) {
+	            doc = doc || document;
+	            // stackoverflow.com/questions/1145850/
+	            var body = doc.body,
+	                html = doc.documentElement;
+	            var height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+	            return height;
+	        }
+	        function setIframeHeight(ifrm) {
+	            var doc = ifrm.contentDocument ? ifrm.contentDocument : ifrm.contentWindow.document;
+	            ifrm.style.visibility = 'hidden';
+	            ifrm.style.height = "10px"; // reset to minimal height ...
+	            // IE opt. for bing/msn needs a bit added or scrollbar appears
+	            ifrm.style.height = getDocHeight(doc) + 4 + "px";
+	            ifrm.style.visibility = 'visible';
+	        }
+	        setIframeHeight(frame);
+	    },
+	    wrapHTML: function wrapHTML(str) {
+	        return '<html>' + '<head>' + '<style>body * {margin:0px;padding:4px;}</style>' + '</head>' + '<body style="margin:0px;">' + str + '</body' + '</html>';
+	    },
+	    render: function render() {
+	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
+	            return {
+	                value: outcome.id,
+	                label: outcome.displayName.text
+	            };
+	        }),
+	            linkButton = '',
+	            answerHTML = this.wrapHTML(this.props.answerText);
+	        //            answerHTML = this.props.answerText;
+
+	        if (!this.props.hideLinkBtn) {
+	            if (this.props.enableClickthrough) {
+	                linkButton = React.createElement(
+	                    'div',
+	                    { className: 'wrong-answer-actions' },
+	                    React.createElement(LORelatedItemsBadge, { confusedLO: this.state.confusedLO,
+	                        libraryId: this.props.libraryId,
+	                        relatedItems: this.props.relatedItems }),
+	                    React.createElement(
+	                        'div',
+	                        null,
+	                        React.createElement(
+	                            Button,
+	                            { onClick: this.open, bsSize: 'small' },
+	                            React.createElement(Glyphicon, { glyph: 'link' })
+	                        )
+	                    ),
+	                    React.createElement(
+	                        Modal,
+	                        { show: this.state.showModal, onHide: this.close },
+	                        React.createElement(
+	                            Modal.Header,
+	                            { closeButton: true },
+	                            React.createElement(
+	                                Modal.Title,
+	                                null,
+	                                'Link Answer to Outcome'
+	                            )
+	                        ),
+	                        React.createElement(
+	                            Modal.Body,
+	                            null,
+	                            React.createElement(
+	                                'form',
+	                                null,
+	                                React.createElement(
+	                                    FormGroup,
+	                                    { controlId: 'outcomeSelector' },
+	                                    React.createElement(
+	                                        ControlLabel,
+	                                        null,
+	                                        'Select a learning outcome ...'
+	                                    ),
+	                                    React.createElement(Select, { name: 'confusedOutcomeSelector',
+	                                        placeholder: 'Select an outcome ... ',
+	                                        value: this.state.confusedLO,
+	                                        onChange: this.onChange,
+	                                        options: formattedOutcomes })
+	                                )
+	                            )
+	                        ),
+	                        React.createElement(
+	                            Modal.Footer,
+	                            null,
+	                            React.createElement(
+	                                Button,
+	                                { onClick: this.close },
+	                                'Close'
+	                            ),
+	                            React.createElement(
+	                                Button,
+	                                { bsStyle: 'success', onClick: this.save },
+	                                'Save'
+	                            )
+	                        )
+	                    )
+	                );
+	            }
+	        } else {
+	            linkButton = React.createElement(
+	                'div',
+	                { className: 'right-answer-check' },
+	                React.createElement(Glyphicon, { glyph: 'ok' })
+	            );
+	        }
+
+	        return React.createElement(
+	            'div',
+	            { className: 'taggable-text' },
+	            React.createElement(
+	                'div',
+	                { className: 'text-blob' },
+	                React.createElement('iframe', { ref: 'myFrame',
+	                    srcDoc: answerHTML,
+	                    frameBorder: 0,
+	                    width: '100%',
+	                    sandbox: 'allow-same-origin'
+	                })
+	            ),
+	            linkButton
+	        );
+	    }
+	});
+
+	module.exports = AnswerText;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 68 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(69);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(26)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./AnswerText.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./AnswerText.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 69 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(25)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".wrong-answer-actions  button {\n    height: 34px;\n}", ""]);
+
+	// exports
+
 
 /***/ }
 /******/ ])));
