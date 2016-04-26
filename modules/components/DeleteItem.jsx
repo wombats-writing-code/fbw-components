@@ -36,7 +36,8 @@ var DeleteItem = React.createClass({
     render: function () {
         return <span>
             <Button onClick={this.open}
-                    bsSize="large">
+                    bsSize="large"
+                    title="Delete Item">
                 <Glyphicon glyph="trash" />
             </Button>
             <Modal show={this.state.showModal} onHide={this.close}>

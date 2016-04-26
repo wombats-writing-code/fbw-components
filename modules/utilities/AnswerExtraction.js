@@ -3,17 +3,18 @@
 
 var _ = require('lodash');
 
-
 var AnswerExtraction = function (item) {
     // TODO: Extract feedback
     var answers = item.answers,
         rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
         correctChoiceId = rightAnswer.choiceIds[0],
         wrongAnswers = _.filter(answers, {genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU"}),
+        wrongAnswerFeedbacks = [],
         wrongAnswerIds = [],
         wrongAnswerLOs = [],
         wrongChoiceIds = [],
         choices = item.question.choices,
+        correctAnswerFeedback = rightAnswer.texts.feedback,
         correctAnswerId = rightAnswer.id,
         correctAnswerText, wrongAnswerTexts;
 
@@ -34,6 +35,7 @@ var AnswerExtraction = function (item) {
         var wrongAnswer = _.find(wrongAnswers, function (wrongAnswer) {
             return wrongAnswer.choiceIds[0] == wrongAnswerText.id;
         });
+        wrongAnswerFeedbacks.push(wrongAnswer.texts.feedback);
         wrongAnswerIds.push(wrongAnswer.id);
         wrongChoiceIds.push(wrongAnswer.choiceIds[0]);
 
@@ -45,9 +47,11 @@ var AnswerExtraction = function (item) {
     });
 
     return {
+        correctAnswerFeedback: correctAnswerFeedback,
         correctAnswerId: correctAnswerId,
         correctAnswerText: correctAnswerText,
         correctChoiceId: correctChoiceId,
+        wrongAnswerFeedbacks: wrongAnswerFeedbacks,
         wrongAnswerIds: wrongAnswerIds,
         wrongAnswerLOs: wrongAnswerLOs,
         wrongAnswerTexts: wrongAnswerTexts,

@@ -31,13 +31,7 @@ var QuestionText = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
-        // this seems hacky...but without the timeout
-        // it sets the height before the iframe content
-        // has fully rendered, making the height 10px;
-        var _this = this;
-        window.setTimeout(function () {
-            SetIFrameHeight(_this.refs.myFrame);
-        }, 100);
+        SetIFrameHeight(this.refs.myFrame);
     },
     close: function () {
         this.setState({showModal: false});
@@ -93,7 +87,9 @@ var QuestionText = React.createClass({
         if (this.props.enableClickthrough) {
             linkButton = <div className="pull-right question-actions">
                 <div>
-                    <Button onClick={this.open} bsSize="small">
+                    <Button onClick={this.open}
+                            bsSize="small"
+                            title="Link to an Outcome">
                         <Glyphicon glyph="link" />
                     </Button>
                 </div>

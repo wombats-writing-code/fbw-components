@@ -47,7 +47,7 @@ var LORelatedItemsBadge = React.createClass({
             items = <Alert bsStyle="danger">No items with this LO</Alert>
         }
         return <div>
-            <Button onClick={this.open}>
+            <Button onClick={this.open} title="Related Items">
                 <Badge>{this.props.relatedItems.length}</Badge>
                 <Glyphicon glyph="tags" />
             </Button>

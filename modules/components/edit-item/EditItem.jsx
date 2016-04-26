@@ -33,7 +33,7 @@ var EditItem = React.createClass({
             correctAnswer: answers.correctAnswerText.text,
             correctAnswerError: false,
             correctAnswerId: answers.correctAnswerId,
-            correctAnswerFeedback: '',
+            correctAnswerFeedback: answers.correctAnswerFeedback,
             itemDescription: me.description.text,
             itemDisplayName: me.displayName.text,
             itemDisplayNameError: false,
@@ -45,15 +45,15 @@ var EditItem = React.createClass({
             wrongAnswer1: answers.wrongAnswerTexts[0].text,
             wrongAnswer1Error: false,
             wrongAnswer1Id: answers.wrongAnswerIds[0],
-            wrongAnswer1Feedback: '',
+            wrongAnswer1Feedback: answers.wrongAnswerFeedbacks[0],
             wrongAnswer2: answers.wrongAnswerTexts[1].text,
             wrongAnswer2Error: false,
             wrongAnswer2Id: answers.wrongAnswerIds[1],
-            wrongAnswer2Feedback: '',
+            wrongAnswer2Feedback: answers.wrongAnswerFeedbacks[1],
             wrongAnswer3: answers.wrongAnswerTexts[2].text,
             wrongAnswer3Error: false,
             wrongAnswer3Id: answers.wrongAnswerIds[2],
-            wrongAnswer3Feedback: ''
+            wrongAnswer3Feedback: answers.wrongAnswerFeedbacks[2]
         };
     },
     close: function () {
@@ -130,10 +130,14 @@ var EditItem = React.createClass({
             libraryId: this.props.libraryId
         },
             correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
+            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
             questionString = CKEDITOR.instances.questionString.getData(),
             wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
+            wrongAnswer1Feedback = CKEDITOR.instances.wrongAnswer1Feedback.getData(),
             wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
-            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData();
+            wrongAnswer2Feedback = CKEDITOR.instances.wrongAnswer2Feedback.getData(),
+            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData(),
+            wrongAnswer3Feedback = CKEDITOR.instances.wrongAnswer3Feedback.getData();
 
         if (this.state.itemDisplayName === '' ||
             correctAnswer === '' ||
@@ -174,19 +178,19 @@ var EditItem = React.createClass({
             payload['answers'] = [{
                 answerId: this.state.correctAnswerId,
                 choiceId: choiceData.correctChoiceId,
-                feedback: this.state.correctAnswerFeedback
+                feedback: correctAnswerFeedback
             },{
                 answerId: this.state.wrongAnswer1Id,
                 choiceId: choiceData.wrongChoiceIds[0],
-                feedback: this.state.wrongAnswer1Feedback
+                feedback: wrongAnswer1Feedback
             },{
                 answerId: this.state.wrongAnswer2Id,
                 choiceId: choiceData.wrongChoiceIds[1],
-                feedback: this.state.wrongAnswer2Feedback
+                feedback: wrongAnswer2Feedback
             },{
                 answerId: this.state.wrongAnswer3Id,
                 choiceId: choiceData.wrongChoiceIds[2],
-                feedback: this.state.wrongAnswer3Feedback
+                feedback: wrongAnswer3Feedback
             }];
             if (questionFile != null) {
                 payload['questionFile'] = questionFile;
@@ -330,7 +334,9 @@ var EditItem = React.createClass({
         }
 
         return <div>
-            <Button onClick={this.open} bsSize="large">
+            <Button onClick={this.open}
+                    bsSize="large"
+                    title="Edit Item">
                 <Glyphicon glyph="pencil" />
             </Button>
             <Modal bsSize="lg"

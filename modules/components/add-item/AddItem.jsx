@@ -66,10 +66,14 @@ var AddItem = React.createClass({
             libraryId: this.props.libraryId
         },
             correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
+            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
             questionString = CKEDITOR.instances.questionString.getData(),
             wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
+            wrongAnswer1Feedback = CKEDITOR.instances.wrongAnswer1Feedback.getData(),
             wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
-            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData();
+            wrongAnswer2Feedback = CKEDITOR.instances.wrongAnswer2Feedback.getData(),
+            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData(),
+            wrongAnswer3Feedback = CKEDITOR.instances.wrongAnswer3Feedback.getData();
 
         if (this.state.itemDisplayName === '' ||
             correctAnswer === '' ||
@@ -99,19 +103,19 @@ var AddItem = React.createClass({
             payload['answers'] = [{
                 genusTypeId: GenusTypes.CORRECT_ANSWER,
                 choiceId: 0,
-                feedback: this.state.correctAnswerFeedback
+                feedback: correctAnswerFeedback
             },{
                 genusTypeId: GenusTypes.WRONG_ANSWER,
                 choiceId: 1,
-                feedback: this.state.wrongAnswer1Feedback
+                feedback: wrongAnswer1Feedback
             },{
                 genusTypeId: GenusTypes.WRONG_ANSWER,
                 choiceId: 2,
-                feedback: this.state.wrongAnswer2Feedback
+                feedback: wrongAnswer2Feedback
             },{
                 genusTypeId: GenusTypes.WRONG_ANSWER,
                 choiceId: 3,
-                feedback: this.state.wrongAnswer3Feedback
+                feedback: wrongAnswer3Feedback
             }];
             if (questionFile != null) {
                 payload['questionFile'] = questionFile;

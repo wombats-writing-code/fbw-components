@@ -16,6 +16,7 @@ var Glyphicon = ReactBS.Glyphicon;
 var Modal = ReactBS.Modal;
 
 var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+var AnswerFeedback = require('../AnswerFeedback');
 var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
 var LORelatedItemsBadge = require('../lo-related-items-badge/LORelatedItemsBadge');
 var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
@@ -32,13 +33,7 @@ var AnswerText = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
-        // this seems hacky...but without the timeout
-        // it sets the height before the iframe content
-        // has fully rendered, making the height 10px;
-        var _this = this;
-        window.setTimeout(function () {
-            SetIFrameHeight(_this.refs.myFrame);
-        }, 100);
+        SetIFrameHeight(this.refs.myFrame);
     },
     close: function () {
         this.setState({showModal: false});
@@ -98,8 +93,12 @@ var AnswerText = React.createClass({
                     <LORelatedItemsBadge confusedLO={this.state.confusedLO}
                                          libraryId={this.props.libraryId}
                                          relatedItems={this.props.relatedItems} />
+                    <AnswerFeedback feedback={this.props.feedback}
+                                    feedbackSource={this.props.label} />
                     <div>
-                        <Button onClick={this.open} bsSize="small">
+                        <Button onClick={this.open}
+                                bsSize="small"
+                                title="Link to an Outcome">
                             <Glyphicon glyph="link" />
                         </Button>
                     </div>
@@ -128,8 +127,11 @@ var AnswerText = React.createClass({
                 </div>
             }
         } else {
-            linkButton = <div className="right-answer-check">
-                <Glyphicon glyph="ok" />
+            linkButton = <div className="right-answer-actions">
+                <AnswerFeedback feedback={this.props.feedback}
+                                feedbackSource={this.props.label} />
+                <Glyphicon className="right-answer-check"
+                           glyph="ok" />
             </div>
         }
 

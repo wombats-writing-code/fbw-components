@@ -21,7 +21,13 @@ var SetIFrameHeight = function (frame) {
         ifrm.style.height = getDocHeight( doc ) + 4 + "px";
         ifrm.style.visibility = 'visible';
     }
-    setIframeHeight(frame);
+
+    // this seems hacky...but without the timeout
+    // it sets the height before the iframe content
+    // has fully rendered, making the height 10px;
+    window.setTimeout(function () {
+        setIframeHeight(frame);
+    }, 250);
 };
 
 module.exports = SetIFrameHeight;

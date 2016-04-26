@@ -36968,17 +36968,18 @@
 
 	var _ = __webpack_require__(5);
 
-
 	var AnswerExtraction = function (item) {
 	    // TODO: Extract feedback
 	    var answers = item.answers,
 	        rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
 	        correctChoiceId = rightAnswer.choiceIds[0],
 	        wrongAnswers = _.filter(answers, {genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU"}),
+	        wrongAnswerFeedbacks = [],
 	        wrongAnswerIds = [],
 	        wrongAnswerLOs = [],
 	        wrongChoiceIds = [],
 	        choices = item.question.choices,
+	        correctAnswerFeedback = rightAnswer.texts.feedback,
 	        correctAnswerId = rightAnswer.id,
 	        correctAnswerText, wrongAnswerTexts;
 
@@ -36999,6 +37000,7 @@
 	        var wrongAnswer = _.find(wrongAnswers, function (wrongAnswer) {
 	            return wrongAnswer.choiceIds[0] == wrongAnswerText.id;
 	        });
+	        wrongAnswerFeedbacks.push(wrongAnswer.texts.feedback);
 	        wrongAnswerIds.push(wrongAnswer.id);
 	        wrongChoiceIds.push(wrongAnswer.choiceIds[0]);
 
@@ -37010,9 +37012,11 @@
 	    });
 
 	    return {
+	        correctAnswerFeedback: correctAnswerFeedback,
 	        correctAnswerId: correctAnswerId,
 	        correctAnswerText: correctAnswerText,
 	        correctChoiceId: correctChoiceId,
+	        wrongAnswerFeedbacks: wrongAnswerFeedbacks,
 	        wrongAnswerIds: wrongAnswerIds,
 	        wrongAnswerLOs: wrongAnswerLOs,
 	        wrongAnswerTexts: wrongAnswerTexts,
@@ -38629,7 +38633,7 @@
 	            null,
 	            React.createElement(
 	                Button,
-	                { onClick: this.open },
+	                { onClick: this.open, title: 'Related Items' },
 	                React.createElement(
 	                    Badge,
 	                    null,
@@ -38794,7 +38798,8 @@
 	            React.createElement(
 	                Button,
 	                { onClick: this.open,
-	                    bsSize: 'large' },
+	                    bsSize: 'large',
+	                    title: 'Delete Item' },
 	                React.createElement(Glyphicon, { glyph: 'trash' })
 	            ),
 	            React.createElement(
@@ -39181,15 +39186,19 @@
 	            var answers = AnswerExtraction(item);
 
 	            item['correctAnswer'] = answers.correctAnswerText.text;
+	            item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
 	            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
+	            item['wrongAnswer1Feedback'] = answers.wrongAnswerFeedbacks[0];
 	            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
 	            item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
 	            item['wrongAnswer1RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[0]);
 	            item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
+	            item['wrongAnswer2Feedback'] = answers.wrongAnswerFeedbacks[1];
 	            item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
 	            item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
 	            item['wrongAnswer2RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[1]);
 	            item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
+	            item['wrongAnswer3Feedback'] = answers.wrongAnswerFeedbacks[2];
 	            item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
 	            item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
 	            item['wrongAnswer3RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[2]);
@@ -39249,8 +39258,10 @@
 	                                'a)'
 	                            ),
 	                            React.createElement(AnswerText, { answerText: item.correctAnswer,
+	                                feedback: item.correctAnswerFeedback,
 	                                outcomes: _this.state.outcomes,
-	                                hideLinkBtn: 'true' })
+	                                hideLinkBtn: 'true',
+	                                label: 'Correct Answer' })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -39264,7 +39275,9 @@
 	                                answerText: item.wrongAnswer1,
 	                                confusedLO: item.wrongAnswer1LO,
 	                                enableClickthrough: _this.props.enableClickthrough,
+	                                feedback: item.wrongAnswer1Feedback,
 	                                itemId: item.id,
+	                                label: 'Wrong Answer 1',
 	                                libraryId: _this.props.libraryId,
 	                                outcomes: _this.state.outcomes,
 	                                relatedItems: item.wrongAnswer1RelatedItems })
@@ -39281,7 +39294,9 @@
 	                                answerText: item.wrongAnswer2,
 	                                confusedLO: item.wrongAnswer2LO,
 	                                enableClickthrough: _this.props.enableClickthrough,
+	                                feedback: item.wrongAnswer2Feedback,
 	                                itemId: item.id,
+	                                label: 'Wrong Answer 2',
 	                                libraryId: _this.props.libraryId,
 	                                outcomes: _this.state.outcomes,
 	                                relatedItems: item.wrongAnswer2RelatedItems })
@@ -39298,7 +39313,9 @@
 	                                answerText: item.wrongAnswer3,
 	                                confusedLO: item.wrongAnswer3LO,
 	                                enableClickthrough: _this.props.enableClickthrough,
+	                                feedback: item.wrongAnswer3Feedback,
 	                                itemId: item.id,
+	                                label: 'Wrong Answer 3',
 	                                libraryId: _this.props.libraryId,
 	                                outcomes: _this.state.outcomes,
 	                                relatedItems: item.wrongAnswer3RelatedItems })
@@ -39422,7 +39439,7 @@
 
 
 	// module
-	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.wrong-answer-actions {\n    float: right;\n    display: flex;\n}\n\n.item-controls button,\n.wrong-answer-actions button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n", ""]);
+	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n", ""]);
 
 	// exports
 
@@ -39632,10 +39649,14 @@
 	            libraryId: this.props.libraryId
 	        },
 	            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
+	            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
 	            questionString = CKEDITOR.instances.questionString.getData(),
 	            wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
+	            wrongAnswer1Feedback = CKEDITOR.instances.wrongAnswer1Feedback.getData(),
 	            wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
-	            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData();
+	            wrongAnswer2Feedback = CKEDITOR.instances.wrongAnswer2Feedback.getData(),
+	            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData(),
+	            wrongAnswer3Feedback = CKEDITOR.instances.wrongAnswer3Feedback.getData();
 
 	        if (this.state.itemDisplayName === '' || correctAnswer === '' || questionString === '' || wrongAnswer1 === '' || wrongAnswer2 === '' || wrongAnswer3 === '') {
 	            this.setState({ showAlert: true });
@@ -39657,19 +39678,19 @@
 	            payload['answers'] = [{
 	                genusTypeId: GenusTypes.CORRECT_ANSWER,
 	                choiceId: 0,
-	                feedback: this.state.correctAnswerFeedback
+	                feedback: correctAnswerFeedback
 	            }, {
 	                genusTypeId: GenusTypes.WRONG_ANSWER,
 	                choiceId: 1,
-	                feedback: this.state.wrongAnswer1Feedback
+	                feedback: wrongAnswer1Feedback
 	            }, {
 	                genusTypeId: GenusTypes.WRONG_ANSWER,
 	                choiceId: 2,
-	                feedback: this.state.wrongAnswer2Feedback
+	                feedback: wrongAnswer2Feedback
 	            }, {
 	                genusTypeId: GenusTypes.WRONG_ANSWER,
 	                choiceId: 3,
-	                feedback: this.state.wrongAnswer3Feedback
+	                feedback: wrongAnswer3Feedback
 	            }];
 	            if (questionFile != null) {
 	                payload['questionFile'] = questionFile;
@@ -49467,6 +49488,7 @@
 	var Modal = ReactBS.Modal;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var AnswerFeedback = __webpack_require__(78);
 	var Dispatcher = __webpack_require__(9);
 	var LORelatedItemsBadge = __webpack_require__(38);
 	var SetIFrameHeight = __webpack_require__(74);
@@ -49484,13 +49506,7 @@
 	    },
 	    componentWillMount: function componentWillMount() {},
 	    componentDidMount: function componentDidMount() {
-	        // this seems hacky...but without the timeout
-	        // it sets the height before the iframe content
-	        // has fully rendered, making the height 10px;
-	        var _this = this;
-	        window.setTimeout(function () {
-	            SetIFrameHeight(_this.refs.myFrame);
-	        }, 100);
+	        SetIFrameHeight(this.refs.myFrame);
 	    },
 	    close: function close() {
 	        this.setState({ showModal: false });
@@ -49550,12 +49566,16 @@
 	                    React.createElement(LORelatedItemsBadge, { confusedLO: this.state.confusedLO,
 	                        libraryId: this.props.libraryId,
 	                        relatedItems: this.props.relatedItems }),
+	                    React.createElement(AnswerFeedback, { feedback: this.props.feedback,
+	                        feedbackSource: this.props.label }),
 	                    React.createElement(
 	                        'div',
 	                        null,
 	                        React.createElement(
 	                            Button,
-	                            { onClick: this.open, bsSize: 'small' },
+	                            { onClick: this.open,
+	                                bsSize: 'small',
+	                                title: 'Link to an Outcome' },
 	                            React.createElement(Glyphicon, { glyph: 'link' })
 	                        )
 	                    ),
@@ -49613,8 +49633,11 @@
 	        } else {
 	            linkButton = React.createElement(
 	                'div',
-	                { className: 'right-answer-check' },
-	                React.createElement(Glyphicon, { glyph: 'ok' })
+	                { className: 'right-answer-actions' },
+	                React.createElement(AnswerFeedback, { feedback: this.props.feedback,
+	                    feedbackSource: this.props.label }),
+	                React.createElement(Glyphicon, { className: 'right-answer-check',
+	                    glyph: 'ok' })
 	            );
 	        }
 
@@ -49674,7 +49697,7 @@
 
 
 	// module
-	exports.push([module.id, ".wrong-answer-actions  button {\n    height: 34px;\n}", ""]);
+	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n    float: right;\n    display: flex;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}", ""]);
 
 	// exports
 
@@ -49717,13 +49740,7 @@
 	    },
 	    componentWillMount: function componentWillMount() {},
 	    componentDidMount: function componentDidMount() {
-	        // this seems hacky...but without the timeout
-	        // it sets the height before the iframe content
-	        // has fully rendered, making the height 10px;
-	        var _this = this;
-	        window.setTimeout(function () {
-	            SetIFrameHeight(_this.refs.myFrame);
-	        }, 100);
+	        SetIFrameHeight(this.refs.myFrame);
 	    },
 	    close: function close() {
 	        this.setState({ showModal: false });
@@ -49783,7 +49800,9 @@
 	                    null,
 	                    React.createElement(
 	                        Button,
-	                        { onClick: this.open, bsSize: 'small' },
+	                        { onClick: this.open,
+	                            bsSize: 'small',
+	                            title: 'Link to an Outcome' },
 	                        React.createElement(Glyphicon, { glyph: 'link' })
 	                    )
 	                ),
@@ -49945,7 +49964,13 @@
 	        ifrm.style.height = getDocHeight( doc ) + 4 + "px";
 	        ifrm.style.visibility = 'visible';
 	    }
-	    setIframeHeight(frame);
+
+	    // this seems hacky...but without the timeout
+	    // it sets the height before the iframe content
+	    // has fully rendered, making the height 10px;
+	    window.setTimeout(function () {
+	        setIframeHeight(frame);
+	    }, 250);
 	};
 
 	module.exports = SetIFrameHeight;
@@ -49991,7 +50016,7 @@
 	            correctAnswer: answers.correctAnswerText.text,
 	            correctAnswerError: false,
 	            correctAnswerId: answers.correctAnswerId,
-	            correctAnswerFeedback: '',
+	            correctAnswerFeedback: answers.correctAnswerFeedback,
 	            itemDescription: me.description.text,
 	            itemDisplayName: me.displayName.text,
 	            itemDisplayNameError: false,
@@ -50003,15 +50028,15 @@
 	            wrongAnswer1: answers.wrongAnswerTexts[0].text,
 	            wrongAnswer1Error: false,
 	            wrongAnswer1Id: answers.wrongAnswerIds[0],
-	            wrongAnswer1Feedback: '',
+	            wrongAnswer1Feedback: answers.wrongAnswerFeedbacks[0],
 	            wrongAnswer2: answers.wrongAnswerTexts[1].text,
 	            wrongAnswer2Error: false,
 	            wrongAnswer2Id: answers.wrongAnswerIds[1],
-	            wrongAnswer2Feedback: '',
+	            wrongAnswer2Feedback: answers.wrongAnswerFeedbacks[1],
 	            wrongAnswer3: answers.wrongAnswerTexts[2].text,
 	            wrongAnswer3Error: false,
 	            wrongAnswer3Id: answers.wrongAnswerIds[2],
-	            wrongAnswer3Feedback: ''
+	            wrongAnswer3Feedback: answers.wrongAnswerFeedbacks[2]
 	        };
 	    },
 	    close: function close() {
@@ -50086,10 +50111,14 @@
 	            libraryId: this.props.libraryId
 	        },
 	            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
+	            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
 	            questionString = CKEDITOR.instances.questionString.getData(),
 	            wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
+	            wrongAnswer1Feedback = CKEDITOR.instances.wrongAnswer1Feedback.getData(),
 	            wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
-	            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData();
+	            wrongAnswer2Feedback = CKEDITOR.instances.wrongAnswer2Feedback.getData(),
+	            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData(),
+	            wrongAnswer3Feedback = CKEDITOR.instances.wrongAnswer3Feedback.getData();
 
 	        if (this.state.itemDisplayName === '' || correctAnswer === '' || questionString === '' || wrongAnswer1 === '' || wrongAnswer2 === '' || wrongAnswer3 === '') {
 	            this.setState({ showAlert: true });
@@ -50125,19 +50154,19 @@
 	            payload['answers'] = [{
 	                answerId: this.state.correctAnswerId,
 	                choiceId: choiceData.correctChoiceId,
-	                feedback: this.state.correctAnswerFeedback
+	                feedback: correctAnswerFeedback
 	            }, {
 	                answerId: this.state.wrongAnswer1Id,
 	                choiceId: choiceData.wrongChoiceIds[0],
-	                feedback: this.state.wrongAnswer1Feedback
+	                feedback: wrongAnswer1Feedback
 	            }, {
 	                answerId: this.state.wrongAnswer2Id,
 	                choiceId: choiceData.wrongChoiceIds[1],
-	                feedback: this.state.wrongAnswer2Feedback
+	                feedback: wrongAnswer2Feedback
 	            }, {
 	                answerId: this.state.wrongAnswer3Id,
 	                choiceId: choiceData.wrongChoiceIds[2],
-	                feedback: this.state.wrongAnswer3Feedback
+	                feedback: wrongAnswer3Feedback
 	            }];
 	            if (questionFile != null) {
 	                payload['questionFile'] = questionFile;
@@ -50365,7 +50394,9 @@
 	            null,
 	            React.createElement(
 	                Button,
-	                { onClick: this.open, bsSize: 'large' },
+	                { onClick: this.open,
+	                    bsSize: 'large',
+	                    title: 'Edit Item' },
 	                React.createElement(Glyphicon, { glyph: 'pencil' })
 	            ),
 	            React.createElement(
@@ -50523,5 +50554,84 @@
 
 /***/ },
 /* 77 */
-62
+62,
+/* 78 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// AnswerFeedback.jsx
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Alert = ReactBS.Alert;
+	var Button = ReactBS.Button;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var WrapHTML = __webpack_require__(73);
+
+	var AnswerFeedback = React.createClass({
+	    displayName: 'AnswerFeedback',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    close: function close() {
+	        this.setState({ showModal: false });
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    render: function render() {
+	        var feedbackText = WrapHTML(this.props.feedback);
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open,
+	                    title: 'View Feedback' },
+	                React.createElement(Glyphicon, { glyph: 'transfer' })
+	            ),
+	            React.createElement(
+	                Modal,
+	                { bsSize: 'lg', show: this.state.showModal,
+	                    onHide: this.close },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Feedback for: ',
+	                        this.props.feedbackSource
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    React.createElement('iframe', { ref: 'myFrame',
+	                        srcDoc: feedbackText,
+	                        frameBorder: 0,
+	                        width: '100%',
+	                        sandbox: 'allow-same-origin'
+	                    })
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.close },
+	                        'Close'
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = AnswerFeedback;
+
+/***/ }
 /******/ ])));
