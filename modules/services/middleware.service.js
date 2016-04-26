@@ -17,6 +17,15 @@ let MiddlewareService = {
     } else {
         return '/fbw-author/api/v1';
     }
+  },
+  staticFiles: () => {
+    let location = window.location.host;
+
+    if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
+        return '/static';
+    } else {
+        return '/fbw-author/static';
+    }
   }
 }
 

@@ -21,6 +21,7 @@ let CKEditorModalHack = require('../../utilities/CKEditorModalHack');
 let Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
 let GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
 let LibraryItemsStore = require('../../stores/LibraryItemsStore');
+let MiddlewareService = require('../../services/middleware.service.js');
 
 let questionFile;
 
@@ -78,7 +79,7 @@ let EditItem = React.createClass({
         // Instructions from here
         // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
         CKEditorModalHack();
-        $s('../static/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
             CKEDITOR.replace('correctAnswer');
             CKEDITOR.replace('correctAnswerFeedback');
             CKEDITOR.replace('questionString');

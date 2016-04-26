@@ -3,27 +3,28 @@
 
 require('./AddItem.css');
 
-var React = require('react');
-var ReactBS = require('react-bootstrap');
-var Alert = ReactBS.Alert;
-var Button = ReactBS.Button;
-var ControlLabel = ReactBS.ControlLabel;
-var FormControl = ReactBS.FormControl;
-var FormGroup = ReactBS.FormGroup;
-var Glyphicon = ReactBS.Glyphicon;
-var Modal = ReactBS.Modal;
+let React = require('react');
+let ReactBS = require('react-bootstrap');
+let Alert = ReactBS.Alert;
+let Button = ReactBS.Button;
+let ControlLabel = ReactBS.ControlLabel;
+let FormControl = ReactBS.FormControl;
+let FormGroup = ReactBS.FormGroup;
+let Glyphicon = ReactBS.Glyphicon;
+let Modal = ReactBS.Modal;
 
-var $s = require('scriptjs');
+let $s = require('scriptjs');
 
-var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
-var CKEditorModalHack = require('../../utilities/CKEditorModalHack');
-var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
-var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
-var LibraryItemsStore = require('../../stores/LibraryItemsStore');
+let ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+let CKEditorModalHack = require('../../utilities/CKEditorModalHack');
+let GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
+let Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+let LibraryItemsStore = require('../../stores/LibraryItemsStore');
+let MiddlewareService = require('../../services/middleware.service.js');
 
-var questionFile;
+let questionFile;
 
-var AddItem = React.createClass({
+let AddItem = React.createClass({
     getInitialState: function () {
         return {
             correctAnswer: '',
@@ -61,8 +62,8 @@ var AddItem = React.createClass({
     create: function (e) {
         // With CKEditor, need to get the data from CKEditor,
         // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
-        // var data = CKEDITOR.instances.correctAnswer.getData();
-        var payload = {
+        // let data = CKEDITOR.instances.correctAnswer.getData();
+        let payload = {
             libraryId: this.props.libraryId
         },
             correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
@@ -133,7 +134,7 @@ var AddItem = React.createClass({
         // Instructions from here
         // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
         CKEditorModalHack();
-        $s('../static/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
             CKEDITOR.replace('correctAnswer');
             CKEDITOR.replace('correctAnswerFeedback');
             CKEDITOR.replace('questionString');
@@ -146,7 +147,7 @@ var AddItem = React.createClass({
         });
     },
     onChange: function(e) {
-        var inputId = e.currentTarget.id,
+        let inputId = e.currentTarget.id,
             inputValue = e.target.value,
             URL = window.webkitURL || window.URL;
         if (inputId === "questionFile") {
@@ -154,7 +155,7 @@ var AddItem = React.createClass({
             this.setState({ showImagePreviewDeleteBtn: true });
             this.refs.imagePreview.src = URL.createObjectURL(questionFile);
         } else {
-            var update = {};
+            let update = {};
             update[inputId] = inputValue;
             this.setState(update);
         }
@@ -191,7 +192,7 @@ var AddItem = React.createClass({
     },
     render: function () {
         // TODO: allow choices to be image files (i.e. graphs)
-        var alert = '',
+        let alert = '',
             correctAnswer, itemDisplayName, questionString, wrongAnswer1,
             wrongAnswer2, wrongAnswer3, imagePreviewDeleteBtn;
 
