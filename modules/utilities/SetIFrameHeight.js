@@ -27,7 +27,7 @@ var SetIFrameHeight = function (frame) {
     // has fully rendered, making the height 10px;
     window.setTimeout(function () {
         setIframeHeight(frame);
-    }, 250);
+    }, 2000);
 };
 
 module.exports = SetIFrameHeight;

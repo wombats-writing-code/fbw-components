@@ -36664,6 +36664,7 @@
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
 	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.config.mathJaxLib = '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML';
 	            CKEDITOR.replace('correctAnswer');
 	            CKEDITOR.replace('correctAnswerFeedback');
 	            CKEDITOR.replace('questionString');
@@ -47541,7 +47542,7 @@
 	                    srcDoc: answerHTML,
 	                    frameBorder: 0,
 	                    width: '100%',
-	                    sandbox: 'allow-same-origin'
+	                    sandbox: 'allow-scripts allow-same-origin'
 	                })
 	            ),
 	            linkButton
@@ -49226,13 +49227,26 @@
 	// WrapHTML.js
 	'use strict';
 
-	var WrapHTML = function (str) {
-	    return '<html>' +
-	        '<head>' +
+	let WrapHTML = function (str) {
+	    let wrappedStr;
+	    if (str.indexOf("math-tex") >= 0) {
+	        wrappedStr = '<html>' +
+	            '<head>' +
+	            '<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>' +
 	            '<style>body * {margin:0px;padding:4px;}</style>' +
-	        '</head>' +
-	        '<body style="margin:0px;">' + str + '</body' +
-	    '</html>';
+	            '</head>' +
+	            '<body style="margin:0px;">' + str + '</body>' +
+	            '</html>';
+	    } else {
+	        wrappedStr = '<html>' +
+	            '<head>' +
+	            '<style>body * {margin:0px;padding:4px;}</style>' +
+	            '</head>' +
+	            '<body style="margin:0px;">' + str + '</body>' +
+	            '</html>';
+	    }
+
+	    return wrappedStr;
 	};
 
 	module.exports = WrapHTML;
@@ -49478,7 +49492,7 @@
 	    // has fully rendered, making the height 10px;
 	    window.setTimeout(function () {
 	        setIframeHeight(frame);
-	    }, 250);
+	    }, 2000);
 	};
 
 	module.exports = SetIFrameHeight;
@@ -49713,6 +49727,7 @@
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
 	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.config.mathJaxLib = '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML';
 	            CKEDITOR.replace('correctAnswer');
 	            CKEDITOR.replace('correctAnswerFeedback');
 	            CKEDITOR.replace('questionString');
@@ -50503,7 +50518,7 @@
 	                    srcDoc: questionText,
 	                    frameBorder: 0,
 	                    width: '100%',
-	                    sandbox: 'allow-same-origin'
+	                    sandbox: 'allow-same-origin allow-scripts'
 	                })
 	            ),
 	            linkButton

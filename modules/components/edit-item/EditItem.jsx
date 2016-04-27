@@ -80,6 +80,7 @@ let EditItem = React.createClass({
         // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
         CKEditorModalHack();
         $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+            CKEDITOR.config.mathJaxLib = '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML';
             CKEDITOR.replace('correctAnswer');
             CKEDITOR.replace('correctAnswerFeedback');
             CKEDITOR.replace('questionString');

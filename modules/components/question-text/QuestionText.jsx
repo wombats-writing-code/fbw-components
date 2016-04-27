@@ -124,7 +124,7 @@ var QuestionText = React.createClass({
                         srcDoc={questionText}
                         frameBorder={0}
                         width="100%"
-                        sandbox="allow-same-origin"
+                        sandbox="allow-same-origin allow-scripts"
                         ></iframe>
             </div>
             {linkButton}
