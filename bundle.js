@@ -50836,7 +50836,7 @@
 
 	    editor.config.extraPlugins = 'uploadimage';
 	    editor.config.filebrowserUploadUrl = MiddlewareService.host() + '/repository/repositories/' + repositoryId + '/assets';
-	    editor.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+	    editor.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML';
 	};
 
 	module.exports = ConfigureCKEditor;
