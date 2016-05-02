@@ -28,7 +28,7 @@ var AnswerFeedback = React.createClass({
         return <div>
             <Button onClick={this.open}
                     title="View Feedback">
-                <Glyphicon glyph="transfer" />
+                Feedback
             </Button>
             <Modal bsSize="lg" show={this.state.showModal}
                    onHide={this.close}>

@@ -120,6 +120,7 @@ var ItemsList = React.createClass({
                         <div className="text-row-wrapper">
                             <p className="answer-label">a)</p>
                             <AnswerText answerText={item.correctAnswer}
+                                        enableClickthrough={_this.props.enableClickthrough}
                                         feedback={item.correctAnswerFeedback}
                                         outcomes={_this.state.outcomes}
                                         hideLinkBtn="true"

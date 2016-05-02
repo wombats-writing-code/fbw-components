@@ -36555,6 +36555,8 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var CKEditorModalHack = __webpack_require__(25);
+	var ConfigureCKEditor = __webpack_require__(67);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(66);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
@@ -36659,12 +36661,13 @@
 	        }
 	    },
 	    initializeEditors: function initializeEditors(e) {
+	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId);
 	        // CKEditor
 	        // Instructions from here
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
 	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
-	            CKEDITOR.config.mathJaxLib = '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML';
+	            ConfigureCKEditor(CKEDITOR, repositoryId);
 	            CKEDITOR.replace('correctAnswer');
 	            CKEDITOR.replace('correctAnswerFeedback');
 	            CKEDITOR.replace('questionString');
@@ -47104,6 +47107,7 @@
 	                                'a)'
 	                            ),
 	                            React.createElement(AnswerText, { answerText: item.correctAnswer,
+	                                enableClickthrough: _this.props.enableClickthrough,
 	                                feedback: item.correctAnswerFeedback,
 	                                outcomes: _this.state.outcomes,
 	                                hideLinkBtn: 'true',
@@ -47522,14 +47526,23 @@
 	                );
 	            }
 	        } else {
-	            linkButton = React.createElement(
-	                'div',
-	                { className: 'right-answer-actions' },
-	                React.createElement(AnswerFeedback, { feedback: this.props.feedback,
-	                    feedbackSource: this.props.label }),
-	                React.createElement(Glyphicon, { className: 'right-answer-check',
-	                    glyph: 'ok' })
-	            );
+	            if (this.props.enableClickthrough) {
+	                linkButton = React.createElement(
+	                    'div',
+	                    { className: 'right-answer-actions' },
+	                    React.createElement(AnswerFeedback, { feedback: this.props.feedback,
+	                        feedbackSource: this.props.label }),
+	                    React.createElement(Glyphicon, { className: 'right-answer-check',
+	                        glyph: 'ok' })
+	                );
+	            } else {
+	                linkButton = React.createElement(
+	                    'div',
+	                    { className: 'right-answer-actions' },
+	                    React.createElement(Glyphicon, { className: 'right-answer-check',
+	                        glyph: 'ok' })
+	                );
+	            }
 	        }
 
 	        return React.createElement(
@@ -49178,7 +49191,7 @@
 	                Button,
 	                { onClick: this.open,
 	                    title: 'View Feedback' },
-	                React.createElement(Glyphicon, { glyph: 'transfer' })
+	                'Feedback'
 	            ),
 	            React.createElement(
 	                Modal,
@@ -49727,7 +49740,7 @@
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
 	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
-	            CKEDITOR.config.mathJaxLib = '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML';
+	            CKEDITOR.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML';
 	            CKEDITOR.replace('correctAnswer');
 	            CKEDITOR.replace('correctAnswerFeedback');
 	            CKEDITOR.replace('questionString');
@@ -50788,5 +50801,66 @@
 
 /***/ },
 /* 65 */
-9
+9,
+/* 66 */
+/***/ function(module, exports) {
+
+	// ConvertLibraryId2RepositoryId.js
+	'use strict';
+
+	let ConvertLibraryId2RepositoryId = function (libraryId) {
+	    return libraryId.replace('assessment.Bank', 'repository.Repository');
+	};
+
+	module.exports = ConvertLibraryId2RepositoryId;
+
+/***/ },
+/* 67 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(jQuery) {// ConfigureCKEditor.js
+	// the cookie getting parts from:
+	// From: https://docs.djangoproject.com/en/1.6/ref/contrib/csrf/
+	// And:  http://stackoverflow.com/questions/6506897/csrf-token-missing-or-incorrect-while-post-parameter-via-ajax-in-django
+
+	'use strict';
+
+	let $ = __webpack_require__(26);
+
+	let ConfigureCKEditor = function (editor, repositoryId) {
+	    function getCookie(name) {
+	        let cookieValue = null;
+	        if (document.cookie && document.cookie != '') {
+	            var cookies = document.cookie.split(';');
+	            for (var i = 0; i < cookies.length; i++) {
+	                var cookie = jQuery.trim(cookies[i]);
+	                // Does this cookie string begin with the name we want?
+	                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+	                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+	                    break;
+	                }
+	            }
+	        }
+	        return cookieValue;
+	    }
+	    let csrftoken = getCookie('csrftoken');
+
+	    editor.config.extraPlugins = 'uploadimage';
+	    editor.config.filebrowserUploadUrl = '/api/v1/repository/repositories/' + repositoryId + '/assets';
+	    editor.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+
+	    // to handle csrf from:
+	    // http://stackoverflow.com/a/34213891
+	    editor.on('imageUploadRequest', function (e) {
+	        let xhr = e.data.fileLoader.xhr;
+	        xhr.setRequestHeader('Cache-Control', 'no-cache');
+	        xhr.setRequestHeader('X-CSRFToken', csrftoken);
+	        xhr.withCredentials = true;
+	    });
+	};
+
+	module.exports = ConfigureCKEditor;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)))
+
+/***/ }
 /******/ ])));

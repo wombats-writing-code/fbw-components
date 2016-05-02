@@ -127,12 +127,19 @@ var AnswerText = React.createClass({
                 </div>
             }
         } else {
-            linkButton = <div className="right-answer-actions">
-                <AnswerFeedback feedback={this.props.feedback}
-                                feedbackSource={this.props.label} />
-                <Glyphicon className="right-answer-check"
-                           glyph="ok" />
-            </div>
+            if (this.props.enableClickthrough) {
+                linkButton = <div className="right-answer-actions">
+                    <AnswerFeedback feedback={this.props.feedback}
+                                    feedbackSource={this.props.label} />
+                    <Glyphicon className="right-answer-check"
+                                glyph="ok" />
+                </div>
+            } else {
+                linkButton = <div className="right-answer-actions">
+                    <Glyphicon className="right-answer-check"
+                                glyph="ok" />
+                </div>
+            }
         }
 
         return <div className="taggable-text">
