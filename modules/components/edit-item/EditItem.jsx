@@ -18,6 +18,8 @@ let $s = require('scriptjs');
 let ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
 let AnswerExtraction = require('../../utilities/AnswerExtraction');
 let CKEditorModalHack = require('../../utilities/CKEditorModalHack');
+let ConfigureCKEditor = require('../../utilities/ConfigureCKEditor');
+let ConvertLibraryId2RepositoryId = require('../../utilities/ConvertLibraryId2RepositoryId');
 let Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
 let GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
 let LibraryItemsStore = require('../../stores/LibraryItemsStore');
@@ -75,12 +77,14 @@ let EditItem = React.createClass({
         this.reset();
     },
     initializeEditors: function (e) {
+        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId);
+
         // CKEditor
         // Instructions from here
         // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
         CKEditorModalHack();
         $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
-            CKEDITOR.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+            ConfigureCKEditor(CKEDITOR, repositoryId);
             CKEDITOR.replace('correctAnswer');
             CKEDITOR.replace('correctAnswerFeedback');
             CKEDITOR.replace('questionString');

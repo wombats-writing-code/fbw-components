@@ -49678,6 +49678,8 @@
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var AnswerExtraction = __webpack_require__(32);
 	var CKEditorModalHack = __webpack_require__(25);
+	var ConfigureCKEditor = __webpack_require__(67);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(66);
 	var Dispatcher = __webpack_require__(9);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var LibraryItemsStore = __webpack_require__(8);
@@ -49735,12 +49737,14 @@
 	        this.reset();
 	    },
 	    initializeEditors: function initializeEditors(e) {
+	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId);
+
 	        // CKEditor
 	        // Instructions from here
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
 	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
-	            CKEDITOR.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+	            ConfigureCKEditor(CKEDITOR, repositoryId);
 	            CKEDITOR.replace('correctAnswer');
 	            CKEDITOR.replace('correctAnswerFeedback');
 	            CKEDITOR.replace('questionString');
@@ -50818,7 +50822,7 @@
 /* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(jQuery) {// ConfigureCKEditor.js
+	// ConfigureCKEditor.js
 	// the cookie getting parts from:
 	// From: https://docs.djangoproject.com/en/1.6/ref/contrib/csrf/
 	// And:  http://stackoverflow.com/questions/6506897/csrf-token-missing-or-incorrect-while-post-parameter-via-ajax-in-django
@@ -50828,39 +50832,14 @@
 	let $ = __webpack_require__(26);
 
 	let ConfigureCKEditor = function (editor, repositoryId) {
-	    function getCookie(name) {
-	        let cookieValue = null;
-	        if (document.cookie && document.cookie != '') {
-	            var cookies = document.cookie.split(';');
-	            for (var i = 0; i < cookies.length; i++) {
-	                var cookie = jQuery.trim(cookies[i]);
-	                // Does this cookie string begin with the name we want?
-	                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-	                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-	                    break;
-	                }
-	            }
-	        }
-	        return cookieValue;
-	    }
-	    let csrftoken = getCookie('csrftoken');
+	    let MiddlewareService = __webpack_require__(17);
 
 	    editor.config.extraPlugins = 'uploadimage';
-	    editor.config.filebrowserUploadUrl = '/api/v1/repository/repositories/' + repositoryId + '/assets';
+	    editor.config.filebrowserUploadUrl = MiddlewareService.host() + '/repository/repositories/' + repositoryId + '/assets';
 	    editor.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML';
-
-	    // to handle csrf from:
-	    // http://stackoverflow.com/a/34213891
-	    editor.on('imageUploadRequest', function (e) {
-	        let xhr = e.data.fileLoader.xhr;
-	        xhr.setRequestHeader('Cache-Control', 'no-cache');
-	        xhr.setRequestHeader('X-CSRFToken', csrftoken);
-	        xhr.withCredentials = true;
-	    });
 	};
 
 	module.exports = ConfigureCKEditor;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)))
 
 /***/ }
 /******/ ])));
