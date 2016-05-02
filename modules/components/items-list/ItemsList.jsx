@@ -19,6 +19,7 @@ var AnswerText = require('../answer-text/AnswerText');
 var ItemControls = require('../ItemControls');
 var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 var LORelatedItems = require('../../utilities/LORelatedItems');
+var LOText = require('../lo-text/LOText');
 var OutcomesStore = require('../../stores/OutcomesStore');
 var QuestionText = require('../question-text/QuestionText');
 
@@ -69,6 +70,7 @@ var ItemsList = React.createClass({
 
             item['correctAnswer'] = answers.correctAnswerText.text;
             item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
+            item['questionRelatedItems'] = getRelatedItems(item.learningObjectiveIds[0]);
             item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
             item['wrongAnswer1Feedback'] = answers.wrongAnswerFeedbacks[0];
             item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
@@ -106,73 +108,51 @@ var ItemsList = React.createClass({
             }
 
             return <Row key={item.id}>
-                <Col sm={8} md={8} lg={8}>
+                <Col sm={6} md={6} lg={6}>
                     <Panel header={item.displayName.text}>
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
-                            <QuestionText questionId={item.id}
-                                          questionLO={questionLO}
-                                          questionText={item.question.text.text}
-                                          enableClickthrough={_this.props.enableClickthrough}
-                                          libraryId={_this.props.libraryId}
-                                          outcomes={_this.state.outcomes} />
+                            <QuestionText questionText={item.question.text.text} />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">a)</p>
                             <AnswerText answerText={item.correctAnswer}
-                                        enableClickthrough={_this.props.enableClickthrough}
+                                        correctAnswer="true"
                                         feedback={item.correctAnswerFeedback}
-                                        outcomes={_this.state.outcomes}
-                                        hideLinkBtn="true"
                                         label="Correct Answer" />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">b)</p>
-                            <AnswerText answerId={item.wrongAnswer1ID}
-                                        answerText={item.wrongAnswer1}
-                                        confusedLO={item.wrongAnswer1LO}
-                                        enableClickthrough={_this.props.enableClickthrough}
+                            <AnswerText answerText={item.wrongAnswer1}
                                         feedback={item.wrongAnswer1Feedback}
-                                        itemId={item.id}
-                                        label="Wrong Answer 1"
-                                        libraryId={_this.props.libraryId}
-                                        outcomes={_this.state.outcomes}
-                                        relatedItems={item.wrongAnswer1RelatedItems} />
+                                        label="Wrong Answer 1" />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">c)</p>
-                            <AnswerText answerId={item.wrongAnswer2ID}
-                                        answerText={item.wrongAnswer2}
-                                        confusedLO={item.wrongAnswer2LO}
-                                        enableClickthrough={_this.props.enableClickthrough}
+                            <AnswerText answerText={item.wrongAnswer2}
                                         feedback={item.wrongAnswer2Feedback}
-                                        itemId={item.id}
-                                        label="Wrong Answer 2"
-                                        libraryId={_this.props.libraryId}
-                                        outcomes={_this.state.outcomes}
-                                        relatedItems={item.wrongAnswer2RelatedItems}  />
+                                        label="Wrong Answer 2" />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">d)</p>
-                            <AnswerText answerId={item.wrongAnswer3ID}
-                                        answerText={item.wrongAnswer3}
-                                        confusedLO={item.wrongAnswer3LO}
-                                        enableClickthrough={_this.props.enableClickthrough}
+                            <AnswerText answerText={item.wrongAnswer3}
                                         feedback={item.wrongAnswer3Feedback}
-                                        itemId={item.id}
-                                        label="Wrong Answer 3"
-                                        libraryId={_this.props.libraryId}
-                                        outcomes={_this.state.outcomes}
-                                        relatedItems={item.wrongAnswer3RelatedItems}  />
+                                        label="Wrong Answer 3" />
                         </div>
                         {itemControls}
                     </Panel>
                 </Col>
-                <Col sm={4} md={4} lg={4}>
+                <Col sm={6} md={6} lg={6}>
                     <Panel header="Learning Outcomes">
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
-                            {_this.getOutcomeDisplayName(questionLO)}
+                            <LOText component="question"
+                                    itemId={item.id}
+                                    libraryId={_this.props.libraryId}
+                                    outcomeDisplayName={_this.getOutcomeDisplayName(questionLO)}
+                                    outcomeId={questionLO}
+                                    outcomes={_this.state.outcomes}
+                                    relatedItems={item.questionRelatedItems} />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">a)</p>
@@ -182,15 +162,36 @@ var ItemsList = React.createClass({
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">b)</p>
-                            {_this.getOutcomeDisplayName(item.wrongAnswer1LO)}
+                            <LOText answerId={item.wrongAnswer1ID}
+                                    component="answer"
+                                    itemId={item.id}
+                                    libraryId={_this.props.libraryId}
+                                    outcomeDisplayName={_this.getOutcomeDisplayName(item.wrongAnswer1LO)}
+                                    outcomeId={questionLO}
+                                    outcomes={_this.state.outcomes}
+                                    relatedItems={item.wrongAnswer1RelatedItems} />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">c)</p>
-                            {_this.getOutcomeDisplayName(item.wrongAnswer2LO)}
+                            <LOText answerId={item.wrongAnswer2ID}
+                                    component="answer"
+                                    itemId={item.id}
+                                    libraryId={_this.props.libraryId}
+                                    outcomeDisplayName={_this.getOutcomeDisplayName(item.wrongAnswer2LO)}
+                                    outcomeId={questionLO}
+                                    outcomes={_this.state.outcomes}
+                                    relatedItems={item.wrongAnswer2RelatedItems} />
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">d)</p>
-                            {_this.getOutcomeDisplayName(item.wrongAnswer3LO)}
+                            <LOText answerId={item.wrongAnswer3ID}
+                                    component="answer"
+                                    itemId={item.id}
+                                    libraryId={_this.props.libraryId}
+                                    outcomeDisplayName={_this.getOutcomeDisplayName(item.wrongAnswer3LO)}
+                                    outcomeId={questionLO}
+                                    outcomes={_this.state.outcomes}
+                                    relatedItems={item.wrongAnswer3RelatedItems} />
                         </div>
                     </Panel>
                 </Col>

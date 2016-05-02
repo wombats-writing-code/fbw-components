@@ -49,7 +49,7 @@ var LORelatedItemsBadge = React.createClass({
         return <div>
             <Button onClick={this.open} title="Related Items">
                 <Badge>{this.props.relatedItems.length}</Badge>
-                <Glyphicon glyph="tags" />
+                Items
             </Button>
             <Modal bsSize="lg" show={this.state.showModal}
                    onHide={this.close}

@@ -1,0 +1,14 @@
+.outcome-text {
+    display: flex;
+    width: 100%;
+}
+
+.outcome-text .badge {
+    margin-right: 5px;
+}
+
+.outcome-display-name {
+    flex: 1 1 100%;
+}
+
+

@@ -75,48 +75,7 @@ var QuestionText = React.createClass({
         this.close();
     },
     render: function () {
-        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
-            return {
-                value: outcome.id,
-                label: outcome.displayName.text
-            };
-        }),
-            linkButton = '',
-            questionText = WrapHTML(this.props.questionText);
-
-        if (this.props.enableClickthrough) {
-            linkButton = <div className="pull-right question-actions">
-                <div>
-                    <Button onClick={this.open}
-                            bsSize="small"
-                            title="Link to an Outcome">
-                        <Glyphicon glyph="link" />
-                    </Button>
-                </div>
-                <Modal show={this.state.showModal} onHide={this.close}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Link Question to Outcome</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <form>
-                            <FormGroup controlId="outcomeSelector">
-                                <ControlLabel>Select a learning outcome ...</ControlLabel>
-                                <Select name="questionOutcomeSelector"
-                                        placeholder="Select an outcome ... "
-                                        value={this.state.questionLO}
-                                        onChange={this.onChange}
-                                        options={formattedOutcomes}>
-                                </Select>
-                            </FormGroup>
-                        </form>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button onClick={this.close}>Close</Button>
-                        <Button bsStyle="success" onClick={this.save}>Save</Button>
-                    </Modal.Footer>
-                </Modal>
-            </div>
-        }
+        var questionText = WrapHTML(this.props.questionText);
 
         return <div className="taggable-text">
             <div className="text-blob">
@@ -127,7 +86,6 @@ var QuestionText = React.createClass({
                         sandbox="allow-same-origin allow-scripts"
                         ></iframe>
             </div>
-            {linkButton}
         </div>
 
     }

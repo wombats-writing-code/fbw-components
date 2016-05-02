@@ -46980,6 +46980,7 @@
 	var ItemControls = __webpack_require__(53);
 	var LibraryItemsStore = __webpack_require__(8);
 	var LORelatedItems = __webpack_require__(58);
+	var LOText = __webpack_require__(69);
 	var OutcomesStore = __webpack_require__(50);
 	var QuestionText = __webpack_require__(59);
 
@@ -47036,6 +47037,7 @@
 
 	            item['correctAnswer'] = answers.correctAnswerText.text;
 	            item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
+	            item['questionRelatedItems'] = getRelatedItems(item.learningObjectiveIds[0]);
 	            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
 	            item['wrongAnswer1Feedback'] = answers.wrongAnswerFeedbacks[0];
 	            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
@@ -47079,7 +47081,7 @@
 	                { key: item.id },
 	                React.createElement(
 	                    Col,
-	                    { sm: 8, md: 8, lg: 8 },
+	                    { sm: 6, md: 6, lg: 6 },
 	                    React.createElement(
 	                        Panel,
 	                        { header: item.displayName.text },
@@ -47091,12 +47093,7 @@
 	                                { className: 'question-label' },
 	                                'Q:'
 	                            ),
-	                            React.createElement(QuestionText, { questionId: item.id,
-	                                questionLO: questionLO,
-	                                questionText: item.question.text.text,
-	                                enableClickthrough: _this.props.enableClickthrough,
-	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes })
+	                            React.createElement(QuestionText, { questionText: item.question.text.text })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -47107,10 +47104,8 @@
 	                                'a)'
 	                            ),
 	                            React.createElement(AnswerText, { answerText: item.correctAnswer,
-	                                enableClickthrough: _this.props.enableClickthrough,
+	                                correctAnswer: 'true',
 	                                feedback: item.correctAnswerFeedback,
-	                                outcomes: _this.state.outcomes,
-	                                hideLinkBtn: 'true',
 	                                label: 'Correct Answer' })
 	                        ),
 	                        React.createElement(
@@ -47121,16 +47116,9 @@
 	                                { className: 'answer-label' },
 	                                'b)'
 	                            ),
-	                            React.createElement(AnswerText, { answerId: item.wrongAnswer1ID,
-	                                answerText: item.wrongAnswer1,
-	                                confusedLO: item.wrongAnswer1LO,
-	                                enableClickthrough: _this.props.enableClickthrough,
+	                            React.createElement(AnswerText, { answerText: item.wrongAnswer1,
 	                                feedback: item.wrongAnswer1Feedback,
-	                                itemId: item.id,
-	                                label: 'Wrong Answer 1',
-	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer1RelatedItems })
+	                                label: 'Wrong Answer 1' })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -47140,16 +47128,9 @@
 	                                { className: 'answer-label' },
 	                                'c)'
 	                            ),
-	                            React.createElement(AnswerText, { answerId: item.wrongAnswer2ID,
-	                                answerText: item.wrongAnswer2,
-	                                confusedLO: item.wrongAnswer2LO,
-	                                enableClickthrough: _this.props.enableClickthrough,
+	                            React.createElement(AnswerText, { answerText: item.wrongAnswer2,
 	                                feedback: item.wrongAnswer2Feedback,
-	                                itemId: item.id,
-	                                label: 'Wrong Answer 2',
-	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer2RelatedItems })
+	                                label: 'Wrong Answer 2' })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -47159,23 +47140,16 @@
 	                                { className: 'answer-label' },
 	                                'd)'
 	                            ),
-	                            React.createElement(AnswerText, { answerId: item.wrongAnswer3ID,
-	                                answerText: item.wrongAnswer3,
-	                                confusedLO: item.wrongAnswer3LO,
-	                                enableClickthrough: _this.props.enableClickthrough,
+	                            React.createElement(AnswerText, { answerText: item.wrongAnswer3,
 	                                feedback: item.wrongAnswer3Feedback,
-	                                itemId: item.id,
-	                                label: 'Wrong Answer 3',
-	                                libraryId: _this.props.libraryId,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer3RelatedItems })
+	                                label: 'Wrong Answer 3' })
 	                        ),
 	                        itemControls
 	                    )
 	                ),
 	                React.createElement(
 	                    Col,
-	                    { sm: 4, md: 4, lg: 4 },
+	                    { sm: 6, md: 6, lg: 6 },
 	                    React.createElement(
 	                        Panel,
 	                        { header: 'Learning Outcomes' },
@@ -47187,7 +47161,13 @@
 	                                { className: 'question-label' },
 	                                'Q:'
 	                            ),
-	                            _this.getOutcomeDisplayName(questionLO)
+	                            React.createElement(LOText, { component: 'question',
+	                                itemId: item.id,
+	                                libraryId: _this.props.libraryId,
+	                                outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
+	                                outcomeId: questionLO,
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.questionRelatedItems })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -47211,7 +47191,14 @@
 	                                { className: 'answer-label' },
 	                                'b)'
 	                            ),
-	                            _this.getOutcomeDisplayName(item.wrongAnswer1LO)
+	                            React.createElement(LOText, { answerId: item.wrongAnswer1ID,
+	                                component: 'answer',
+	                                itemId: item.id,
+	                                libraryId: _this.props.libraryId,
+	                                outcomeDisplayName: _this.getOutcomeDisplayName(item.wrongAnswer1LO),
+	                                outcomeId: questionLO,
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer1RelatedItems })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -47221,7 +47208,14 @@
 	                                { className: 'answer-label' },
 	                                'c)'
 	                            ),
-	                            _this.getOutcomeDisplayName(item.wrongAnswer2LO)
+	                            React.createElement(LOText, { answerId: item.wrongAnswer2ID,
+	                                component: 'answer',
+	                                itemId: item.id,
+	                                libraryId: _this.props.libraryId,
+	                                outcomeDisplayName: _this.getOutcomeDisplayName(item.wrongAnswer2LO),
+	                                outcomeId: questionLO,
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer2RelatedItems })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -47231,7 +47225,14 @@
 	                                { className: 'answer-label' },
 	                                'd)'
 	                            ),
-	                            _this.getOutcomeDisplayName(item.wrongAnswer3LO)
+	                            React.createElement(LOText, { answerId: item.wrongAnswer3ID,
+	                                component: 'answer',
+	                                itemId: item.id,
+	                                libraryId: _this.props.libraryId,
+	                                outcomeDisplayName: _this.getOutcomeDisplayName(item.wrongAnswer3LO),
+	                                outcomeId: questionLO,
+	                                outcomes: _this.state.outcomes,
+	                                relatedItems: item.wrongAnswer3RelatedItems })
 	                        )
 	                    )
 	                )
@@ -47403,46 +47404,6 @@
 	    componentDidMount: function componentDidMount() {
 	        SetIFrameHeight(this.refs.myFrame);
 	    },
-	    close: function close() {
-	        this.setState({ showModal: false });
-	        this.reset();
-	    },
-	    onChange: function onChange(e) {
-	        if (e == null) {
-	            this.setState({ confusedLO: '' });
-	        } else {
-	            this.setState({ confusedLO: e.value });
-	        }
-	    },
-	    open: function open(e) {
-	        this.setState({ showModal: true }, function () {});
-	    },
-	    renderOutcomes: function renderOutcomes() {
-	        return _.map(this.props.outcomes, function (outcome) {
-	            return React.createElement(
-	                'option',
-	                { value: outcome.id,
-	                    title: outcome.description.text,
-	                    key: outcome.id },
-	                outcome.displayName.text
-	            );
-	        });
-	    },
-	    reset: function reset() {},
-	    save: function save(e) {
-	        var payload = {
-	            answerId: this.props.answerId,
-	            confusedLearningObjectiveId: this.state.confusedLO,
-	            itemId: this.props.itemId,
-	            libraryId: this.props.libraryId
-	        };
-
-	        Dispatcher.dispatch({
-	            type: ActionTypes.LINK_ANSWER_LO,
-	            content: payload
-	        });
-	        this.close();
-	    },
 	    render: function render() {
 	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
 	            return {
@@ -47453,96 +47414,22 @@
 	            linkButton = '',
 	            answerHTML = WrapHTML(this.props.answerText);
 
-	        if (!this.props.hideLinkBtn) {
-	            if (this.props.enableClickthrough) {
-	                linkButton = React.createElement(
-	                    'div',
-	                    { className: 'wrong-answer-actions' },
-	                    React.createElement(LORelatedItemsBadge, { confusedLO: this.state.confusedLO,
-	                        libraryId: this.props.libraryId,
-	                        relatedItems: this.props.relatedItems }),
-	                    React.createElement(AnswerFeedback, { feedback: this.props.feedback,
-	                        feedbackSource: this.props.label }),
-	                    React.createElement(
-	                        'div',
-	                        null,
-	                        React.createElement(
-	                            Button,
-	                            { onClick: this.open,
-	                                bsSize: 'small',
-	                                title: 'Link to an Outcome' },
-	                            React.createElement(Glyphicon, { glyph: 'link' })
-	                        )
-	                    ),
-	                    React.createElement(
-	                        Modal,
-	                        { show: this.state.showModal, onHide: this.close },
-	                        React.createElement(
-	                            Modal.Header,
-	                            { closeButton: true },
-	                            React.createElement(
-	                                Modal.Title,
-	                                null,
-	                                'Link Answer to Outcome'
-	                            )
-	                        ),
-	                        React.createElement(
-	                            Modal.Body,
-	                            null,
-	                            React.createElement(
-	                                'form',
-	                                null,
-	                                React.createElement(
-	                                    FormGroup,
-	                                    { controlId: 'outcomeSelector' },
-	                                    React.createElement(
-	                                        ControlLabel,
-	                                        null,
-	                                        'Select a learning outcome ...'
-	                                    ),
-	                                    React.createElement(Select, { name: 'confusedOutcomeSelector',
-	                                        placeholder: 'Select an outcome ... ',
-	                                        value: this.state.confusedLO,
-	                                        onChange: this.onChange,
-	                                        options: formattedOutcomes })
-	                                )
-	                            )
-	                        ),
-	                        React.createElement(
-	                            Modal.Footer,
-	                            null,
-	                            React.createElement(
-	                                Button,
-	                                { onClick: this.close },
-	                                'Close'
-	                            ),
-	                            React.createElement(
-	                                Button,
-	                                { bsStyle: 'success', onClick: this.save },
-	                                'Save'
-	                            )
-	                        )
-	                    )
-	                );
-	            }
+	        if (!this.props.correctAnswer) {
+	            linkButton = React.createElement(
+	                'div',
+	                { className: 'wrong-answer-actions' },
+	                React.createElement(AnswerFeedback, { feedback: this.props.feedback,
+	                    feedbackSource: this.props.label })
+	            );
 	        } else {
-	            if (this.props.enableClickthrough) {
-	                linkButton = React.createElement(
-	                    'div',
-	                    { className: 'right-answer-actions' },
-	                    React.createElement(AnswerFeedback, { feedback: this.props.feedback,
-	                        feedbackSource: this.props.label }),
-	                    React.createElement(Glyphicon, { className: 'right-answer-check',
-	                        glyph: 'ok' })
-	                );
-	            } else {
-	                linkButton = React.createElement(
-	                    'div',
-	                    { className: 'right-answer-actions' },
-	                    React.createElement(Glyphicon, { className: 'right-answer-check',
-	                        glyph: 'ok' })
-	                );
-	            }
+	            linkButton = React.createElement(
+	                'div',
+	                { className: 'right-answer-actions' },
+	                React.createElement(Glyphicon, { className: 'right-answer-check',
+	                    glyph: 'ok' }),
+	                React.createElement(AnswerFeedback, { feedback: this.props.feedback,
+	                    feedbackSource: this.props.label })
+	            );
 	        }
 
 	        return React.createElement(
@@ -49328,7 +49215,7 @@
 	                    null,
 	                    this.props.relatedItems.length
 	                ),
-	                React.createElement(Glyphicon, { glyph: 'tags' })
+	                'Items'
 	            ),
 	            React.createElement(
 	                Modal,
@@ -50449,81 +50336,7 @@
 	        this.close();
 	    },
 	    render: function render() {
-	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
-	            return {
-	                value: outcome.id,
-	                label: outcome.displayName.text
-	            };
-	        }),
-	            linkButton = '',
-	            questionText = WrapHTML(this.props.questionText);
-
-	        if (this.props.enableClickthrough) {
-	            linkButton = React.createElement(
-	                'div',
-	                { className: 'pull-right question-actions' },
-	                React.createElement(
-	                    'div',
-	                    null,
-	                    React.createElement(
-	                        Button,
-	                        { onClick: this.open,
-	                            bsSize: 'small',
-	                            title: 'Link to an Outcome' },
-	                        React.createElement(Glyphicon, { glyph: 'link' })
-	                    )
-	                ),
-	                React.createElement(
-	                    Modal,
-	                    { show: this.state.showModal, onHide: this.close },
-	                    React.createElement(
-	                        Modal.Header,
-	                        { closeButton: true },
-	                        React.createElement(
-	                            Modal.Title,
-	                            null,
-	                            'Link Question to Outcome'
-	                        )
-	                    ),
-	                    React.createElement(
-	                        Modal.Body,
-	                        null,
-	                        React.createElement(
-	                            'form',
-	                            null,
-	                            React.createElement(
-	                                FormGroup,
-	                                { controlId: 'outcomeSelector' },
-	                                React.createElement(
-	                                    ControlLabel,
-	                                    null,
-	                                    'Select a learning outcome ...'
-	                                ),
-	                                React.createElement(Select, { name: 'questionOutcomeSelector',
-	                                    placeholder: 'Select an outcome ... ',
-	                                    value: this.state.questionLO,
-	                                    onChange: this.onChange,
-	                                    options: formattedOutcomes })
-	                            )
-	                        )
-	                    ),
-	                    React.createElement(
-	                        Modal.Footer,
-	                        null,
-	                        React.createElement(
-	                            Button,
-	                            { onClick: this.close },
-	                            'Close'
-	                        ),
-	                        React.createElement(
-	                            Button,
-	                            { bsStyle: 'success', onClick: this.save },
-	                            'Save'
-	                        )
-	                    )
-	                )
-	            );
-	        }
+	        var questionText = WrapHTML(this.props.questionText);
 
 	        return React.createElement(
 	            'div',
@@ -50537,8 +50350,7 @@
 	                    width: '100%',
 	                    sandbox: 'allow-same-origin allow-scripts'
 	                })
-	            ),
-	            linkButton
+	            )
 	        );
 	    }
 	});
@@ -50840,6 +50652,256 @@
 	};
 
 	module.exports = ConfigureCKEditor;
+
+/***/ },
+/* 68 */,
+/* 69 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// LOText.js
+
+	'use strict';
+
+	__webpack_require__(70);
+
+	var React = __webpack_require__(1);
+
+	var LinkLO = __webpack_require__(72);
+	var LORelatedItemsBadge = __webpack_require__(47);
+
+	var LOText = React.createClass({
+	    displayName: 'LOText',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    render: function render() {
+	        return React.createElement(
+	            'div',
+	            { className: 'outcome-text' },
+	            React.createElement(
+	                'div',
+	                { className: 'outcome-display-name' },
+	                this.props.outcomeDisplayName
+	            ),
+	            React.createElement(LORelatedItemsBadge, { outcomeId: this.props.outcomeId,
+	                libraryId: this.props.libraryId,
+	                relatedItems: this.props.relatedItems }),
+	            React.createElement(LinkLO, { answerId: this.props.answerId,
+	                component: this.props.component,
+	                itemId: this.props.itemId,
+	                libraryId: this.props.libraryId,
+	                outcomeId: this.state.outcomeId,
+	                outcomes: this.props.outcomes })
+	        );
+	    }
+	});
+
+	module.exports = LOText;
+
+/***/ },
+/* 70 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(71);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(23)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./LOText.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./LOText.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 71 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(22)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 72 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
+
+	'use strict';
+
+	__webpack_require__(36);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Select = __webpack_require__(38);
+
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var Dispatcher = __webpack_require__(9);
+
+	var LinkLO = React.createClass({
+	    displayName: 'LinkLO',
+
+	    getInitialState: function getInitialState() {
+	        var outcomeId = this.props.outcomeId === 'None linked yet' ? '' : this.props.outcomeId;
+	        return {
+	            outcomeId: outcomeId,
+	            showModal: false
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    close: function close() {
+	        this.setState({ showModal: false });
+	        this.reset();
+	    },
+	    onChange: function onChange(e) {
+	        if (e == null) {
+	            this.setState({ outcomeId: '' });
+	        } else {
+	            this.setState({ outcomeId: e.value });
+	        }
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    renderOutcomes: function renderOutcomes() {
+	        return _.map(this.props.outcomes, function (outcome) {
+	            return React.createElement(
+	                'option',
+	                { value: outcome.id,
+	                    title: outcome.description.text,
+	                    key: outcome.id },
+	                outcome.displayName.text
+	            );
+	        });
+	    },
+	    reset: function reset() {},
+	    save: function save(e) {
+	        if (this.props.component == 'answer') {
+	            var payload = {
+	                answerId: this.props.answerId,
+	                confusedLearningObjectiveId: this.state.outcomeId,
+	                itemId: this.props.itemId,
+	                libraryId: this.props.libraryId
+	            };
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.LINK_ANSWER_LO,
+	                content: payload
+	            });
+	        } else {
+	            // question
+	            var payload = {
+	                learningObjectiveId: this.state.outcomeId,
+	                itemId: this.props.itemId,
+	                libraryId: this.props.libraryId
+	            };
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.LINK_ITEM_LO,
+	                content: payload
+	            });
+	        }
+	        this.close();
+	    },
+	    render: function render() {
+	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
+	            return {
+	                value: outcome.id,
+	                label: outcome.displayName.text
+	            };
+	        });
+
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open,
+	                    title: 'Link to an Outcome' },
+	                React.createElement(Glyphicon, { glyph: 'link' })
+	            ),
+	            React.createElement(
+	                Modal,
+	                { show: this.state.showModal, onHide: this.close },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Link to Outcome'
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    React.createElement(
+	                        'form',
+	                        null,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'outcomeSelector' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Select a learning outcome ...'
+	                            ),
+	                            React.createElement(Select, { name: 'confusedOutcomeSelector',
+	                                placeholder: 'Select an outcome ... ',
+	                                value: this.state.outcomeId,
+	                                onChange: this.onChange,
+	                                options: formattedOutcomes })
+	                        )
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.close },
+	                        'Close'
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { bsStyle: 'success', onClick: this.save },
+	                        'Save'
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = LinkLO;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }
 /******/ ])));
