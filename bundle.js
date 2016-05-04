@@ -35418,18 +35418,18 @@
 	// LibraryItemsStore.js
 	'use strict';
 
-	let LibraryItemsDispatcher = __webpack_require__(9);
-	let AuthoringConstants = __webpack_require__(14);
-	let EventEmitter = __webpack_require__(16).EventEmitter;
-	let MiddlewareService = __webpack_require__(17);
-	let _ = __webpack_require__(5);
+	var LibraryItemsDispatcher = __webpack_require__(9);
+	var AuthoringConstants = __webpack_require__(14);
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+	var MiddlewareService = __webpack_require__(17);
+	var _ = __webpack_require__(5);
 
-	let ActionTypes = AuthoringConstants.ActionTypes;
-	let CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
-	let _items = [];
+	var _items = [];
 
-	let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
+	var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
 	    emitChange: function () {
 	        this.emit(CHANGE_EVENT, _items);
 	    },
@@ -35440,7 +35440,7 @@
 	        this.removeListener(CHANGE_EVENT, callback);
 	    },
 	    createNewItem: function (payload) {
-	        let url = this.url() + payload.libraryId + '/items',
+	        var url = this.url() + payload.libraryId + '/items',
 	            _this = this,
 	            data = new FormData();
 
@@ -35451,7 +35451,6 @@
 	                data.append(key, payload[key]);
 	            }
 	        });
-	        data.append('question_imageFile', payload.questionFile);
 
 	        fetch(url, {
 	            method: 'POST',
@@ -35476,7 +35475,7 @@
 	        });
 	    },
 	    deleteItem: function (data) {
-	        let url = this.url() + data.libraryId + '/items/' + data.itemId,
+	        var url = this.url() + data.libraryId + '/items/' + data.itemId,
 	            _this = this;
 
 	        fetch(url, {
@@ -35499,7 +35498,7 @@
 	        });
 	    },
 	    getItemDetails: function (libraryId, itemId, callback) {
-	        let url;
+	        var url;
 
 	        if (MiddlewareService.shouldReturnStatic()) {
 	          url = '/raw_data/CAD_item_with_file_url.json';
@@ -35518,7 +35517,7 @@
 	        });
 	    },
 	    getItems: function (id) {
-	        let url, _this = this;
+	        var url, _this = this;
 
 	        if (MiddlewareService.shouldReturnStatic()) {
 	          url = '/raw_data/CAD_items.json';
@@ -35538,7 +35537,7 @@
 	        });
 	    },
 	    linkAnswerToLO: function (payload) {
-	        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+	        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
 	            _this = this,
 	            data = new FormData();
 
@@ -35570,7 +35569,7 @@
 	        });
 	    },
 	    linkItemToLO: function (payload) {
-	        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+	        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
 	            _this = this,
 	            data = new FormData();
 
@@ -35599,7 +35598,7 @@
 	        });
 	    },
 	    updateItem: function (payload) {
-	        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+	        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
 	            _this = this,
 	            data = new FormData();
 
@@ -35610,7 +35609,6 @@
 	                data.append(key, payload[key]);
 	            }
 	        });
-	        data.append('question_imageFile', payload.questionFile);
 
 	        fetch(url, {
 	            method: 'PUT',
@@ -36651,25 +36649,27 @@
 	            payload['description'] = this.state.itemDescription;
 	            payload['question'] = {
 	                text: questionString,
-	                choices: [correctAnswer, wrongAnswer1, wrongAnswer2, wrongAnswer3]
+	                choices: [correctAnswer]
 	            };
+
+	            _.each(wrongAnswers, function (wrongAnswer) {
+	                payload['question']['choices'].push(wrongAnswer);
+	            });
 	            payload['answers'] = [{
 	                genusTypeId: GenusTypes.CORRECT_ANSWER,
 	                choiceId: 0,
 	                feedback: correctAnswerFeedback
-	            }, {
-	                genusTypeId: GenusTypes.WRONG_ANSWER,
-	                choiceId: 1,
-	                feedback: wrongAnswer1Feedback
-	            }, {
-	                genusTypeId: GenusTypes.WRONG_ANSWER,
-	                choiceId: 2,
-	                feedback: wrongAnswer2Feedback
-	            }, {
-	                genusTypeId: GenusTypes.WRONG_ANSWER,
-	                choiceId: 3,
-	                feedback: wrongAnswer3Feedback
 	            }];
+
+	            _.each(wrongAnswerFeedbacks, function (feedback, index) {
+	                var choiceIndex = index + 1,
+	                    data = {
+	                    genusTypeId: GenusTypes.WRONG_ANSWER,
+	                    choiceId: choiceIndex,
+	                    feedback: feedback
+	                };
+	                payload['answers'].push(data);
+	            });
 
 	            Dispatcher.dispatch({
 	                type: ActionTypes.CREATE_ITEM,
@@ -36689,7 +36689,7 @@
 	                index: index,
 	                key: index,
 	                remove: _this.removeWrongAnswer,
-	                text: wrongAnswer });
+	                text: wrongAnswer.text });
 	        });
 	    },
 	    getWrongAnswerFeedbacks: function getWrongAnswerFeedbacks() {
@@ -36799,8 +36799,6 @@
 	    },
 	    setWrongAnswerValues: function setWrongAnswerValues(data) {},
 	    render: function render() {
-	        // TODO: add + wrong answer button
-	        // TODO: fix CKEditor initialization for wrong answers
 	        var alert = '',
 	            wrongAnswers = this.formatWrongAnswers(),
 	            correctAnswer,
@@ -46808,9 +46806,6 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	// ConfigureCKEditor.js
-	// the cookie getting parts from:
-	// From: https://docs.djangoproject.com/en/1.6/ref/contrib/csrf/
-	// And:  http://stackoverflow.com/questions/6506897/csrf-token-missing-or-incorrect-while-post-parameter-via-ajax-in-django
 
 	'use strict';
 
@@ -47100,7 +47095,8 @@
 	var Row = ReactBS.Row;
 
 	var AuthoringConstants = __webpack_require__(14);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var ChoiceLabels = AuthoringConstants.ChoiceLabels;
+	var GenusTypes = AuthoringConstants.GenusTypes;
 
 	var AnswerExtraction = __webpack_require__(37);
 	var AnswerText = __webpack_require__(38);
@@ -47145,52 +47141,98 @@
 	            return outcome.displayName.text;
 	        }
 	    },
+	    getQuestionLO: function getQuestionLO(item) {
+	        var questionLO;
+	        if (item.question.learningObjectiveIds.length > 0) {
+	            questionLO = item.question.learningObjectiveIds[0];
+	        } else {
+	            questionLO = '';
+	        }
+
+	        return questionLO;
+	    },
+	    getRelatedItems: function getRelatedItems(loId) {
+	        if (this.state.sortedItems.hasOwnProperty(loId)) {
+	            return this.state.sortedItems[loId];
+	        } else {
+	            return [];
+	        }
+	    },
+	    renderItemAnswerLOs: function renderItemAnswerLOs(item) {
+	        // just generate the answer los
+	        var _this = this;
+	        return _.map(item.wrongAnswerLOs, function (outcomeId, index) {
+	            var visibleIndex = index + 1,
+	                answerId = item.wrongAnswerIds[index],
+	                relatedItems = _this.getRelatedItems(outcomeId),
+	                choiceLetter = ChoiceLabels[visibleIndex];
+
+	            return React.createElement(
+	                'div',
+	                { className: 'text-row-wrapper',
+	                    key: index },
+	                React.createElement(
+	                    'p',
+	                    { className: 'answer-label' },
+	                    choiceLetter,
+	                    ')'
+	                ),
+	                React.createElement(LOText, { answerId: answerId,
+	                    component: 'answer',
+	                    itemId: item.id,
+	                    libraryId: _this.props.libraryId,
+	                    outcomeDisplayName: _this.getOutcomeDisplayName(outcomeId),
+	                    outcomeId: _this.getQuestionLO(item),
+	                    outcomes: _this.state.outcomes,
+	                    relatedItems: relatedItems })
+	            );
+	        });
+	    },
+	    renderItemAnswerTexts: function renderItemAnswerTexts(item) {
+	        // just generate the answer objects
+	        return _.map(item.wrongAnswers, function (answer, index) {
+	            var visibleIndex = index + 1,
+	                feedback = item.wrongAnswerFeedbacks[index],
+	                choiceLetter = ChoiceLabels[visibleIndex];
+
+	            return React.createElement(
+	                'div',
+	                { className: 'text-row-wrapper',
+	                    key: index },
+	                React.createElement(
+	                    'p',
+	                    { className: 'answer-label' },
+	                    choiceLetter,
+	                    ')'
+	                ),
+	                React.createElement(AnswerText, { answerText: answer.text,
+	                    feedback: feedback,
+	                    label: 'Wrong Answer {visibleIndex}' })
+	            );
+	        });
+	    },
 	    renderItems: function renderItems() {
 	        var _this = this,
 
 	        // map the choiceIds, etc., in answers back to choices in questions
 	        items = [];
 
-	        function getRelatedItems(loId) {
-	            if (_this.state.sortedItems.hasOwnProperty(loId)) {
-	                return _this.state.sortedItems[loId];
-	            } else {
-	                return [];
-	            }
-	        }
-
 	        _.each(this.props.items, function (item) {
 	            var answers = AnswerExtraction(item);
 
 	            item['correctAnswer'] = answers.correctAnswerText.text;
 	            item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
-	            item['questionRelatedItems'] = getRelatedItems(item.learningObjectiveIds[0]);
-	            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
-	            item['wrongAnswer1Feedback'] = answers.wrongAnswerFeedbacks[0];
-	            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
-	            item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
-	            item['wrongAnswer1RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[0]);
-	            item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
-	            item['wrongAnswer2Feedback'] = answers.wrongAnswerFeedbacks[1];
-	            item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
-	            item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
-	            item['wrongAnswer2RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[1]);
-	            item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
-	            item['wrongAnswer3Feedback'] = answers.wrongAnswerFeedbacks[2];
-	            item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
-	            item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
-	            item['wrongAnswer3RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[2]);
+	            item['questionRelatedItems'] = _this.getRelatedItems(item.learningObjectiveIds[0]);
+	            item['wrongAnswers'] = answers.wrongAnswerTexts;
+	            item['wrongAnswerFeedbacks'] = answers.wrongAnswerFeedbacks;
+	            item['wrongAnswerIds'] = answers.wrongAnswerIds;
+	            item['wrongAnswerLOs'] = answers.wrongAnswerLOs;
 	            items.push(item);
 	        });
 
 	        return _.map(items, function (item) {
-	            var questionLO, itemControls;
-
-	            if (item.question.learningObjectiveIds.length > 0) {
-	                questionLO = item.question.learningObjectiveIds[0];
-	            } else {
-	                questionLO = '';
-	            }
+	            var questionLO = _this.getQuestionLO(item),
+	                itemControls;
 
 	            if (_this.props.enableClickthrough) {
 	                itemControls = React.createElement(
@@ -47235,42 +47277,7 @@
 	                                feedback: item.correctAnswerFeedback,
 	                                label: 'Correct Answer' })
 	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'b)'
-	                            ),
-	                            React.createElement(AnswerText, { answerText: item.wrongAnswer1,
-	                                feedback: item.wrongAnswer1Feedback,
-	                                label: 'Wrong Answer 1' })
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'c)'
-	                            ),
-	                            React.createElement(AnswerText, { answerText: item.wrongAnswer2,
-	                                feedback: item.wrongAnswer2Feedback,
-	                                label: 'Wrong Answer 2' })
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'd)'
-	                            ),
-	                            React.createElement(AnswerText, { answerText: item.wrongAnswer3,
-	                                feedback: item.wrongAnswer3Feedback,
-	                                label: 'Wrong Answer 3' })
-	                        ),
+	                        _this.renderItemAnswerTexts(item),
 	                        itemControls
 	                    )
 	                ),
@@ -47310,57 +47317,7 @@
 	                                'Correct answer -- no confused LO'
 	                            )
 	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'b)'
-	                            ),
-	                            React.createElement(LOText, { answerId: item.wrongAnswer1ID,
-	                                component: 'answer',
-	                                itemId: item.id,
-	                                libraryId: _this.props.libraryId,
-	                                outcomeDisplayName: _this.getOutcomeDisplayName(item.wrongAnswer1LO),
-	                                outcomeId: questionLO,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer1RelatedItems })
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'c)'
-	                            ),
-	                            React.createElement(LOText, { answerId: item.wrongAnswer2ID,
-	                                component: 'answer',
-	                                itemId: item.id,
-	                                libraryId: _this.props.libraryId,
-	                                outcomeDisplayName: _this.getOutcomeDisplayName(item.wrongAnswer2LO),
-	                                outcomeId: questionLO,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer2RelatedItems })
-	                        ),
-	                        React.createElement(
-	                            'div',
-	                            { className: 'text-row-wrapper' },
-	                            React.createElement(
-	                                'p',
-	                                { className: 'answer-label' },
-	                                'd)'
-	                            ),
-	                            React.createElement(LOText, { answerId: item.wrongAnswer3ID,
-	                                component: 'answer',
-	                                itemId: item.id,
-	                                libraryId: _this.props.libraryId,
-	                                outcomeDisplayName: _this.getOutcomeDisplayName(item.wrongAnswer3LO),
-	                                outcomeId: questionLO,
-	                                outcomes: _this.state.outcomes,
-	                                relatedItems: item.wrongAnswer3RelatedItems })
-	                        )
+	                        _this.renderItemAnswerLOs(item)
 	                    )
 	                )
 	            );
@@ -49671,7 +49628,7 @@
 /* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// EditItem.jsx
+	/* WEBPACK VAR INJECTION */(function(_) {// EditItem.jsx
 	'use strict';
 
 	__webpack_require__(61);
@@ -49697,8 +49654,7 @@
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-
-	var questionFile;
+	var WrongAnswerEditor = __webpack_require__(30);
 
 	var EditItem = React.createClass({
 	    displayName: 'EditItem',
@@ -49706,7 +49662,11 @@
 	    getInitialState: function getInitialState() {
 	        var me = this.props.item,
 	            answers = AnswerExtraction(me),
-	            currentImage = me.question.hasOwnProperty('files') ? me.question.files.imageFile : '';
+	            wrongAnswerErrors = [];
+
+	        _.each(answers.wrongAnswers, function (wrongAnswer) {
+	            wrongAnswerErrors.push(false);
+	        });
 
 	        return {
 	            correctAnswer: answers.correctAnswerText.text,
@@ -49716,41 +49676,66 @@
 	            itemDescription: me.description.text,
 	            itemDisplayName: me.displayName.text,
 	            itemDisplayNameError: false,
-	            originalQuestionFileURL: currentImage,
-	            questionFile: currentImage,
+	            newWrongAnswerIndices: [],
 	            questionString: me.question.text.text,
 	            questionStringError: false,
-	            removeImageFile: false,
+	            removedAnswerIds: [],
+	            removedChoiceIds: [],
 	            showAlert: false,
-	            showDevareImageBtn: false,
 	            showModal: false,
-	            showRevertImageBtn: false,
-	            wrongAnswer1: answers.wrongAnswerTexts[0].text,
-	            wrongAnswer1Error: false,
-	            wrongAnswer1Id: answers.wrongAnswerIds[0],
-	            wrongAnswer1Feedback: answers.wrongAnswerFeedbacks[0],
-	            wrongAnswer2: answers.wrongAnswerTexts[1].text,
-	            wrongAnswer2Error: false,
-	            wrongAnswer2Id: answers.wrongAnswerIds[1],
-	            wrongAnswer2Feedback: answers.wrongAnswerFeedbacks[1],
-	            wrongAnswer3: answers.wrongAnswerTexts[2].text,
-	            wrongAnswer3Error: false,
-	            wrongAnswer3Id: answers.wrongAnswerIds[2],
-	            wrongAnswer3Feedback: answers.wrongAnswerFeedbacks[2]
+	            wrongAnswers: answers.wrongAnswerTexts,
+	            wrongAnswerErrors: wrongAnswerErrors,
+	            wrongAnswerIds: answers.wrongAnswerIds,
+	            wrongAnswerFeedbacks: answers.wrongAnswerFeedbacks,
+	            wrongChoiceIds: answers.wrongChoiceIds
 	        };
 	    },
 	    componentWillMount: function componentWillMount() {},
+	    componentDidUpdate: function componentDidUpdate() {
+	        setTimeout(this.checkNewEditorInstances, 500);
+	    },
+	    addWrongAnswer: function addWrongAnswer() {
+	        var newIndex = this.state.wrongAnswers.length + 1;
+	        this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
+	        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.concat([false]) });
+	        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
+
+	        this.setState({ newWrongAnswerIndices: [newIndex] });
+	    },
+	    checkNewEditorInstances: function checkNewEditorInstances() {
+	        if (this.state.newWrongAnswerIndices.length > 0) {
+	            this.initializeNewEditorInstances();
+	        }
+	    },
 	    close: function close() {
 	        this.setState({ showModal: false });
-	        this.setState({ showDevareImageBtn: false });
-	        this.setState({ showRevertImageBtn: false });
 	    },
 	    closeAndReset: function closeAndReset() {
 	        this.setState({ showModal: false });
 	        this.reset();
 	    },
+	    formatWrongAnswers: function formatWrongAnswers() {
+	        var _this = this;
+	        return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
+	            var errorState = _this.state.wrongAnswerErrors[index],
+	                feedback = _this.state.wrongAnswerFeedbacks[index];
+
+	            return React.createElement(WrongAnswerEditor, { error: errorState,
+	                feedback: feedback,
+	                index: index,
+	                key: index,
+	                remove: _this.removeWrongAnswer,
+	                text: wrongAnswer.text });
+	        });
+	    },
+	    initializeEditorInstance: function initializeEditorInstance(instance) {
+	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.replace(instance);
+	        });
+	    },
 	    initializeEditors: function initializeEditors(e) {
-	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId);
+	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId),
+	            _this = this;
 
 	        // CKEditor
 	        // Instructions from here
@@ -49758,30 +49743,40 @@
 	        CKEditorModalHack();
 	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
 	            ConfigureCKEditor(CKEDITOR, repositoryId);
-	            CKEDITOR.replace('correctAnswer');
-	            CKEDITOR.replace('correctAnswerFeedback');
-	            CKEDITOR.replace('questionString');
-	            CKEDITOR.replace('wrongAnswer1');
-	            CKEDITOR.replace('wrongAnswer1Feedback');
-	            CKEDITOR.replace('wrongAnswer2');
-	            CKEDITOR.replace('wrongAnswer2Feedback');
-	            CKEDITOR.replace('wrongAnswer3');
-	            CKEDITOR.replace('wrongAnswer3Feedback');
+	            _this.initializeEditorInstance('correctAnswer');
+	            _this.initializeEditorInstance('correctAnswerFeedback');
+	            _this.initializeEditorInstance('questionString');
+
+	            _.each(_this.state.wrongAnswers, function (wrongAnswer, index) {
+	                var visibleIndex = index + 1,
+	                    editorInstance = 'wrongAnswer' + visibleIndex,
+	                    feedbackInstance = editorInstance + 'Feedback';
+
+	                _this.initializeEditorInstance(editorInstance);
+	                _this.initializeEditorInstance(feedbackInstance);
+	            });
 	        });
+	    },
+	    initializeNewEditorInstances: function initializeNewEditorInstances() {
+	        var _this = this;
+	        _.each(this.state.newWrongAnswerIndices, function (index) {
+	            var visibleIndex = index,
+	                editorInstance = 'wrongAnswer' + visibleIndex,
+	                feedbackInstance = editorInstance + 'Feedback';
+
+	            _this.initializeEditorInstance(editorInstance);
+	            _this.initializeEditorInstance(feedbackInstance);
+	        });
+
+	        this.setState({ newWrongAnswerIndices: [] });
 	    },
 	    onChange: function onChange(e) {
 	        var inputId = e.currentTarget.id,
 	            inputValue = e.target.value,
-	            URL = window.webkitURL || window.URL;
-	        if (inputId === "questionFile") {
-	            questionFile = e.target.files[0];
-	            this.setState({ showRevertImageBtn: true });
-	            this.refs.imagePreview.src = URL.createObjectURL(questionFile);
-	        } else {
-	            var update = {};
-	            update[inputId] = inputValue;
-	            this.setState(update);
-	        }
+	            update = {};
+
+	        update[inputId] = inputValue;
+	        this.setState(update);
 	    },
 	    open: function open(e) {
 	        // This seems un-React-like (i.e. should do it via a Store?),
@@ -49790,29 +49785,45 @@
 	        // every single item on the page would attach an event...
 
 	        var _this = this;
-	        this.setState({ showModal: true }, function () {
-	            LibraryItemsStore.getItemDetails(_this.props.libraryId, _this.props.item.id, function (item) {
-	                var fileURL = item.question.hasOwnProperty('files') ? item.question.files.imageFile : '';
-	                _this.setState({ originalQuestionFileURL: fileURL });
-	                _this.setState({ questionFile: fileURL });
-	                if (fileURL != '') {
-	                    _this.setState({ showDevareImageBtn: true });
-	                }
-	            });
-	        });
+	        this.setState({ showModal: true });
 	    },
-	    removeImage: function removeImage() {
-	        questionFile = null;
-	        this.setState({ removeImageFile: true });
-	        this.setState({ showDevareImageBtn: false });
-	        this.setState({ showRevertImageBtn: true });
-	        this.refs.imagePreview.src = '';
+	    removeWrongAnswer: function removeWrongAnswer(index) {
+	        // remove wrong answer & feedback & errors with the given index
+	        // will also have to remove this from the actual item...
+	        // so store the choiceId + answerId in the component
+
+	        var editorInstance = 'wrongAnswer' + (index + 1),
+	            feedbackEditor = editorInstance + 'Feedback',
+	            wrongAnswerId = this.state.wrongAnswerIds[index],
+	            wrongChoiceId = this.state.wrongChoiceIds[index];
+
+	        this.setState({ wrongAnswers: this.state.wrongAnswers.splice(index, 1) });
+	        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.splice(index, 1) });
+	        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.splice(index, 1) });
+	        this.setState({ wrongAnswerIds: this.state.wrongAnswerIds.splice(index, 1) });
+	        this.setState({ wrongChoiceIds: this.state.wrongChoiceIds.splice(index, 1) });
+
+	        this.setState({ removedAnswerIds: this.state.removedAnswerIds.concat(wrongAnswerId) });
+	        this.setState({ wrongChoiceIds: this.state.wrongChoiceIds.concat(wrongChoiceId) });
+
+	        if (this.state.wrongAnswers.length === 0) {
+	            this.setState({ wrongAnswers: [''] });
+	            this.setState({ wrongAnswerErrors: [false] });
+	            this.setState({ wrongAnswerFeedbacks: [''] });
+	        }
+
+	        this.resetEditorInstance(editorInstance);
+	        this.resetEditorInstance(feedbackEditor);
 	    },
 	    reset: function reset() {
 	        var me = this.props.item,
-	            answers = AnswerExtraction(me);
+	            answers = AnswerExtraction(me),
+	            wrongAnswerErrors = [];
 
-	        questionFile = null;
+	        _.each(answers.wrongAnswers, function (wrongAnswer) {
+	            wrongAnswerErrors.push(false);
+	        });
+
 	        this.setState({ correctAnswer: answers.correctAnswerText.text });
 	        this.setState({ correctAnswerError: false });
 	        this.setState({ correctAnswerId: answers.correctAnswerId });
@@ -49820,38 +49831,23 @@
 	        this.setState({ itemDescription: me.description.text });
 	        this.setState({ itemDisplayName: me.displayName.text });
 	        this.setState({ itemDisplayNameError: false });
-	        this.setState({ originalQuestionFileURL: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
-	        this.setState({ questionFile: me.question.hasOwnProperty('files') ? me.question.files.imageFile : '' });
 	        this.setState({ questionString: me.question.text.text });
 	        this.setState({ questionStringError: false });
-	        this.setState({ removeImageFile: false });
+	        this.setState({ removedAnswerIds: [] });
+	        this.setState({ removedChoiceIds: [] });
 	        this.setState({ showAlert: false });
-	        this.setState({ showDevareImageBtn: false });
-	        this.setState({ showRevertImageBtn: false });
-	        this.setState({ wrongAnswer1: answers.wrongAnswerTexts[0].text });
-	        this.setState({ wrongAnswer1Error: false });
-	        this.setState({ wrongAnswer1Id: answers.wrongAnswerIds[0] });
-	        this.setState({ wrongAnswer1Feedback: '' });
-	        this.setState({ wrongAnswer2: answers.wrongAnswerTexts[1].text });
-	        this.setState({ wrongAnswer2Error: false });
-	        this.setState({ wrongAnswer2Id: answers.wrongAnswerIds[1] });
-	        this.setState({ wrongAnswer2Feedback: '' });
-	        this.setState({ wrongAnswer3: answers.wrongAnswerTexts[2].text });
-	        this.setState({ wrongAnswer3Error: false });
-	        this.setState({ wrongAnswer3Id: answers.wrongAnswerIds[2] });
-	        this.setState({ wrongAnswer3Feedback: '' });
-	    },
-	    revertImage: function revertImage() {
-	        // undo the image preview changes and show the
-	        // original image file
-	        this.refs.imagePreview.src = this.state.originalQuestionFileURL;
-	        this.setState({ removeImageFile: false });
-	        if (this.state.originalQuestionFileURL != '') {
-	            this.setState({ showDevareImageBtn: true });
-	        }
-	        this.setState({ showRevertImageBtn: false });
+	        this.setState({ wrongAnswers: answers.wrongAnswerTexts });
+	        this.setState({ wrongAnswerErrors: wrongAnswerErrors });
+	        this.setState({ wrongAnswerIds: answers.wrongAnswerIds });
+	        this.setState({ wrongAnswerFeedbacks: answers.wrongAnswerFeedbacks });
+	        this.setState({ wrongChoiceIds: answers.wrongChoiceIds });
 	    },
 	    save: function save(e) {
+	        // NOTE: include all the deleted choices and answers
+	        //     up front in the wrongAnswer sections, with the "delete": true flag set
+	        // NOTE: the choiceId index for any new choices / answers should
+	        //     assume the index position post-delete
+
 	        var payload = {
 	            itemId: this.props.item.id,
 	            libraryId: this.props.libraryId
@@ -49915,12 +49911,6 @@
 	                feedback: wrongAnswer3Feedback
 	            }];
 
-	            if (questionFile != null && !this.state.removeImageFile) {
-	                payload['questionFile'] = questionFile;
-	            } else if (this.state.removeImageFile) {
-	                payload['question']['removeImageFile'] = true;
-	            }
-
 	            Dispatcher.dispatch({
 	                type: ActionTypes.UPDATE_ITEM,
 	                content: payload
@@ -49930,14 +49920,10 @@
 	    },
 	    render: function render() {
 	        var alert = '',
-	            devareImageBtn = '',
-	            revertImageBtn = '',
+	            wrongAnswers = this.formatWrongAnswers(),
 	            correctAnswer,
 	            itemDisplayName,
-	            questionString,
-	            wrongAnswer1,
-	            wrongAnswer2,
-	            wrongAnswer3;
+	            questionString;
 
 	        if (this.state.showAlert) {
 	            alert = React.createElement(
@@ -50043,120 +50029,6 @@
 	            );
 	        }
 
-	        if (this.state.wrongAnswer1Error) {
-	            wrongAnswer1 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer1',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 1'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.wrongAnswer1,
-	                    onChange: this.onChange,
-	                    placeholder: 'The first mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer1 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer1' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 1'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.wrongAnswer1,
-	                    onChange: this.onChange,
-	                    placeholder: 'The first mis-direction answer' })
-	            );
-	        }
-
-	        if (this.state.wrongAnswer2Error) {
-	            wrongAnswer2 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer2',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 2'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.wrongAnswer2,
-	                    onChange: this.onChange,
-	                    placeholder: 'The second mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer2 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer2' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 2'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.wrongAnswer2,
-	                    onChange: this.onChange,
-	                    placeholder: 'The second mis-direction answer' })
-	            );
-	        }
-
-	        if (this.state.wrongAnswer3Error) {
-	            wrongAnswer3 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer3',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 3'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.wrongAnswer3,
-	                    onChange: this.onChange,
-	                    placeholder: 'The third mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer3 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer3' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 3'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.wrongAnswer3,
-	                    onChange: this.onChange,
-	                    placeholder: 'The third mis-direction answer' })
-	            );
-	        }
-
-	        if (this.state.showRevertImageBtn) {
-	            revertImageBtn = React.createElement(
-	                Button,
-	                { onClick: this.revertImage,
-	                    title: 'Revert to original image' },
-	                React.createElement(Glyphicon, { glyph: 'refresh' })
-	            );
-	        }
-
-	        if (this.state.showDevareImageBtn) {
-	            devareImageBtn = React.createElement(
-	                Button,
-	                { onClick: this.removeImage,
-	                    title: 'Remove the image' },
-	                React.createElement(Glyphicon, { glyph: 'trash' })
-	            );
-	        }
-
 	        return React.createElement(
 	            'div',
 	            null,
@@ -50204,30 +50076,6 @@
 	                                placeholder: 'A description for this item' })
 	                        ),
 	                        questionString,
-	                        React.createElement(
-	                            'div',
-	                            { className: 'image-preview' },
-	                            React.createElement(
-	                                FormGroup,
-	                                { controlId: 'questionFile' },
-	                                React.createElement(
-	                                    ControlLabel,
-	                                    null,
-	                                    'Image File (optional)'
-	                                ),
-	                                React.createElement(FormControl, { type: 'file',
-	                                    ref: 'imageFileInput',
-	                                    onChange: this.onChange })
-	                            ),
-	                            React.createElement('img', { ref: 'imagePreview',
-	                                src: this.state.questionFile }),
-	                            React.createElement(
-	                                'div',
-	                                { className: 'image-controls' },
-	                                devareImageBtn,
-	                                revertImageBtn
-	                            )
-	                        ),
 	                        correctAnswer,
 	                        React.createElement(
 	                            FormGroup,
@@ -50242,47 +50090,13 @@
 	                                onChange: this.onChange,
 	                                placeholder: 'Feedback for the correct answer' })
 	                        ),
-	                        wrongAnswer1,
+	                        wrongAnswers,
 	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer1Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 1 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer1Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the first mis-direction answer' })
-	                        ),
-	                        wrongAnswer2,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer2Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 2 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer2Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the second mis-direction answer' })
-	                        ),
-	                        wrongAnswer3,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer3Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 3 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer3Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the third mis-direction answer' })
+	                            Button,
+	                            { onClick: this.addWrongAnswer,
+	                                bsStyle: 'success' },
+	                            React.createElement(Glyphicon, { glyph: 'plus' }),
+	                            'Add Wrong Answer'
 	                        )
 	                    )
 	                ),
@@ -50306,6 +50120,7 @@
 	});
 
 	module.exports = EditItem;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
 /* 61 */
