@@ -97,6 +97,7 @@ var ItemsList = React.createClass({
         // just generate the answer objects
         return _.map(item.wrongAnswers, function (answer, index) {
             var visibleIndex = index + 1,
+                wrongAnswerLabel = 'Wrong Answer ' + visibleIndex,
                 feedback = item.wrongAnswerFeedbacks[index],
                 choiceLetter = ChoiceLabels[visibleIndex];
 
@@ -105,7 +106,7 @@ var ItemsList = React.createClass({
                 <p className="answer-label">{choiceLetter})</p>
                 <AnswerText answerText={answer.text}
                             feedback={feedback}
-                            label="Wrong Answer {visibleIndex}" />
+                            label={wrongAnswerLabel} />
             </div>
         });
     },

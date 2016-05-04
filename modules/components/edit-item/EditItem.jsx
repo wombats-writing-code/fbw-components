@@ -11,6 +11,7 @@ var ControlLabel = ReactBS.ControlLabel;
 var FormControl = ReactBS.FormControl;
 var FormGroup = ReactBS.FormGroup;
 var Glyphicon = ReactBS.Glyphicon;
+var ListGroup = ReactBS.ListGroup;
 var Modal = ReactBS.Modal;
 
 var $s = require('scriptjs');
@@ -88,15 +89,65 @@ var EditItem = React.createClass({
         var _this = this;
         return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
             var errorState = _this.state.wrongAnswerErrors[index],
-                feedback = _this.state.wrongAnswerFeedbacks[index];
+                feedback = _this.state.wrongAnswerFeedbacks[index],
+                answerId = _this.state.wrongAnswerIds[index],
+                choiceId = _this.state.wrongChoiceIds[index];
 
-            return <WrongAnswerEditor error={errorState}
+            return <WrongAnswerEditor answerId={answerId}
+                                      choiceId={choiceId}
+                                      error={errorState}
                                       feedback={feedback}
                                       index={index}
-                                      key={index}
+                                      key={answerId}
                                       remove={_this.removeWrongAnswer}
                                       text={wrongAnswer.text} />
         });
+    },
+    getWrongAnswerChoiceIds: function () {
+        var results = [];
+        _.each(this.refs.wrongAnswers.props.children, function (wrongAnswerEditor) {
+            if (wrongAnswerEditor.props.choiceId !== 'undefined') {
+                results.push(wrongAnswerEditor.props.choiceId);
+            } else {
+                results.push(null);
+            }
+        });
+
+        return results;
+    },
+    getWrongAnswerEditorIds: function () {
+        var results = [];
+        _.each(this.refs.wrongAnswers.props.children, function (wrongAnswerEditor) {
+            if (wrongAnswerEditor.key !== 'undefined') {
+                results.push(wrongAnswerEditor.key);
+            } else {
+                results.push(null);
+            }
+        });
+
+        return results;
+    },
+    getWrongAnswerFeedbacks: function () {
+        var results = [];
+
+        _.each(this.refs.wrongAnswers.props.children, function (wrongAnswerEditor, index) {
+            var visibleIndex = index + 1,
+                editorInstance = 'wrongAnswer' + visibleIndex,
+                feedbackEditor = editorInstance + 'Feedback';
+            results.push(CKEDITOR.instances[feedbackEditor].getData());
+        });
+
+        return results;
+    },
+    getWrongAnswers: function () {
+        var results = [];
+        _.each(this.refs.wrongAnswers.props.children, function (wrongAnswerEditor, index) {
+            var visibleIndex = index + 1,
+                editorInstance = 'wrongAnswer' + visibleIndex;
+            results.push(CKEDITOR.instances[editorInstance].getData());
+        });
+
+        return results;
     },
     initializeEditorInstance: function (instance) {
         $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
@@ -165,16 +216,38 @@ var EditItem = React.createClass({
         var editorInstance = 'wrongAnswer' + (index + 1),
             feedbackEditor = editorInstance + 'Feedback',
             wrongAnswerId = this.state.wrongAnswerIds[index],
-            wrongChoiceId = this.state.wrongChoiceIds[index];
+            wrongChoiceId = this.state.wrongChoiceIds[index],
+            updatedWrongAnswers = this.state.wrongAnswers,
+            updatedWrongAnswerErrors = this.state.wrongAnswerErrors,
+            updatedWrongAnswerFeedbacks = this.state.wrongAnswerFeedbacks,
+            updatedWrongAnswerIds = this.state.wrongAnswerIds,
+            updatedWrongChoiceIds = this.state.wrongChoiceIds,
+            _this = this;
 
-        this.setState({ wrongAnswers: this.state.wrongAnswers.splice(index, 1) });
-        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.splice(index, 1) });
-        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.splice(index, 1) });
-        this.setState({ wrongAnswerIds: this.state.wrongAnswerIds.splice(index, 1) });
-        this.setState({ wrongChoiceIds: this.state.wrongChoiceIds.splice(index, 1) });
+        // need to remove the CKEditor instances on wrongAnswers
+        // before React re-renders the DOM, otherwise the instance
+        // values won't match, i.e. wrongAnswer1 will have CKEditor instance wrongAnswer2
+        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
+            var remainingInstance = 'wrongAnswer' + (index + 1),
+                feedbackInstance = remainingInstance + 'Feedback';
+                CKEDITOR.instances[remainingInstance].destroy();
+                CKEDITOR.instances[feedbackInstance].destroy();
+        });
+
+        updatedWrongAnswers.splice(index, 1);
+        updatedWrongAnswerErrors.splice(index, 1);
+        updatedWrongAnswerFeedbacks.splice(index, 1);
+        updatedWrongAnswerIds.splice(index, 1);
+        updatedWrongChoiceIds.splice(index, 1);
+
+        this.setState({ wrongAnswers: updatedWrongAnswers });
+        this.setState({ wrongAnswerErrors: updatedWrongAnswerErrors });
+        this.setState({ wrongAnswerFeedbacks: updatedWrongAnswerFeedbacks });
+        this.setState({ wrongAnswerIds: updatedWrongAnswerIds });
+        this.setState({ wrongChoiceIds: updatedWrongChoiceIds });
 
         this.setState({ removedAnswerIds: this.state.removedAnswerIds.concat(wrongAnswerId) });
-        this.setState({ wrongChoiceIds: this.state.wrongChoiceIds.concat(wrongChoiceId) });
+        this.setState({ removedChoiceIds: this.state.removedChoiceIds.concat(wrongChoiceId) });
 
         if (this.state.wrongAnswers.length === 0) {
             this.setState({ wrongAnswers: [''] });
@@ -182,8 +255,15 @@ var EditItem = React.createClass({
             this.setState({ wrongAnswerFeedbacks: [''] });
         }
 
-        this.resetEditorInstance(editorInstance);
-        this.resetEditorInstance(feedbackEditor);
+        // can we re-add the CKEditors here? Is that enough time?
+        setTimeout(function () {
+            _.each(_this.state.wrongAnswers, function (wrongAnswer, index) {
+            var remainingInstance = 'wrongAnswer' + (index + 1),
+                feedbackInstance = remainingInstance + 'Feedback';
+                CKEDITOR.replace(remainingInstance);
+                CKEDITOR.replace(feedbackInstance);
+        });
+        }, 250);
     },
     reset: function() {
         var me = this.props.item,
@@ -225,27 +305,37 @@ var EditItem = React.createClass({
             correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
             correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
             questionString = CKEDITOR.instances.questionString.getData(),
-            wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
-            wrongAnswer1Feedback = CKEDITOR.instances.wrongAnswer1Feedback.getData(),
-            wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
-            wrongAnswer2Feedback = CKEDITOR.instances.wrongAnswer2Feedback.getData(),
-            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData(),
-            wrongAnswer3Feedback = CKEDITOR.instances.wrongAnswer3Feedback.getData();
+            wrongAnswers = this.getWrongAnswers(),
+            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks(),
+            wrongAnswerIds = this.getWrongAnswerEditorIds(),
+            wrongChoiceIds = this.getWrongAnswerChoiceIds(),
+            _this = this;
 
         if (this.state.itemDisplayName === '' ||
             correctAnswer === '' ||
             questionString === '' ||
-            wrongAnswer1 === '' ||
-            wrongAnswer2 === '' ||
-            wrongAnswer3 === '') {
+            wrongAnswers.indexOf('') >= 0) {
+
+            var firstEmptyWrongAnswer = wrongAnswers.indexOf(''),
+                validationState = [];
+            _.each(this.state.wrongAnswerErrors, function (errorState) {
+                validationState.push(false);
+            });
+
+            if (firstEmptyWrongAnswer >= 0) {
+                _.each(wrongAnswers, function (wrongAnswer, index) {
+                    if (wrongAnswer === '') {
+                        validationState[index] = true;
+                    }
+                });
+            }
+
             this.setState({ showAlert: true });
 
             this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
             this.setState({ correctAnswerError: correctAnswer === '' });
             this.setState({ questionStringError: questionString === '' });
-            this.setState({ wrongAnswer1Error: wrongAnswer1 === '' });
-            this.setState({ wrongAnswer2Error: wrongAnswer2 === '' });
-            this.setState({ wrongAnswer3Error: wrongAnswer3 === '' });
+            this.setState({ wrongAnswerErrors: validationState });
         } else {
             var choiceData = AnswerExtraction(this.props.item);
 
@@ -257,40 +347,79 @@ var EditItem = React.createClass({
                 choices: [{
                     choiceId: choiceData.correctChoiceId,
                     text: correctAnswer
-                },{
-                    choiceId: choiceData.wrongChoiceIds[0],
-                    text: wrongAnswer1
-                },{
-                    choiceId: choiceData.wrongChoiceIds[1],
-                    text: wrongAnswer2
-                },{
-                    choiceId: choiceData.wrongChoiceIds[2],
-                    text: wrongAnswer3
                 }]
             };
+
+            _.each(this.state.removedChoiceIds, function (choiceId) {
+                payload.question.choices.push({
+                    choiceId: choiceId,
+                    delete: true
+                });
+            });
+
+            _.each(wrongAnswers, function (wrongAnswer, index) {
+                var wrongChoiceId = wrongChoiceIds[index];
+
+                if (_this.state.removedChoiceIds.indexOf(wrongChoiceId) < 0) {
+                    // choice was not deleted, so add it back to the
+                    // payload with the given MC3 ID
+                    if (wrongChoiceId != null) {
+                        payload.question.choices.push({
+                            choiceId: wrongChoiceId,
+                            text: wrongAnswer
+                        });
+                    } else {
+                        // or create a new choice here
+                        payload.question.choices.push({
+                            text: wrongAnswer
+                        });
+                    }
+                }
+            });
+
             payload['answers'] = [{
                 answerId: this.state.correctAnswerId,
                 choiceId: choiceData.correctChoiceId,
                 feedback: correctAnswerFeedback
-            },{
-                answerId: this.state.wrongAnswer1Id,
-                choiceId: choiceData.wrongChoiceIds[0],
-                feedback: wrongAnswer1Feedback
-            },{
-                answerId: this.state.wrongAnswer2Id,
-                choiceId: choiceData.wrongChoiceIds[1],
-                feedback: wrongAnswer2Feedback
-            },{
-                answerId: this.state.wrongAnswer3Id,
-                choiceId: choiceData.wrongChoiceIds[2],
-                feedback: wrongAnswer3Feedback
             }];
+
+            _.each(this.state.removedAnswerIds, function (answerId) {
+                payload.answers.push({
+                    answerId: answerId,
+                    delete: true
+                });
+            });
+
+            _.each(wrongAnswerFeedbacks, function (feedback, index) {
+                var wrongAnswerId = wrongAnswerIds[index],
+                    wrongChoiceId = wrongChoiceIds[index];
+
+                if (_this.state.removedAnswerIds.indexOf(wrongAnswerId) < 0) {
+                    // answer was not deleted, so add it back to the
+                    // payload with the given MC3 ID
+                    if (wrongAnswerId != null) {
+                        payload.answers.push({
+                            answerId: wrongAnswerId,
+                            choiceId: wrongChoiceId,
+                            feedback: feedback
+                        });
+                    } else {
+                        // or create a new answer mapping here
+                        payload.answers.push({
+                            choiceId: index + 1,
+                            feedback: feedback,
+                            genusTypeId: GenusTypes.WRONG_ANSWER
+                        });
+                    }
+                }
+            });
 
             Dispatcher.dispatch({
                 type: ActionTypes.UPDATE_ITEM,
                 content: payload
             });
             this.close();
+            setTimeout(_this.reset, 500);
         }
     },
     render: function () {
@@ -370,7 +499,7 @@ var EditItem = React.createClass({
             </Button>
             <Modal bsSize="lg"
                    show={this.state.showModal}
-                   onHide={this.close}
+                   onHide={this.closeAndReset}
                    onEntered={this.initializeEditors}>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Question</Modal.Title>
@@ -395,7 +524,9 @@ var EditItem = React.createClass({
                                          onChange={this.onChange}
                                          placeholder="Feedback for the correct answer" />
                         </FormGroup>
-                        {wrongAnswers}
+                        <ListGroup ref="wrongAnswers">
+                            {wrongAnswers}
+                        </ListGroup>
                         <Button onClick={this.addWrongAnswer}
                                 bsStyle="success">
                             <Glyphicon glyph="plus" />
