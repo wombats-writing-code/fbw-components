@@ -3,30 +3,31 @@
 
 require('./AddItem.css');
 
-let React = require('react');
-let ReactBS = require('react-bootstrap');
-let Alert = ReactBS.Alert;
-let Button = ReactBS.Button;
-let ControlLabel = ReactBS.ControlLabel;
-let FormControl = ReactBS.FormControl;
-let FormGroup = ReactBS.FormGroup;
-let Glyphicon = ReactBS.Glyphicon;
-let Modal = ReactBS.Modal;
+var React = require('react');
+var ReactBS = require('react-bootstrap');
+var Alert = ReactBS.Alert;
+var Button = ReactBS.Button;
+var ControlLabel = ReactBS.ControlLabel;
+var FormControl = ReactBS.FormControl;
+var FormGroup = ReactBS.FormGroup;
+var Glyphicon = ReactBS.Glyphicon;
+var Modal = ReactBS.Modal;
 
-let $s = require('scriptjs');
+var _ = require('lodash');
 
-let ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
-let CKEditorModalHack = require('../../utilities/CKEditorModalHack');
-let ConfigureCKEditor = require('../../utilities/ConfigureCKEditor');
-let ConvertLibraryId2RepositoryId = require('../../utilities/ConvertLibraryId2RepositoryId');
-let GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
-let Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
-let LibraryItemsStore = require('../../stores/LibraryItemsStore');
-let MiddlewareService = require('../../services/middleware.service.js');
+var $s = require('scriptjs');
 
-let questionFile;
+var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
+var CKEditorModalHack = require('../../utilities/CKEditorModalHack');
+var ConfigureCKEditor = require('../../utilities/ConfigureCKEditor');
+var ConvertLibraryId2RepositoryId = require('../../utilities/ConvertLibraryId2RepositoryId');
+var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
+var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+var LibraryItemsStore = require('../../stores/LibraryItemsStore');
+var MiddlewareService = require('../../services/middleware.service.js');
+var WrongAnswerEditor = require('../wrong-answer-editor/WrongAnswerEditor');
 
-let AddItem = React.createClass({
+var AddItem = React.createClass({
     getInitialState: function () {
         return {
             correctAnswer: '',
@@ -35,94 +36,104 @@ let AddItem = React.createClass({
             itemDescription: '',
             itemDisplayName: '',
             itemDisplayNameError: false,
+            newWrongAnswerIndices: [],
             questionFile: '',
             questionString: '',
             questionStringError: false,
             showAlert: false,
-            showImagePreviewDeleteBtn: false,
             showModal: false,
-            wrongAnswer1: '',
-            wrongAnswer1Error: false,
-            wrongAnswer1Feedback: '',
-            wrongAnswer2: '',
-            wrongAnswer2Error: false,
-            wrongAnswer2Feedback: '',
-            wrongAnswer3: '',
-            wrongAnswer3Error: false,
-            wrongAnswer3Feedback: ''
+            wrongAnswers: [''],
+            wrongAnswerErrors: [false],
+            wrongAnswerFeedbacks: ['']
         };
     },
     componentWillMount: function() {
     },
-    componentDidMount: function () {
+    componentDidUpdate: function () {
+        setTimeout(this.checkNewEditorInstances, 500);
+    },
+    addWrongAnswer: function () {
+        var newIndex = this.state.wrongAnswers.length + 1;
+        this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
+        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.concat([false]) });
+        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
 
+        this.setState({ newWrongAnswerIndices: [newIndex] });
     },
     close: function () {
         this.setState({showModal: false});
         this.reset();
     },
+    checkNewEditorInstances: function () {
+        if (this.state.newWrongAnswerIndices.length > 0) {
+            this.initializeNewEditorInstances();
+        }
+    },
     create: function (e) {
         // With CKEditor, need to get the data from CKEditor,
         // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
-        // let data = CKEDITOR.instances.correctAnswer.getData();
-        let payload = {
+        // var data = CKEDITOR.instances.correctAnswer.getData();
+        var payload = {
             libraryId: this.props.libraryId
         },
             correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
             correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
             questionString = CKEDITOR.instances.questionString.getData(),
-            wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
-            wrongAnswer1Feedback = CKEDITOR.instances.wrongAnswer1Feedback.getData(),
-            wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
-            wrongAnswer2Feedback = CKEDITOR.instances.wrongAnswer2Feedback.getData(),
-            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData(),
-            wrongAnswer3Feedback = CKEDITOR.instances.wrongAnswer3Feedback.getData();
+            wrongAnswers = this.getWrongAnswers(),
+            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks();
 
         if (this.state.itemDisplayName === '' ||
             correctAnswer === '' ||
             questionString === '' ||
-            wrongAnswer1 === '' ||
-            wrongAnswer2 === '' ||
-            wrongAnswer3 === '') {
+            wrongAnswers.indexOf('') >= 0) {
+
+            var firstEmptyWrongAnswer = wrongAnswers.indexOf(''),
+                validationState = [];
+            _.each(this.state.wrongAnswerErrors, function (errorState) {
+                validationState.push(false);
+            });
+
+            if (firstEmptyWrongAnswer >= 0) {
+                _.each(wrongAnswers, function (wrongAnswer, index) {
+                    if (wrongAnswer === '') {
+                        validationState[index] = true;
+                    }
+                });
+            }
+
             this.setState({ showAlert: true });
 
             this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
             this.setState({ correctAnswerError: correctAnswer === '' });
             this.setState({ questionStringError: questionString === '' });
-            this.setState({ wrongAnswer1Error: wrongAnswer1 === '' });
-            this.setState({ wrongAnswer2Error: wrongAnswer2 === '' });
-            this.setState({ wrongAnswer3Error: wrongAnswer3 === '' });
+            this.setState({ wrongAnswerErrors: validationState });
         } else {
 
             payload['displayName'] = this.state.itemDisplayName;
             payload['description'] = this.state.itemDescription;
             payload['question'] = {
                 text: questionString,
-                choices: [correctAnswer,
-                          wrongAnswer1,
-                          wrongAnswer2,
-                          wrongAnswer3]
+                choices: [correctAnswer]
             };
+
+            _.each(wrongAnswers, function (wrongAnswer) {
+                payload['question']['choices'].push(wrongAnswer);
+            });
             payload['answers'] = [{
                 genusTypeId: GenusTypes.CORRECT_ANSWER,
                 choiceId: 0,
                 feedback: correctAnswerFeedback
-            },{
-                genusTypeId: GenusTypes.WRONG_ANSWER,
-                choiceId: 1,
-                feedback: wrongAnswer1Feedback
-            },{
-                genusTypeId: GenusTypes.WRONG_ANSWER,
-                choiceId: 2,
-                feedback: wrongAnswer2Feedback
-            },{
-                genusTypeId: GenusTypes.WRONG_ANSWER,
-                choiceId: 3,
-                feedback: wrongAnswer3Feedback
             }];
-            if (questionFile != null) {
-                payload['questionFile'] = questionFile;
-            }
+
+            _.each(wrongAnswerFeedbacks, function (feedback, index) {
+                var choiceIndex = index + 1,
+                    data = {
+                        genusTypeId: GenusTypes.WRONG_ANSWER,
+                        choiceId: choiceIndex,
+                        feedback: feedback
+                    };
+                payload['answers'].push(data);
+            });
 
             Dispatcher.dispatch({
                 type: ActionTypes.CREATE_ITEM,
@@ -131,74 +142,132 @@ let AddItem = React.createClass({
             this.close();
         }
     },
+    formatWrongAnswers: function () {
+        var _this = this;
+        return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
+            var errorState = _this.state.wrongAnswerErrors[index],
+                feedback = _this.state.wrongAnswerFeedbacks[index];
+
+            return <WrongAnswerEditor error={errorState}
+                                      feedback={feedback}
+                                      index={index}
+                                      key={index}
+                                      remove={_this.removeWrongAnswer}
+                                      text={wrongAnswer.text} />
+        });
+    },
+    getWrongAnswerFeedbacks: function () {
+        var results = [];
+
+        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
+            var visibleIndex = index + 1,
+                editorInstance = 'wrongAnswer' + visibleIndex,
+                feedbackEditor = editorInstance + 'Feedback';
+            results.push(CKEDITOR.instances[feedbackEditor].getData());
+        });
+
+        return results;
+    },
+    getWrongAnswers: function () {
+        var results = [];
+        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
+            var visibleIndex = index + 1,
+                editorInstance = 'wrongAnswer' + visibleIndex;
+            results.push(CKEDITOR.instances[editorInstance].getData());
+        });
+
+        return results;
+    },
+    initializeEditorInstance: function (instance) {
+        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+            CKEDITOR.replace(instance);
+        });
+    },
     initializeEditors: function (e) {
-        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId);
+        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId),
+            _this = this;
         // CKEditor
         // Instructions from here
         // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
         CKEditorModalHack();
         $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
             ConfigureCKEditor(CKEDITOR, repositoryId);
-            CKEDITOR.replace('correctAnswer');
-            CKEDITOR.replace('correctAnswerFeedback');
-            CKEDITOR.replace('questionString');
-            CKEDITOR.replace('wrongAnswer1');
-            CKEDITOR.replace('wrongAnswer1Feedback');
-            CKEDITOR.replace('wrongAnswer2');
-            CKEDITOR.replace('wrongAnswer2Feedback');
-            CKEDITOR.replace('wrongAnswer3');
-            CKEDITOR.replace('wrongAnswer3Feedback');
+            _this.initializeEditorInstance('correctAnswer');
+            _this.initializeEditorInstance('correctAnswerFeedback');
+            _this.initializeEditorInstance('questionString');
+            _this.initializeEditorInstance('wrongAnswer1');
+            _this.initializeEditorInstance('wrongAnswer1Feedback');
         });
     },
+    initializeNewEditorInstances: function () {
+        var _this = this;
+        _.each(this.state.newWrongAnswerIndices, function (index) {
+            var visibleIndex = index,
+                editorInstance = 'wrongAnswer' + visibleIndex,
+                feedbackInstance = editorInstance + 'Feedback';
+
+            _this.initializeEditorInstance(editorInstance);
+            _this.initializeEditorInstance(feedbackInstance);
+        });
+
+        this.setState({ newWrongAnswerIndices: [] });
+    },
     onChange: function(e) {
-        let inputId = e.currentTarget.id,
+        var inputId = e.currentTarget.id,
             inputValue = e.target.value,
-            URL = window.webkitURL || window.URL;
-        if (inputId === "questionFile") {
-            questionFile = e.target.files[0];
-            this.setState({ showImagePreviewDeleteBtn: true });
-            this.refs.imagePreview.src = URL.createObjectURL(questionFile);
-        } else {
-            let update = {};
-            update[inputId] = inputValue;
-            this.setState(update);
-        }
+            update = {};
+
+        update[inputId] = inputValue;
+        this.setState(update);
     },
     open: function () {
         this.setState({showModal: true});
     },
-    removeImage: function () {
-        this.refs.imagePreview.src = '';
-        this.refs.imageFileInput.value = '';
-        this.setState({ showImagePreviewDeleteBtn: false });
-        questionFile = null;
+    removeWrongAnswer: function (index) {
+        var editorInstance = 'wrongAnswer' + (index + 1),
+            feedbackEditor = editorInstance + 'Feedback';
+        // remove wrong answer & feedback & errors with the given index
+        this.setState({ wrongAnswers: this.state.wrongAnswers.splice(index, 1) });
+        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.splice(index, 1) });
+        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.splice(index, 1) });
+
+        if (this.state.wrongAnswers.length === 0) {
+            this.setState({ wrongAnswers: [''] });
+            this.setState({ wrongAnswerErrors: [false] });
+            this.setState({ wrongAnswerFeedbacks: [''] });
+        }
+
+        this.resetEditorInstance(editorInstance);
+        this.resetEditorInstance(feedbackEditor);
     },
     reset: function() {
-        questionFile = null;
-        this.refs.imagePreview.src = '';
         this.setState({ correctAnswer: '' });
         this.setState({ correctAnswerError: false });
         this.setState({ correctAnswerFeedback: '' });
         this.setState({ itemDescription: '' });
         this.setState({ itemDisplayName: '' });
         this.setState({ itemDisplayNameError: false });
+        this.setState({ newWrongAnswerIndices: [] });
         this.setState({ questionString: '' });
         this.setState({ questionStringError: false });
-        this.setState({ wrongAnswer1: '' });
-        this.setState({ wrongAnswer1Error: false });
-        this.setState({ wrongAnswer1Feedback: '' });
-        this.setState({ wrongAnswer2: '' });
-        this.setState({ wrongAnswer2Error: false });
-        this.setState({ wrongAnswer2Feedback: '' });
-        this.setState({ wrongAnswer3: '' });
-        this.setState({ wrongAnswer3Error: false });
-        this.setState({ wrongAnswer3Feedback: '' });
+        this.setState({ wrongAnswers: [''] });
+        this.setState({ wrongAnswerErrors: [false] });
+        this.setState({ wrongAnswerFeedbacks: [''] });
+    },
+    resetEditorInstance: function (instance) {
+        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+            CKEDITOR.instances[instance].setData('');
+            CKEDITOR.instances[instance].destroy();
+            CKEDITOR.replace(instance);
+        });
+    },
+    setWrongAnswerValues: function (data) {
+
     },
     render: function () {
-        // TODO: allow choices to be image files (i.e. graphs)
-        let alert = '',
-            correctAnswer, itemDisplayName, questionString, wrongAnswer1,
-            wrongAnswer2, wrongAnswer3, imagePreviewDeleteBtn;
+        var alert = '',
+            wrongAnswers = this.formatWrongAnswers(),
+            correctAnswer, itemDisplayName, questionString;
 
         if (this.state.showAlert) {
             alert = <Alert bsStyle="danger">You are missing some required fields</Alert>
@@ -264,76 +333,6 @@ let AddItem = React.createClass({
             </FormGroup>
         }
 
-        if (this.state.wrongAnswer1Error) {
-            wrongAnswer1 = <FormGroup controlId="wrongAnswer1"
-                                      validationState="error">
-                <ControlLabel>Wrong Answer 1</ControlLabel>
-                <FormControl type="text"
-                             value={this.state.wrongAnswer1}
-                             onChange={this.onChange}
-                             placeholder="The first mis-direction answer" />
-                <FormControl.Feedback />
-            </FormGroup>
-        } else {
-            wrongAnswer1 = <FormGroup controlId="wrongAnswer1">
-                <ControlLabel>Wrong Answer 1</ControlLabel>
-                <FormControl type="text"
-                             value={this.state.wrongAnswer1}
-                             onChange={this.onChange}
-                             placeholder="The first mis-direction answer" />
-            </FormGroup>
-        }
-
-        if (this.state.wrongAnswer2Error) {
-            wrongAnswer2 = <FormGroup controlId="wrongAnswer2"
-                                      validationState="error">
-                <ControlLabel>Wrong Answer 2</ControlLabel>
-                <FormControl type="text"
-                             value={this.state.wrongAnswer2}
-                             onChange={this.onChange}
-                             placeholder="The second mis-direction answer" />
-                <FormControl.Feedback />
-            </FormGroup>
-        } else {
-            wrongAnswer2 = <FormGroup controlId="wrongAnswer2">
-                <ControlLabel>Wrong Answer 2</ControlLabel>
-                <FormControl type="text"
-                             value={this.state.wrongAnswer2}
-                             onChange={this.onChange}
-                             placeholder="The second mis-direction answer" />
-            </FormGroup>
-        }
-
-        if (this.state.wrongAnswer3Error) {
-            wrongAnswer3 = <FormGroup controlId="wrongAnswer3"
-                                      validationState="error">
-                <ControlLabel>Wrong Answer 3</ControlLabel>
-                <FormControl type="text"
-                             value={this.state.wrongAnswer3}
-                             onChange={this.onChange}
-                             placeholder="The third mis-direction answer" />
-                <FormControl.Feedback />
-            </FormGroup>
-        } else {
-            wrongAnswer3 = <FormGroup controlId="wrongAnswer3">
-                <ControlLabel>Wrong Answer 3</ControlLabel>
-                <FormControl type="text"
-                             value={this.state.wrongAnswer3}
-                             onChange={this.onChange}
-                             placeholder="The third mis-direction answer" />
-            </FormGroup>
-        }
-
-        if (this.state.showImagePreviewDeleteBtn) {
-            imagePreviewDeleteBtn = <Button onClick={this.removeImage}
-                                   className="remove-image-button"
-                                   title="Remove the image">
-                <Glyphicon glyph="trash" />
-            </Button>
-        } else {
-            imagePreviewDeleteBtn = '';
-        }
-
         return <div>
             <Button onClick={this.open}>
                 <Glyphicon glyph="plus" />
@@ -358,17 +357,6 @@ let AddItem = React.createClass({
                                          placeholder="A description for this item" />
                         </FormGroup>
                         {questionString}
-                        <div className="image-preview">
-                            <FormGroup controlId="questionFile">
-                                <ControlLabel>Image File (optional)</ControlLabel>
-                                <FormControl type="file"
-                                             ref="imageFileInput"
-                                             onChange={this.onChange} />
-                            </FormGroup>
-                            <img ref="imagePreview"
-                                 src="" />
-                            {imagePreviewDeleteBtn}
-                        </div>
                         {correctAnswer}
                         <FormGroup controlId="correctAnswerFeedback">
                             <ControlLabel>Correct Answer Feedback (recommended)</ControlLabel>
@@ -377,30 +365,12 @@ let AddItem = React.createClass({
                                          onChange={this.onChange}
                                          placeholder="Feedback for the correct answer" />
                         </FormGroup>
-                        {wrongAnswer1}
-                        <FormGroup controlId="wrongAnswer1Feedback">
-                            <ControlLabel>Wrong Answer 1 Feedback (recommended)</ControlLabel>
-                            <FormControl componentClass="textarea"
-                                         value={this.state.wrongAnswer1Feedback}
-                                         onChange={this.onChange}
-                                         placeholder="Feedback for the first mis-direction answer" />
-                        </FormGroup>
-                        {wrongAnswer2}
-                        <FormGroup controlId="wrongAnswer2Feedback">
-                            <ControlLabel>Wrong Answer 2 Feedback (recommended)</ControlLabel>
-                            <FormControl componentClass="textarea"
-                                         value={this.state.wrongAnswer2Feedback}
-                                         onChange={this.onChange}
-                                         placeholder="Feedback for the second mis-direction answer" />
-                        </FormGroup>
-                        {wrongAnswer3}
-                        <FormGroup controlId="wrongAnswer3Feedback">
-                            <ControlLabel>Wrong Answer 3 Feedback (recommended)</ControlLabel>
-                            <FormControl componentClass="textarea"
-                                         value={this.state.wrongAnswer3Feedback}
-                                         onChange={this.onChange}
-                                         placeholder="Feedback for the third mis-direction answer" />
-                        </FormGroup>
+                        {wrongAnswers}
+                        <Button onClick={this.addWrongAnswer}
+                                bsStyle="success">
+                            <Glyphicon glyph="plus" />
+                            Add Wrong Answer
+                        </Button>
                     </form>
                 </Modal.Body>
                 <Modal.Footer>

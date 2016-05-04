@@ -1,0 +1,11 @@
+.has-error > .cke_chrome {
+    border-color: #a94442;
+}
+
+.wrong-answer-header {
+    display: flex;
+}
+
+.wrong-answer-title {
+    flex: 1 1 100%;
+}

@@ -4,7 +4,6 @@
 var _ = require('lodash');
 
 var AnswerExtraction = function (item) {
-    // TODO: Extract feedback
     var answers = item.answers,
         rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
         correctChoiceId = rightAnswer.choiceIds[0],

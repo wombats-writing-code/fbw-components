@@ -12,7 +12,8 @@ var Panel = ReactBS.Panel;
 var Row = ReactBS.Row;
 
 var AuthoringConstants = require('../../constants/AuthoringConstants');
-var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
+var ChoiceLabels = AuthoringConstants.ChoiceLabels;
+var GenusTypes = AuthoringConstants.GenusTypes;
 
 var AnswerExtraction = require('../../utilities/AnswerExtraction');
 var AnswerText = require('../answer-text/AnswerText');
@@ -52,51 +53,83 @@ var ItemsList = React.createClass({
             return outcome.displayName.text;
         }
     },
+    getQuestionLO: function (item) {
+        var questionLO;
+        if (item.question.learningObjectiveIds.length > 0) {
+            questionLO = item.question.learningObjectiveIds[0];
+        } else {
+            questionLO = '';
+        }
+
+        return questionLO;
+    },
+    getRelatedItems: function (loId) {
+        if (this.state.sortedItems.hasOwnProperty(loId)) {
+            return this.state.sortedItems[loId];
+        } else {
+            return [];
+        }
+    },
+    renderItemAnswerLOs: function (item) {
+        // just generate the answer los
+        var _this = this;
+        return _.map(item.wrongAnswerLOs, function (outcomeId, index) {
+            var visibleIndex = index + 1,
+                answerId = item.wrongAnswerIds[index],
+                relatedItems = _this.getRelatedItems(outcomeId),
+                choiceLetter = ChoiceLabels[visibleIndex];
+
+            return <div className="text-row-wrapper"
+                        key={index}>
+                <p className="answer-label">{choiceLetter})</p>
+                <LOText answerId={answerId}
+                        component="answer"
+                        itemId={item.id}
+                        libraryId={_this.props.libraryId}
+                        outcomeDisplayName={_this.getOutcomeDisplayName(outcomeId)}
+                        outcomeId={_this.getQuestionLO(item)}
+                        outcomes={_this.state.outcomes}
+                        relatedItems={relatedItems} />
+            </div>
+        });
+    },
+    renderItemAnswerTexts: function (item) {
+        // just generate the answer objects
+        return _.map(item.wrongAnswers, function (answer, index) {
+            var visibleIndex = index + 1,
+                feedback = item.wrongAnswerFeedbacks[index],
+                choiceLetter = ChoiceLabels[visibleIndex];
+
+            return <div className="text-row-wrapper"
+                        key={index}>
+                <p className="answer-label">{choiceLetter})</p>
+                <AnswerText answerText={answer.text}
+                            feedback={feedback}
+                            label="Wrong Answer {visibleIndex}" />
+            </div>
+        });
+    },
     renderItems: function () {
         var _this = this,
         // map the choiceIds, etc., in answers back to choices in questions
             items = [];
-
-        function getRelatedItems(loId) {
-            if (_this.state.sortedItems.hasOwnProperty(loId)) {
-                return _this.state.sortedItems[loId];
-            } else {
-                return [];
-            }
-        }
 
         _.each(this.props.items, function (item) {
             var answers = AnswerExtraction(item);
 
             item['correctAnswer'] = answers.correctAnswerText.text;
             item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
-            item['questionRelatedItems'] = getRelatedItems(item.learningObjectiveIds[0]);
-            item['wrongAnswer1'] = answers.wrongAnswerTexts[0].text;
-            item['wrongAnswer1Feedback'] = answers.wrongAnswerFeedbacks[0];
-            item['wrongAnswer1ID'] = answers.wrongAnswerIds[0];
-            item['wrongAnswer1LO'] = answers.wrongAnswerLOs[0];
-            item['wrongAnswer1RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[0]);
-            item['wrongAnswer2'] = answers.wrongAnswerTexts[1].text;
-            item['wrongAnswer2Feedback'] = answers.wrongAnswerFeedbacks[1];
-            item['wrongAnswer2ID'] = answers.wrongAnswerIds[1];
-            item['wrongAnswer2LO'] = answers.wrongAnswerLOs[1];
-            item['wrongAnswer2RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[1]);
-            item['wrongAnswer3'] = answers.wrongAnswerTexts[2].text;
-            item['wrongAnswer3Feedback'] = answers.wrongAnswerFeedbacks[2];
-            item['wrongAnswer3ID'] = answers.wrongAnswerIds[2];
-            item['wrongAnswer3LO'] = answers.wrongAnswerLOs[2];
-            item['wrongAnswer3RelatedItems'] = getRelatedItems(answers.wrongAnswerLOs[2]);
+            item['questionRelatedItems'] = _this.getRelatedItems(item.learningObjectiveIds[0]);
+            item['wrongAnswers'] = answers.wrongAnswerTexts;
+            item['wrongAnswerFeedbacks'] = answers.wrongAnswerFeedbacks;
+            item['wrongAnswerIds'] = answers.wrongAnswerIds;
+            item['wrongAnswerLOs'] = answers.wrongAnswerLOs;
             items.push(item);
         });
 
         return _.map(items, function (item) {
-            var questionLO, itemControls;
-
-            if (item.question.learningObjectiveIds.length > 0) {
-                questionLO = item.question.learningObjectiveIds[0];
-            } else {
-                questionLO = '';
-            }
+            var questionLO = _this.getQuestionLO(item),
+                itemControls;
 
             if (_this.props.enableClickthrough) {
                 itemControls = <div className="item-controls">
@@ -121,24 +154,7 @@ var ItemsList = React.createClass({
                                         feedback={item.correctAnswerFeedback}
                                         label="Correct Answer" />
                         </div>
-                        <div className="text-row-wrapper">
-                            <p className="answer-label">b)</p>
-                            <AnswerText answerText={item.wrongAnswer1}
-                                        feedback={item.wrongAnswer1Feedback}
-                                        label="Wrong Answer 1" />
-                        </div>
-                        <div className="text-row-wrapper">
-                            <p className="answer-label">c)</p>
-                            <AnswerText answerText={item.wrongAnswer2}
-                                        feedback={item.wrongAnswer2Feedback}
-                                        label="Wrong Answer 2" />
-                        </div>
-                        <div className="text-row-wrapper">
-                            <p className="answer-label">d)</p>
-                            <AnswerText answerText={item.wrongAnswer3}
-                                        feedback={item.wrongAnswer3Feedback}
-                                        label="Wrong Answer 3" />
-                        </div>
+                        {_this.renderItemAnswerTexts(item)}
                         {itemControls}
                     </Panel>
                 </Col>
@@ -160,39 +176,7 @@ var ItemsList = React.createClass({
                                 Correct answer -- no confused LO
                             </p>
                         </div>
-                        <div className="text-row-wrapper">
-                            <p className="answer-label">b)</p>
-                            <LOText answerId={item.wrongAnswer1ID}
-                                    component="answer"
-                                    itemId={item.id}
-                                    libraryId={_this.props.libraryId}
-                                    outcomeDisplayName={_this.getOutcomeDisplayName(item.wrongAnswer1LO)}
-                                    outcomeId={questionLO}
-                                    outcomes={_this.state.outcomes}
-                                    relatedItems={item.wrongAnswer1RelatedItems} />
-                        </div>
-                        <div className="text-row-wrapper">
-                            <p className="answer-label">c)</p>
-                            <LOText answerId={item.wrongAnswer2ID}
-                                    component="answer"
-                                    itemId={item.id}
-                                    libraryId={_this.props.libraryId}
-                                    outcomeDisplayName={_this.getOutcomeDisplayName(item.wrongAnswer2LO)}
-                                    outcomeId={questionLO}
-                                    outcomes={_this.state.outcomes}
-                                    relatedItems={item.wrongAnswer2RelatedItems} />
-                        </div>
-                        <div className="text-row-wrapper">
-                            <p className="answer-label">d)</p>
-                            <LOText answerId={item.wrongAnswer3ID}
-                                    component="answer"
-                                    itemId={item.id}
-                                    libraryId={_this.props.libraryId}
-                                    outcomeDisplayName={_this.getOutcomeDisplayName(item.wrongAnswer3LO)}
-                                    outcomeId={questionLO}
-                                    outcomes={_this.state.outcomes}
-                                    relatedItems={item.wrongAnswer3RelatedItems} />
-                        </div>
+                        {_this.renderItemAnswerLOs(item)}
                     </Panel>
                 </Col>
             </Row>

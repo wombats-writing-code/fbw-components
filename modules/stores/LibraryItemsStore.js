@@ -1,18 +1,18 @@
 // LibraryItemsStore.js
 'use strict';
 
-let LibraryItemsDispatcher = require('../dispatcher/LibraryItemsDispatcher');
-let AuthoringConstants = require('../constants/AuthoringConstants');
-let EventEmitter = require('events').EventEmitter;
-let MiddlewareService = require('../services/middleware.service.js');
-let _ = require('lodash');
+var LibraryItemsDispatcher = require('../dispatcher/LibraryItemsDispatcher');
+var AuthoringConstants = require('../constants/AuthoringConstants');
+var EventEmitter = require('events').EventEmitter;
+var MiddlewareService = require('../services/middleware.service.js');
+var _ = require('lodash');
 
-let ActionTypes = AuthoringConstants.ActionTypes;
-let CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+var ActionTypes = AuthoringConstants.ActionTypes;
+var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
-let _items = [];
+var _items = [];
 
-let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
+var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
     emitChange: function () {
         this.emit(CHANGE_EVENT, _items);
     },
@@ -23,7 +23,7 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         this.removeListener(CHANGE_EVENT, callback);
     },
     createNewItem: function (payload) {
-        let url = this.url() + payload.libraryId + '/items',
+        var url = this.url() + payload.libraryId + '/items',
             _this = this,
             data = new FormData();
 
@@ -34,7 +34,6 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
                 data.append(key, payload[key]);
             }
         });
-        data.append('question_imageFile', payload.questionFile);
 
         fetch(url, {
             method: 'POST',
@@ -59,7 +58,7 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     deleteItem: function (data) {
-        let url = this.url() + data.libraryId + '/items/' + data.itemId,
+        var url = this.url() + data.libraryId + '/items/' + data.itemId,
             _this = this;
 
         fetch(url, {
@@ -82,7 +81,7 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     getItemDetails: function (libraryId, itemId, callback) {
-        let url;
+        var url;
 
         if (MiddlewareService.shouldReturnStatic()) {
           url = '/raw_data/CAD_item_with_file_url.json';
@@ -101,7 +100,7 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     getItems: function (id) {
-        let url, _this = this;
+        var url, _this = this;
 
         if (MiddlewareService.shouldReturnStatic()) {
           url = '/raw_data/CAD_items.json';
@@ -121,7 +120,7 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     linkAnswerToLO: function (payload) {
-        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
             _this = this,
             data = new FormData();
 
@@ -153,7 +152,7 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     linkItemToLO: function (payload) {
-        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
             _this = this,
             data = new FormData();
 
@@ -182,7 +181,7 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         });
     },
     updateItem: function (payload) {
-        let url = this.url() + payload.libraryId + '/items/' + payload.itemId,
+        var url = this.url() + payload.libraryId + '/items/' + payload.itemId,
             _this = this,
             data = new FormData();
 
@@ -193,7 +192,6 @@ let LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
                 data.append(key, payload[key]);
             }
         });
-        data.append('question_imageFile', payload.questionFile);
 
         fetch(url, {
             method: 'PUT',

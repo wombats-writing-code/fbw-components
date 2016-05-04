@@ -105,7 +105,7 @@
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemWrapper = __webpack_require__(18);
-	var LibrarySelector = __webpack_require__(63);
+	var LibrarySelector = __webpack_require__(72);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
@@ -36062,7 +36062,9 @@
 	    GenusTypes: {
 	        CORRECT_ANSWER: 'answer-type%3Aright-answer%40ODL.MIT.EDU',
 	        WRONG_ANSWER: 'answer-type%3Awrong-answer%40ODL.MIT.EDU'
-	    }
+	    },
+	    ChoiceLabels: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],  // for multi-choice choices
+	    SequenceNumberTexts: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth']  // useful for labeling the Nth wrong answer
 	};
 
 /***/ },
@@ -36484,8 +36486,8 @@
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var AddItem = __webpack_require__(19);
-	var ItemSearch = __webpack_require__(28);
-	var ItemStatus = __webpack_require__(62);
+	var ItemSearch = __webpack_require__(33);
+	var ItemStatus = __webpack_require__(71);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -36551,18 +36553,19 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
+	var _ = __webpack_require__(5);
+
 	var $s = __webpack_require__(24);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var CKEditorModalHack = __webpack_require__(25);
-	var ConfigureCKEditor = __webpack_require__(67);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(66);
+	var ConfigureCKEditor = __webpack_require__(28);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(29);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-
-	var questionFile = void 0;
+	var WrongAnswerEditor = __webpack_require__(30);
 
 	var AddItem = React.createClass({
 	    displayName: 'AddItem',
@@ -36575,55 +36578,73 @@
 	            itemDescription: '',
 	            itemDisplayName: '',
 	            itemDisplayNameError: false,
+	            newWrongAnswerIndices: [],
 	            questionFile: '',
 	            questionString: '',
 	            questionStringError: false,
 	            showAlert: false,
-	            showImagePreviewDeleteBtn: false,
 	            showModal: false,
-	            wrongAnswer1: '',
-	            wrongAnswer1Error: false,
-	            wrongAnswer1Feedback: '',
-	            wrongAnswer2: '',
-	            wrongAnswer2Error: false,
-	            wrongAnswer2Feedback: '',
-	            wrongAnswer3: '',
-	            wrongAnswer3Error: false,
-	            wrongAnswer3Feedback: ''
+	            wrongAnswers: [''],
+	            wrongAnswerErrors: [false],
+	            wrongAnswerFeedbacks: ['']
 	        };
 	    },
 	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
+	    componentDidUpdate: function componentDidUpdate() {
+	        setTimeout(this.checkNewEditorInstances, 500);
+	    },
+	    addWrongAnswer: function addWrongAnswer() {
+	        var newIndex = this.state.wrongAnswers.length + 1;
+	        this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
+	        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.concat([false]) });
+	        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
+
+	        this.setState({ newWrongAnswerIndices: [newIndex] });
+	    },
 	    close: function close() {
 	        this.setState({ showModal: false });
 	        this.reset();
 	    },
+	    checkNewEditorInstances: function checkNewEditorInstances() {
+	        if (this.state.newWrongAnswerIndices.length > 0) {
+	            this.initializeNewEditorInstances();
+	        }
+	    },
 	    create: function create(e) {
 	        // With CKEditor, need to get the data from CKEditor,
 	        // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
-	        // let data = CKEDITOR.instances.correctAnswer.getData();
+	        // var data = CKEDITOR.instances.correctAnswer.getData();
 	        var payload = {
 	            libraryId: this.props.libraryId
 	        },
 	            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
 	            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
 	            questionString = CKEDITOR.instances.questionString.getData(),
-	            wrongAnswer1 = CKEDITOR.instances.wrongAnswer1.getData(),
-	            wrongAnswer1Feedback = CKEDITOR.instances.wrongAnswer1Feedback.getData(),
-	            wrongAnswer2 = CKEDITOR.instances.wrongAnswer2.getData(),
-	            wrongAnswer2Feedback = CKEDITOR.instances.wrongAnswer2Feedback.getData(),
-	            wrongAnswer3 = CKEDITOR.instances.wrongAnswer3.getData(),
-	            wrongAnswer3Feedback = CKEDITOR.instances.wrongAnswer3Feedback.getData();
+	            wrongAnswers = this.getWrongAnswers(),
+	            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks();
 
-	        if (this.state.itemDisplayName === '' || correctAnswer === '' || questionString === '' || wrongAnswer1 === '' || wrongAnswer2 === '' || wrongAnswer3 === '') {
+	        if (this.state.itemDisplayName === '' || correctAnswer === '' || questionString === '' || wrongAnswers.indexOf('') >= 0) {
+
+	            var firstEmptyWrongAnswer = wrongAnswers.indexOf(''),
+	                validationState = [];
+	            _.each(this.state.wrongAnswerErrors, function (errorState) {
+	                validationState.push(false);
+	            });
+
+	            if (firstEmptyWrongAnswer >= 0) {
+	                _.each(wrongAnswers, function (wrongAnswer, index) {
+	                    if (wrongAnswer === '') {
+	                        validationState[index] = true;
+	                    }
+	                });
+	            }
+
 	            this.setState({ showAlert: true });
 
 	            this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
 	            this.setState({ correctAnswerError: correctAnswer === '' });
 	            this.setState({ questionStringError: questionString === '' });
-	            this.setState({ wrongAnswer1Error: wrongAnswer1 === '' });
-	            this.setState({ wrongAnswer2Error: wrongAnswer2 === '' });
-	            this.setState({ wrongAnswer3Error: wrongAnswer3 === '' });
+	            this.setState({ wrongAnswerErrors: validationState });
 	        } else {
 
 	            payload['displayName'] = this.state.itemDisplayName;
@@ -36649,9 +36670,6 @@
 	                choiceId: 3,
 	                feedback: wrongAnswer3Feedback
 	            }];
-	            if (questionFile != null) {
-	                payload['questionFile'] = questionFile;
-	            }
 
 	            Dispatcher.dispatch({
 	                type: ActionTypes.CREATE_ITEM,
@@ -36660,79 +36678,134 @@
 	            this.close();
 	        }
 	    },
+	    formatWrongAnswers: function formatWrongAnswers() {
+	        var _this = this;
+	        return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
+	            var errorState = _this.state.wrongAnswerErrors[index],
+	                feedback = _this.state.wrongAnswerFeedbacks[index];
+
+	            return React.createElement(WrongAnswerEditor, { error: errorState,
+	                feedback: feedback,
+	                index: index,
+	                key: index,
+	                remove: _this.removeWrongAnswer,
+	                text: wrongAnswer });
+	        });
+	    },
+	    getWrongAnswerFeedbacks: function getWrongAnswerFeedbacks() {
+	        var results = [];
+
+	        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
+	            var visibleIndex = index + 1,
+	                editorInstance = 'wrongAnswer' + visibleIndex,
+	                feedbackEditor = editorInstance + 'Feedback';
+	            results.push(CKEDITOR.instances[feedbackEditor].getData());
+	        });
+
+	        return results;
+	    },
+	    getWrongAnswers: function getWrongAnswers() {
+	        var results = [];
+	        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
+	            var visibleIndex = index + 1,
+	                editorInstance = 'wrongAnswer' + visibleIndex;
+	            results.push(CKEDITOR.instances[editorInstance].getData());
+	        });
+
+	        return results;
+	    },
+	    initializeEditorInstance: function initializeEditorInstance(instance) {
+	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.replace(instance);
+	        });
+	    },
 	    initializeEditors: function initializeEditors(e) {
-	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId);
+	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId),
+	            _this = this;
 	        // CKEditor
 	        // Instructions from here
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
 	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
 	            ConfigureCKEditor(CKEDITOR, repositoryId);
-	            CKEDITOR.replace('correctAnswer');
-	            CKEDITOR.replace('correctAnswerFeedback');
-	            CKEDITOR.replace('questionString');
-	            CKEDITOR.replace('wrongAnswer1');
-	            CKEDITOR.replace('wrongAnswer1Feedback');
-	            CKEDITOR.replace('wrongAnswer2');
-	            CKEDITOR.replace('wrongAnswer2Feedback');
-	            CKEDITOR.replace('wrongAnswer3');
-	            CKEDITOR.replace('wrongAnswer3Feedback');
+	            _this.initializeEditorInstance('correctAnswer');
+	            _this.initializeEditorInstance('correctAnswerFeedback');
+	            _this.initializeEditorInstance('questionString');
+	            _this.initializeEditorInstance('wrongAnswer1');
+	            _this.initializeEditorInstance('wrongAnswer1Feedback');
 	        });
+	    },
+	    initializeNewEditorInstances: function initializeNewEditorInstances() {
+	        var _this = this;
+	        _.each(this.state.newWrongAnswerIndices, function (index) {
+	            var visibleIndex = index,
+	                editorInstance = 'wrongAnswer' + visibleIndex,
+	                feedbackInstance = editorInstance + 'Feedback';
+
+	            _this.initializeEditorInstance(editorInstance);
+	            _this.initializeEditorInstance(feedbackInstance);
+	        });
+
+	        this.setState({ newWrongAnswerIndices: [] });
 	    },
 	    onChange: function onChange(e) {
 	        var inputId = e.currentTarget.id,
 	            inputValue = e.target.value,
-	            URL = window.webkitURL || window.URL;
-	        if (inputId === "questionFile") {
-	            questionFile = e.target.files[0];
-	            this.setState({ showImagePreviewDeleteBtn: true });
-	            this.refs.imagePreview.src = URL.createObjectURL(questionFile);
-	        } else {
-	            var update = {};
-	            update[inputId] = inputValue;
-	            this.setState(update);
-	        }
+	            update = {};
+
+	        update[inputId] = inputValue;
+	        this.setState(update);
 	    },
 	    open: function open() {
 	        this.setState({ showModal: true });
 	    },
-	    removeImage: function removeImage() {
-	        this.refs.imagePreview.src = '';
-	        this.refs.imageFileInput.value = '';
-	        this.setState({ showImagePreviewDeleteBtn: false });
-	        questionFile = null;
+	    removeWrongAnswer: function removeWrongAnswer(index) {
+	        var editorInstance = 'wrongAnswer' + (index + 1),
+	            feedbackEditor = editorInstance + 'Feedback';
+	        // remove wrong answer & feedback & errors with the given index
+	        this.setState({ wrongAnswers: this.state.wrongAnswers.splice(index, 1) });
+	        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.splice(index, 1) });
+	        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.splice(index, 1) });
+
+	        if (this.state.wrongAnswers.length === 0) {
+	            this.setState({ wrongAnswers: [''] });
+	            this.setState({ wrongAnswerErrors: [false] });
+	            this.setState({ wrongAnswerFeedbacks: [''] });
+	        }
+
+	        this.resetEditorInstance(editorInstance);
+	        this.resetEditorInstance(feedbackEditor);
 	    },
 	    reset: function reset() {
-	        questionFile = null;
-	        this.refs.imagePreview.src = '';
 	        this.setState({ correctAnswer: '' });
 	        this.setState({ correctAnswerError: false });
 	        this.setState({ correctAnswerFeedback: '' });
 	        this.setState({ itemDescription: '' });
 	        this.setState({ itemDisplayName: '' });
 	        this.setState({ itemDisplayNameError: false });
+	        this.setState({ newWrongAnswerIndices: [] });
 	        this.setState({ questionString: '' });
 	        this.setState({ questionStringError: false });
-	        this.setState({ wrongAnswer1: '' });
-	        this.setState({ wrongAnswer1Error: false });
-	        this.setState({ wrongAnswer1Feedback: '' });
-	        this.setState({ wrongAnswer2: '' });
-	        this.setState({ wrongAnswer2Error: false });
-	        this.setState({ wrongAnswer2Feedback: '' });
-	        this.setState({ wrongAnswer3: '' });
-	        this.setState({ wrongAnswer3Error: false });
-	        this.setState({ wrongAnswer3Feedback: '' });
+	        this.setState({ wrongAnswers: [''] });
+	        this.setState({ wrongAnswerErrors: [false] });
+	        this.setState({ wrongAnswerFeedbacks: [''] });
 	    },
+	    resetEditorInstance: function resetEditorInstance(instance) {
+	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.instances[instance].setData('');
+	            CKEDITOR.instances[instance].destroy();
+	            CKEDITOR.replace(instance);
+	        });
+	    },
+	    setWrongAnswerValues: function setWrongAnswerValues(data) {},
 	    render: function render() {
-	        // TODO: allow choices to be image files (i.e. graphs)
+	        // TODO: add + wrong answer button
+	        // TODO: fix CKEditor initialization for wrong answers
 	        var alert = '',
-	            correctAnswer = void 0,
-	            itemDisplayName = void 0,
-	            questionString = void 0,
-	            wrongAnswer1 = void 0,
-	            wrongAnswer2 = void 0,
-	            wrongAnswer3 = void 0,
-	            imagePreviewDeleteBtn = void 0;
+	            wrongAnswers = this.formatWrongAnswers(),
+	            correctAnswer,
+	            itemDisplayName,
+	            questionString;
 
 	        if (this.state.showAlert) {
 	            alert = React.createElement(
@@ -36838,114 +36911,6 @@
 	            );
 	        }
 
-	        if (this.state.wrongAnswer1Error) {
-	            wrongAnswer1 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer1',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 1'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer1,
-	                    onChange: this.onChange,
-	                    placeholder: 'The first mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer1 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer1' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 1'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer1,
-	                    onChange: this.onChange,
-	                    placeholder: 'The first mis-direction answer' })
-	            );
-	        }
-
-	        if (this.state.wrongAnswer2Error) {
-	            wrongAnswer2 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer2',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 2'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer2,
-	                    onChange: this.onChange,
-	                    placeholder: 'The second mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer2 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer2' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 2'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer2,
-	                    onChange: this.onChange,
-	                    placeholder: 'The second mis-direction answer' })
-	            );
-	        }
-
-	        if (this.state.wrongAnswer3Error) {
-	            wrongAnswer3 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer3',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 3'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer3,
-	                    onChange: this.onChange,
-	                    placeholder: 'The third mis-direction answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            wrongAnswer3 = React.createElement(
-	                FormGroup,
-	                { controlId: 'wrongAnswer3' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer 3'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.wrongAnswer3,
-	                    onChange: this.onChange,
-	                    placeholder: 'The third mis-direction answer' })
-	            );
-	        }
-
-	        if (this.state.showImagePreviewDeleteBtn) {
-	            imagePreviewDeleteBtn = React.createElement(
-	                Button,
-	                { onClick: this.removeImage,
-	                    className: 'remove-image-button',
-	                    title: 'Remove the image' },
-	                React.createElement(Glyphicon, { glyph: 'trash' })
-	            );
-	        } else {
-	            imagePreviewDeleteBtn = '';
-	        }
-
 	        return React.createElement(
 	            'div',
 	            null,
@@ -36992,25 +36957,6 @@
 	                                placeholder: 'A description for this item' })
 	                        ),
 	                        questionString,
-	                        React.createElement(
-	                            'div',
-	                            { className: 'image-preview' },
-	                            React.createElement(
-	                                FormGroup,
-	                                { controlId: 'questionFile' },
-	                                React.createElement(
-	                                    ControlLabel,
-	                                    null,
-	                                    'Image File (optional)'
-	                                ),
-	                                React.createElement(FormControl, { type: 'file',
-	                                    ref: 'imageFileInput',
-	                                    onChange: this.onChange })
-	                            ),
-	                            React.createElement('img', { ref: 'imagePreview',
-	                                src: '' }),
-	                            imagePreviewDeleteBtn
-	                        ),
 	                        correctAnswer,
 	                        React.createElement(
 	                            FormGroup,
@@ -37025,47 +36971,13 @@
 	                                onChange: this.onChange,
 	                                placeholder: 'Feedback for the correct answer' })
 	                        ),
-	                        wrongAnswer1,
+	                        wrongAnswers,
 	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer1Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 1 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer1Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the first mis-direction answer' })
-	                        ),
-	                        wrongAnswer2,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer2Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 2 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer2Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the second mis-direction answer' })
-	                        ),
-	                        wrongAnswer3,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'wrongAnswer3Feedback' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Wrong Answer 3 Feedback (recommended)'
-	                            ),
-	                            React.createElement(FormControl, { componentClass: 'textarea',
-	                                value: this.state.wrongAnswer3Feedback,
-	                                onChange: this.onChange,
-	                                placeholder: 'Feedback for the third mis-direction answer' })
+	                            Button,
+	                            { onClick: this.addWrongAnswer,
+	                                bsStyle: 'success' },
+	                            React.createElement(Glyphicon, { glyph: 'plus' }),
+	                            'Add Wrong Answer'
 	                        )
 	                    )
 	                ),
@@ -37125,7 +37037,7 @@
 
 
 	// module
-	exports.push([module.id, ".has-error > .cke_chrome {\n    border-color: #a94442;\n}\n\n.image-preview {\n    display: flex;\n}\n\n.image-preview img {\n    max-width: 400px;\n    max-height: 300px;\n}\n\n.remove-image-button {\n    height: 34px;\n}", ""]);
+	exports.push([module.id, ".has-error .form-control-feedback {\n    top: 34px;\n}", ""]);
 
 	// exports
 
@@ -46895,6 +46807,221 @@
 /* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
+	// ConfigureCKEditor.js
+	// the cookie getting parts from:
+	// From: https://docs.djangoproject.com/en/1.6/ref/contrib/csrf/
+	// And:  http://stackoverflow.com/questions/6506897/csrf-token-missing-or-incorrect-while-post-parameter-via-ajax-in-django
+
+	'use strict';
+
+	let $ = __webpack_require__(26);
+
+	let ConfigureCKEditor = function (editor, repositoryId) {
+	    let MiddlewareService = __webpack_require__(17);
+
+	    editor.config.extraPlugins = 'uploadimage';
+	    editor.config.filebrowserUploadUrl = MiddlewareService.host() + '/repository/repositories/' + repositoryId + '/assets';
+	    editor.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML';
+	};
+
+	module.exports = ConfigureCKEditor;
+
+/***/ },
+/* 29 */
+/***/ function(module, exports) {
+
+	// ConvertLibraryId2RepositoryId.js
+	'use strict';
+
+	let ConvertLibraryId2RepositoryId = function (libraryId) {
+	    return libraryId.replace('assessment.Bank', 'repository.Repository');
+	};
+
+	module.exports = ConvertLibraryId2RepositoryId;
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// WrongAnswerEditor.js
+	'use strict';
+
+	__webpack_require__(31);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Alert = ReactBS.Alert;
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var Dispatcher = __webpack_require__(9);
+	var LibraryItemsStore = __webpack_require__(8);
+	var SequenceNumberTexts = __webpack_require__(14).SequenceNumberTexts;
+
+	var WrongAnswerEditor = React.createClass({
+	    displayName: 'WrongAnswerEditor',
+
+	    getInitialState: function getInitialState() {
+	        var wrongAnswerText = this.props.text === '' ? '' : this.props.text,
+	            wrongAnswerFeedback = this.props.feedback === '' ? '' : this.props.feedback;
+
+	        return {
+	            wrongAnswerText: wrongAnswerText,
+	            wrongAnswerFeedback: wrongAnswerFeedback
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    onChange: function onChange(e) {
+	        // update via the parent
+	        var data = {
+	            index: this.props.index,
+	            feedback: this.state.wrongAnswerFeedback,
+	            text: this.state.wrongAnswerText
+	        };
+	        this.props.update(data);
+	    },
+	    removeWrongAnswer: function removeWrongAnswer() {
+	        this.props.remove(this.props.index);
+	    },
+	    render: function render() {
+	        var viewableIndex = this.props.index + 1,
+	            answerId = 'wrongAnswer' + viewableIndex,
+	            feedbackId = answerId + 'Feedback',
+	            nthText = SequenceNumberTexts[this.props.index],
+	            placeholder = 'The ' + nthText + ' mis-direction answer',
+	            feedbackPlaceholder = 'Feedback for the ' + nthText + ' mis-direction answer',
+	            wrongAnswer = '';
+	        if (this.props.error) {
+	            wrongAnswer = React.createElement(
+	                FormGroup,
+	                { controlId: answerId,
+	                    validationState: 'error' },
+	                React.createElement(
+	                    'div',
+	                    { className: 'wrong-answer-header' },
+	                    React.createElement(
+	                        ControlLabel,
+	                        { className: 'wrong-answer-title' },
+	                        'Wrong Answer ',
+	                        viewableIndex
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.addWrongAnswer,
+	                            bsStyle: 'danger' },
+	                        React.createElement(Glyphicon, { glyph: 'trash' }),
+	                        'Delete Wrong Answer'
+	                    )
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswerText,
+	                    onChange: this.onChange,
+	                    placeholder: placeholder }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            wrongAnswer = React.createElement(
+	                FormGroup,
+	                { controlId: answerId },
+	                React.createElement(
+	                    'div',
+	                    { className: 'wrong-answer-header' },
+	                    React.createElement(
+	                        ControlLabel,
+	                        { className: 'wrong-answer-title' },
+	                        'Wrong Answer ',
+	                        viewableIndex
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.removeWrongAnswer,
+	                            bsStyle: 'danger' },
+	                        React.createElement(Glyphicon, { glyph: 'trash' }),
+	                        'Delete Wrong Answer'
+	                    )
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswerText,
+	                    onChange: this.onChange,
+	                    placeholder: placeholder })
+	            );
+	        }
+
+	        return React.createElement(
+	            'div',
+	            null,
+	            wrongAnswer,
+	            React.createElement(
+	                FormGroup,
+	                { controlId: feedbackId },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Wrong Answer ',
+	                    viewableIndex,
+	                    ' Feedback (recommended)'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.wrongAnswerFeedback,
+	                    onChange: this.onChange,
+	                    placeholder: feedbackPlaceholder })
+	            )
+	        );
+	    }
+	});
+
+	module.exports = WrongAnswerEditor;
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(32);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(23)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./WrongAnswerEditor.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./WrongAnswerEditor.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(22)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".has-error > .cke_chrome {\n    border-color: #a94442;\n}\n\n.wrong-answer-header {\n    display: flex;\n}\n\n.wrong-answer-title {\n    flex: 1 1 100%;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// ItemSearch.js
 
 	'use strict';
@@ -46903,7 +47030,7 @@
 	var ReactBS = __webpack_require__(4);
 	var Badge = ReactBS.Badge;
 
-	var ItemsList = __webpack_require__(29);
+	var ItemsList = __webpack_require__(34);
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemSearch = React.createClass({
@@ -46956,14 +47083,14 @@
 	module.exports = ItemSearch;
 
 /***/ },
-/* 29 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemsList.js
 
 	'use strict';
 
-	__webpack_require__(30);
+	__webpack_require__(35);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -46975,14 +47102,14 @@
 	var AuthoringConstants = __webpack_require__(14);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 
-	var AnswerExtraction = __webpack_require__(32);
-	var AnswerText = __webpack_require__(33);
-	var ItemControls = __webpack_require__(53);
+	var AnswerExtraction = __webpack_require__(37);
+	var AnswerText = __webpack_require__(38);
+	var ItemControls = __webpack_require__(58);
 	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(58);
-	var LOText = __webpack_require__(69);
-	var OutcomesStore = __webpack_require__(50);
-	var QuestionText = __webpack_require__(59);
+	var LORelatedItems = __webpack_require__(63);
+	var LOText = __webpack_require__(64);
+	var OutcomesStore = __webpack_require__(55);
+	var QuestionText = __webpack_require__(68);
 
 	var ItemsList = React.createClass({
 	    displayName: 'ItemsList',
@@ -47256,13 +47383,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 30 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(31);
+	var content = __webpack_require__(36);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(23)(content, {});
@@ -47282,7 +47409,7 @@
 	}
 
 /***/ },
-/* 31 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(22)();
@@ -47296,7 +47423,7 @@
 
 
 /***/ },
-/* 32 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerExtraction.js
@@ -47305,7 +47432,6 @@
 	var _ = __webpack_require__(5);
 
 	var AnswerExtraction = function (item) {
-	    // TODO: Extract feedback
 	    var answers = item.answers,
 	        rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
 	        correctChoiceId = rightAnswer.choiceIds[0],
@@ -47363,19 +47489,19 @@
 	module.exports = AnswerExtraction;
 
 /***/ },
-/* 33 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
 
 	'use strict';
 
-	__webpack_require__(34);
-	__webpack_require__(36);
+	__webpack_require__(39);
+	__webpack_require__(41);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(38);
+	var Select = __webpack_require__(43);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -47384,11 +47510,11 @@
 	var Modal = ReactBS.Modal;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerFeedback = __webpack_require__(45);
+	var AnswerFeedback = __webpack_require__(50);
 	var Dispatcher = __webpack_require__(9);
-	var LORelatedItemsBadge = __webpack_require__(47);
-	var SetIFrameHeight = __webpack_require__(52);
-	var WrapHTML = __webpack_require__(46);
+	var LORelatedItemsBadge = __webpack_require__(52);
+	var SetIFrameHeight = __webpack_require__(57);
+	var WrapHTML = __webpack_require__(51);
 
 	var AnswerText = React.createClass({
 	    displayName: 'AnswerText',
@@ -47454,13 +47580,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 34 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(35);
+	var content = __webpack_require__(40);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(23)(content, {});
@@ -47480,7 +47606,7 @@
 	}
 
 /***/ },
-/* 35 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(22)();
@@ -47494,13 +47620,13 @@
 
 
 /***/ },
-/* 36 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(37);
+	var content = __webpack_require__(42);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(23)(content, {});
@@ -47520,7 +47646,7 @@
 	}
 
 /***/ },
-/* 37 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(22)();
@@ -47534,7 +47660,7 @@
 
 
 /***/ },
-/* 38 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47555,27 +47681,27 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _reactInputAutosize = __webpack_require__(39);
+	var _reactInputAutosize = __webpack_require__(44);
 
 	var _reactInputAutosize2 = _interopRequireDefault(_reactInputAutosize);
 
-	var _classnames = __webpack_require__(40);
+	var _classnames = __webpack_require__(45);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsStripDiacritics = __webpack_require__(41);
+	var _utilsStripDiacritics = __webpack_require__(46);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
-	var _Async = __webpack_require__(42);
+	var _Async = __webpack_require__(47);
 
 	var _Async2 = _interopRequireDefault(_Async);
 
-	var _Option = __webpack_require__(43);
+	var _Option = __webpack_require__(48);
 
 	var _Option2 = _interopRequireDefault(_Option);
 
-	var _Value = __webpack_require__(44);
+	var _Value = __webpack_require__(49);
 
 	var _Value2 = _interopRequireDefault(_Value);
 
@@ -48451,7 +48577,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 39 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48582,7 +48708,7 @@
 	module.exports = AutosizeInput;
 
 /***/ },
-/* 40 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -48636,7 +48762,7 @@
 
 
 /***/ },
-/* 41 */
+/* 46 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -48651,7 +48777,7 @@
 	};
 
 /***/ },
-/* 42 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48664,11 +48790,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Select = __webpack_require__(38);
+	var _Select = __webpack_require__(43);
 
 	var _Select2 = _interopRequireDefault(_Select);
 
-	var _utilsStripDiacritics = __webpack_require__(41);
+	var _utilsStripDiacritics = __webpack_require__(46);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
@@ -48824,7 +48950,7 @@
 	module.exports = Async;
 
 /***/ },
-/* 43 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48835,7 +48961,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(40);
+	var _classnames = __webpack_require__(45);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -48933,7 +49059,7 @@
 	module.exports = Option;
 
 /***/ },
-/* 44 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48944,7 +49070,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(40);
+	var _classnames = __webpack_require__(45);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49042,7 +49168,7 @@
 	module.exports = Value;
 
 /***/ },
-/* 45 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerFeedback.jsx
@@ -49055,7 +49181,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var WrapHTML = __webpack_require__(46);
+	var WrapHTML = __webpack_require__(51);
 
 	var AnswerFeedback = React.createClass({
 	    displayName: 'AnswerFeedback',
@@ -49121,7 +49247,7 @@
 	module.exports = AnswerFeedback;
 
 /***/ },
-/* 46 */
+/* 51 */
 /***/ function(module, exports) {
 
 	// WrapHTML.js
@@ -49152,13 +49278,13 @@
 	module.exports = WrapHTML;
 
 /***/ },
-/* 47 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItemsBadge.jsx
 	'use strict';
 
-	__webpack_require__(48);
+	__webpack_require__(53);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -49171,7 +49297,7 @@
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
-	var OutcomesStore = __webpack_require__(50);
+	var OutcomesStore = __webpack_require__(55);
 
 	var LORelatedItemsBadge = React.createClass({
 	    displayName: 'LORelatedItemsBadge',
@@ -49188,7 +49314,7 @@
 	        this.setState({ showModal: true });
 	    },
 	    render: function render() {
-	        var ItemsList = __webpack_require__(29);
+	        var ItemsList = __webpack_require__(34);
 	        var items, lo;
 
 	        lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;
@@ -49254,13 +49380,13 @@
 	module.exports = LORelatedItemsBadge;
 
 /***/ },
-/* 48 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(49);
+	var content = __webpack_require__(54);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(23)(content, {});
@@ -49280,7 +49406,7 @@
 	}
 
 /***/ },
-/* 49 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(22)();
@@ -49294,14 +49420,14 @@
 
 
 /***/ },
-/* 50 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// OutcomesStore.js
 
 	'use strict';
 
-	var OutcomesDispatcher = __webpack_require__(51);
+	var OutcomesDispatcher = __webpack_require__(56);
 	var AuthoringConstants = __webpack_require__(14);
 	var MiddlewareService = __webpack_require__(17);
 
@@ -49358,9 +49484,9 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 51 */
+/* 56 */
 9,
-/* 52 */
+/* 57 */
 /***/ function(module, exports) {
 
 	// SetIFrameHeight.js
@@ -49398,7 +49524,7 @@
 	module.exports = SetIFrameHeight;
 
 /***/ },
-/* 53 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemControls.js
@@ -49407,8 +49533,8 @@
 
 	var React = __webpack_require__(1);
 
-	var DeleteItem = __webpack_require__(54);
-	var EditItem = __webpack_require__(55);
+	var DeleteItem = __webpack_require__(59);
+	var EditItem = __webpack_require__(60);
 
 	var ItemControls = React.createClass({
 	    displayName: 'ItemControls',
@@ -49433,7 +49559,7 @@
 	module.exports = ItemControls;
 
 /***/ },
-/* 54 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// DeleteItem.jsx
@@ -49542,13 +49668,13 @@
 	module.exports = DeleteItem;
 
 /***/ },
-/* 55 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// EditItem.jsx
 	'use strict';
 
-	__webpack_require__(56);
+	__webpack_require__(61);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -49563,16 +49689,16 @@
 	var $s = __webpack_require__(24);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(32);
+	var AnswerExtraction = __webpack_require__(37);
 	var CKEditorModalHack = __webpack_require__(25);
-	var ConfigureCKEditor = __webpack_require__(67);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(66);
+	var ConfigureCKEditor = __webpack_require__(28);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(29);
 	var Dispatcher = __webpack_require__(9);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
 
-	var questionFile = void 0;
+	var questionFile;
 
 	var EditItem = React.createClass({
 	    displayName: 'EditItem',
@@ -49596,7 +49722,7 @@
 	            questionStringError: false,
 	            removeImageFile: false,
 	            showAlert: false,
-	            showDeleteImageBtn: false,
+	            showDevareImageBtn: false,
 	            showModal: false,
 	            showRevertImageBtn: false,
 	            wrongAnswer1: answers.wrongAnswerTexts[0].text,
@@ -49616,7 +49742,7 @@
 	    componentWillMount: function componentWillMount() {},
 	    close: function close() {
 	        this.setState({ showModal: false });
-	        this.setState({ showDeleteImageBtn: false });
+	        this.setState({ showDevareImageBtn: false });
 	        this.setState({ showRevertImageBtn: false });
 	    },
 	    closeAndReset: function closeAndReset() {
@@ -49670,7 +49796,7 @@
 	                _this.setState({ originalQuestionFileURL: fileURL });
 	                _this.setState({ questionFile: fileURL });
 	                if (fileURL != '') {
-	                    _this.setState({ showDeleteImageBtn: true });
+	                    _this.setState({ showDevareImageBtn: true });
 	                }
 	            });
 	        });
@@ -49678,7 +49804,7 @@
 	    removeImage: function removeImage() {
 	        questionFile = null;
 	        this.setState({ removeImageFile: true });
-	        this.setState({ showDeleteImageBtn: false });
+	        this.setState({ showDevareImageBtn: false });
 	        this.setState({ showRevertImageBtn: true });
 	        this.refs.imagePreview.src = '';
 	    },
@@ -49700,7 +49826,7 @@
 	        this.setState({ questionStringError: false });
 	        this.setState({ removeImageFile: false });
 	        this.setState({ showAlert: false });
-	        this.setState({ showDeleteImageBtn: false });
+	        this.setState({ showDevareImageBtn: false });
 	        this.setState({ showRevertImageBtn: false });
 	        this.setState({ wrongAnswer1: answers.wrongAnswerTexts[0].text });
 	        this.setState({ wrongAnswer1Error: false });
@@ -49721,7 +49847,7 @@
 	        this.refs.imagePreview.src = this.state.originalQuestionFileURL;
 	        this.setState({ removeImageFile: false });
 	        if (this.state.originalQuestionFileURL != '') {
-	            this.setState({ showDeleteImageBtn: true });
+	            this.setState({ showDevareImageBtn: true });
 	        }
 	        this.setState({ showRevertImageBtn: false });
 	    },
@@ -49804,14 +49930,14 @@
 	    },
 	    render: function render() {
 	        var alert = '',
-	            deleteImageBtn = '',
+	            devareImageBtn = '',
 	            revertImageBtn = '',
-	            correctAnswer = void 0,
-	            itemDisplayName = void 0,
-	            questionString = void 0,
-	            wrongAnswer1 = void 0,
-	            wrongAnswer2 = void 0,
-	            wrongAnswer3 = void 0;
+	            correctAnswer,
+	            itemDisplayName,
+	            questionString,
+	            wrongAnswer1,
+	            wrongAnswer2,
+	            wrongAnswer3;
 
 	        if (this.state.showAlert) {
 	            alert = React.createElement(
@@ -50022,8 +50148,8 @@
 	            );
 	        }
 
-	        if (this.state.showDeleteImageBtn) {
-	            deleteImageBtn = React.createElement(
+	        if (this.state.showDevareImageBtn) {
+	            devareImageBtn = React.createElement(
 	                Button,
 	                { onClick: this.removeImage,
 	                    title: 'Remove the image' },
@@ -50098,7 +50224,7 @@
 	                            React.createElement(
 	                                'div',
 	                                { className: 'image-controls' },
-	                                deleteImageBtn,
+	                                devareImageBtn,
 	                                revertImageBtn
 	                            )
 	                        ),
@@ -50182,13 +50308,13 @@
 	module.exports = EditItem;
 
 /***/ },
-/* 56 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(57);
+	var content = __webpack_require__(62);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(23)(content, {});
@@ -50208,7 +50334,7 @@
 	}
 
 /***/ },
-/* 57 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(22)();
@@ -50222,7 +50348,7 @@
 
 
 /***/ },
-/* 58 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItems.js
@@ -50257,417 +50383,19 @@
 	module.exports = LORelatedItems;
 
 /***/ },
-/* 59 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
-
-	'use strict';
-
-	__webpack_require__(60);
-	__webpack_require__(36);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(38);
-
-	var Button = ReactBS.Button;
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormGroup = ReactBS.FormGroup;
-	var Glyphicon = ReactBS.Glyphicon;
-	var Modal = ReactBS.Modal;
-
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-	var SetIFrameHeight = __webpack_require__(52);
-	var WrapHTML = __webpack_require__(46);
-
-	var QuestionText = React.createClass({
-	    displayName: 'QuestionText',
-
-	    getInitialState: function getInitialState() {
-	        var questionLO = this.props.questionLO === '' ? '' : this.props.questionLO;
-	        return {
-	            questionLO: questionLO,
-	            showModal: false
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {
-	        SetIFrameHeight(this.refs.myFrame);
-	    },
-	    close: function close() {
-	        this.setState({ showModal: false });
-	        this.reset();
-	    },
-	    onChange: function onChange(e) {
-	        if (e == null) {
-	            this.setState({ questionLO: '' });
-	        } else {
-	            this.setState({ questionLO: e.value });
-	        }
-	    },
-	    open: function open(e) {
-	        this.setState({ showModal: true }, function () {});
-	    },
-	    renderOutcomes: function renderOutcomes() {
-	        return _.map(this.props.outcomes, function (outcome) {
-	            return React.createElement(
-	                'option',
-	                { value: outcome.id,
-	                    title: outcome.description.text,
-	                    key: outcome.id },
-	                outcome.displayName.text
-	            );
-	        });
-	    },
-	    reset: function reset() {},
-	    save: function save(e) {
-	        var payload = {
-	            learningObjectiveId: this.state.questionLO,
-	            itemId: this.props.questionId,
-	            libraryId: this.props.libraryId
-	        };
-
-	        Dispatcher.dispatch({
-	            type: ActionTypes.LINK_ITEM_LO,
-	            content: payload
-	        });
-	        this.close();
-	    },
-	    render: function render() {
-	        var questionText = WrapHTML(this.props.questionText);
-
-	        return React.createElement(
-	            'div',
-	            { className: 'taggable-text' },
-	            React.createElement(
-	                'div',
-	                { className: 'text-blob' },
-	                React.createElement('iframe', { ref: 'myFrame',
-	                    srcDoc: questionText,
-	                    frameBorder: 0,
-	                    width: '100%',
-	                    sandbox: 'allow-same-origin allow-scripts'
-	                })
-	            )
-	        );
-	    }
-	});
-
-	module.exports = QuestionText;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 60 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(61);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./QuestionText.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./QuestionText.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 61 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(22)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".question-actions  button {\n    height: 34px;\n}", ""]);
-
-	// exports
-
-
-/***/ },
-/* 62 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Label = ReactBS.Label;
-
-	var AuthoringConstants = __webpack_require__(14);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var LibraryItemsStore = __webpack_require__(8);
-
-	var ItemStatus = React.createClass({
-	    displayName: 'ItemStatus',
-
-	    getInitialState: function getInitialState() {
-	        return {};
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    render: function render() {
-	        // How to figure out how many are uncurated?
-	        var libraryName = this.props.libraryDescription,
-	            numberItems = this.props.items.length,
-	            numberUncuratedItems = 0,
-	            uncuratedLabel;
-
-	        _.each(this.props.items, function (item) {
-	            var unlinkedAnswers = _.find(item.answers, function (answer) {
-	                return answer.confusedLearningObjectiveIds.length === 0 && answer.genusTypeId === GenusTypes.WRONG_ANSWER;
-	            });
-	            if (item.question.learningObjectiveIds.length === 0 || unlinkedAnswers != null) {
-	                numberUncuratedItems++;
-	            }
-	        });
-
-	        if (numberUncuratedItems === 0) {
-	            uncuratedLabel = React.createElement(
-	                Label,
-	                { bsStyle: 'success' },
-	                numberUncuratedItems
-	            );
-	        } else {
-	            uncuratedLabel = React.createElement(
-	                Label,
-	                { bsStyle: 'danger' },
-	                numberUncuratedItems
-	            );
-	        }
-
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                'div',
-	                null,
-	                libraryName,
-	                ': ',
-	                numberItems,
-	                ' questions'
-	            ),
-	            React.createElement(
-	                'div',
-	                null,
-	                'Number of uncurated questions: ',
-	                uncuratedLabel
-	            )
-	        );
-	    }
-	});
-
-	module.exports = ItemStatus;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 63 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormControl = ReactBS.FormControl;
-	var FormGroup = ReactBS.FormGroup;
-
-	var LibraryItemsStore = __webpack_require__(8);
-	var LibrariesStore = __webpack_require__(64);
-
-	var LibrarySelector = React.createClass({
-	    displayName: 'LibrarySelector',
-
-	    getInitialState: function getInitialState() {
-	        return {
-	            libraries: []
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        LibrariesStore.addChangeListener(function (libraries) {
-	            _this.setState({ libraries: libraries });
-	        });
-	    },
-	    componentDidMount: function componentDidMount() {
-	        LibrariesStore.getAll();
-	    },
-	    renderLibraries: function renderLibraries() {
-	        return _.map(this.state.libraries, function (library) {
-	            return React.createElement(
-	                'option',
-	                { value: library.id,
-	                    title: library.description.text,
-	                    key: library.id },
-	                library.displayName.text
-	            );
-	        });
-	    },
-	    showItems: function showItems(e) {
-	        var option = e.currentTarget.selectedOptions[0],
-	            id = option.value,
-	            description = option.title;
-	        if (id !== '-1') {
-	            LibraryItemsStore.getItems(id);
-	            this.props.onSelect(id, description);
-	        } else {
-	            this.props.hideItems();
-	        }
-	    },
-	    render: function render() {
-	        return React.createElement(
-	            FormGroup,
-	            { controlId: 'librarySelector' },
-	            React.createElement(
-	                ControlLabel,
-	                null,
-	                'Select class ...'
-	            ),
-	            React.createElement(
-	                FormControl,
-	                { componentClass: 'select',
-	                    placeholder: 'Select a class',
-	                    onChange: this.showItems },
-	                React.createElement(
-	                    'option',
-	                    { value: '-1' },
-	                    'Please select a content domain ... '
-	                ),
-	                this.renderLibraries()
-	            )
-	        );
-	    }
-	});
-
-	module.exports = LibrarySelector;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
 /* 64 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var LibrariesDispatcher = __webpack_require__(65);
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-	var _ = __webpack_require__(5);
-	var MiddlewareService = __webpack_require__(17)
-
-	var ActionTypes = AuthoringConstants.ActionTypes;
-	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
-
-	var _libraries = [];
-
-	var LibrariesStore = _.assign({}, EventEmitter.prototype, {
-	    emitChange: function () {
-	        this.emit(CHANGE_EVENT, _libraries);
-	    },
-	    addChangeListener: function (callback) {
-	        this.on(CHANGE_EVENT, callback);
-	    },
-	    removeChangeListener: function (callback) {
-	        this.removeListener(CHANGE_EVENT, callback);
-	    },
-	    getAll: function () {
-	        var _this = this;
-	        fetch(this.url(), {
-	            credentials: "same-origin"
-	        }).then(function (response) {
-	            response.json().then(function (data) {
-	                _libraries = data;
-	                _this.emitChange();
-	            });
-	        })
-	        .catch(function (error) {
-	            console.log('Problem with getting libraries: ' + error.message);
-	        });
-	    },
-	    url: function () {
-	        if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
-
-	        return MiddlewareService.host() + '/assessment/libraries/';
-	    }
-	});
-
-	LibrariesStore.dispatchToken = LibrariesDispatcher.register(function (action) {
-	    switch(action.type) {
-	    }
-	});
-
-	module.exports = LibrariesStore;
-
-
-/***/ },
-/* 65 */
-9,
-/* 66 */
-/***/ function(module, exports) {
-
-	// ConvertLibraryId2RepositoryId.js
-	'use strict';
-
-	let ConvertLibraryId2RepositoryId = function (libraryId) {
-	    return libraryId.replace('assessment.Bank', 'repository.Repository');
-	};
-
-	module.exports = ConvertLibraryId2RepositoryId;
-
-/***/ },
-/* 67 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// ConfigureCKEditor.js
-	// the cookie getting parts from:
-	// From: https://docs.djangoproject.com/en/1.6/ref/contrib/csrf/
-	// And:  http://stackoverflow.com/questions/6506897/csrf-token-missing-or-incorrect-while-post-parameter-via-ajax-in-django
-
-	'use strict';
-
-	let $ = __webpack_require__(26);
-
-	let ConfigureCKEditor = function (editor, repositoryId) {
-	    let MiddlewareService = __webpack_require__(17);
-
-	    editor.config.extraPlugins = 'uploadimage';
-	    editor.config.filebrowserUploadUrl = MiddlewareService.host() + '/repository/repositories/' + repositoryId + '/assets';
-	    editor.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML';
-	};
-
-	module.exports = ConfigureCKEditor;
-
-/***/ },
-/* 68 */,
-/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LOText.js
 
 	'use strict';
 
-	__webpack_require__(70);
+	__webpack_require__(65);
 
 	var React = __webpack_require__(1);
 
-	var LinkLO = __webpack_require__(72);
-	var LORelatedItemsBadge = __webpack_require__(47);
+	var LinkLO = __webpack_require__(67);
+	var LORelatedItemsBadge = __webpack_require__(52);
 
 	var LOText = React.createClass({
 	    displayName: 'LOText',
@@ -50702,13 +50430,13 @@
 	module.exports = LOText;
 
 /***/ },
-/* 70 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(71);
+	var content = __webpack_require__(66);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(23)(content, {});
@@ -50728,7 +50456,7 @@
 	}
 
 /***/ },
-/* 71 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(22)();
@@ -50742,18 +50470,18 @@
 
 
 /***/ },
-/* 72 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
 
 	'use strict';
 
-	__webpack_require__(36);
+	__webpack_require__(41);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(38);
+	var Select = __webpack_require__(43);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -50903,5 +50631,366 @@
 	module.exports = LinkLO;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
-/***/ }
+/***/ },
+/* 68 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
+
+	'use strict';
+
+	__webpack_require__(69);
+	__webpack_require__(41);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Select = __webpack_require__(43);
+
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var Dispatcher = __webpack_require__(9);
+	var SetIFrameHeight = __webpack_require__(57);
+	var WrapHTML = __webpack_require__(51);
+
+	var QuestionText = React.createClass({
+	    displayName: 'QuestionText',
+
+	    getInitialState: function getInitialState() {
+	        var questionLO = this.props.questionLO === '' ? '' : this.props.questionLO;
+	        return {
+	            questionLO: questionLO,
+	            showModal: false
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {
+	        SetIFrameHeight(this.refs.myFrame);
+	    },
+	    close: function close() {
+	        this.setState({ showModal: false });
+	        this.reset();
+	    },
+	    onChange: function onChange(e) {
+	        if (e == null) {
+	            this.setState({ questionLO: '' });
+	        } else {
+	            this.setState({ questionLO: e.value });
+	        }
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    renderOutcomes: function renderOutcomes() {
+	        return _.map(this.props.outcomes, function (outcome) {
+	            return React.createElement(
+	                'option',
+	                { value: outcome.id,
+	                    title: outcome.description.text,
+	                    key: outcome.id },
+	                outcome.displayName.text
+	            );
+	        });
+	    },
+	    reset: function reset() {},
+	    save: function save(e) {
+	        var payload = {
+	            learningObjectiveId: this.state.questionLO,
+	            itemId: this.props.questionId,
+	            libraryId: this.props.libraryId
+	        };
+
+	        Dispatcher.dispatch({
+	            type: ActionTypes.LINK_ITEM_LO,
+	            content: payload
+	        });
+	        this.close();
+	    },
+	    render: function render() {
+	        var questionText = WrapHTML(this.props.questionText);
+
+	        return React.createElement(
+	            'div',
+	            { className: 'taggable-text' },
+	            React.createElement(
+	                'div',
+	                { className: 'text-blob' },
+	                React.createElement('iframe', { ref: 'myFrame',
+	                    srcDoc: questionText,
+	                    frameBorder: 0,
+	                    width: '100%',
+	                    sandbox: 'allow-same-origin allow-scripts'
+	                })
+	            )
+	        );
+	    }
+	});
+
+	module.exports = QuestionText;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 69 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(70);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(23)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./QuestionText.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./QuestionText.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 70 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(22)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".question-actions  button {\n    height: 34px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 71 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Label = ReactBS.Label;
+
+	var AuthoringConstants = __webpack_require__(14);
+	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var LibraryItemsStore = __webpack_require__(8);
+
+	var ItemStatus = React.createClass({
+	    displayName: 'ItemStatus',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    render: function render() {
+	        // How to figure out how many are uncurated?
+	        var libraryName = this.props.libraryDescription,
+	            numberItems = this.props.items.length,
+	            numberUncuratedItems = 0,
+	            uncuratedLabel;
+
+	        _.each(this.props.items, function (item) {
+	            var unlinkedAnswers = _.find(item.answers, function (answer) {
+	                return answer.confusedLearningObjectiveIds.length === 0 && answer.genusTypeId === GenusTypes.WRONG_ANSWER;
+	            });
+	            if (item.question.learningObjectiveIds.length === 0 || unlinkedAnswers != null) {
+	                numberUncuratedItems++;
+	            }
+	        });
+
+	        if (numberUncuratedItems === 0) {
+	            uncuratedLabel = React.createElement(
+	                Label,
+	                { bsStyle: 'success' },
+	                numberUncuratedItems
+	            );
+	        } else {
+	            uncuratedLabel = React.createElement(
+	                Label,
+	                { bsStyle: 'danger' },
+	                numberUncuratedItems
+	            );
+	        }
+
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                'div',
+	                null,
+	                libraryName,
+	                ': ',
+	                numberItems,
+	                ' questions'
+	            ),
+	            React.createElement(
+	                'div',
+	                null,
+	                'Number of uncurated questions: ',
+	                uncuratedLabel
+	            )
+	        );
+	    }
+	});
+
+	module.exports = ItemStatus;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 72 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+
+	var LibraryItemsStore = __webpack_require__(8);
+	var LibrariesStore = __webpack_require__(73);
+
+	var LibrarySelector = React.createClass({
+	    displayName: 'LibrarySelector',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            libraries: []
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {
+	        var _this = this;
+	        LibrariesStore.addChangeListener(function (libraries) {
+	            _this.setState({ libraries: libraries });
+	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        LibrariesStore.getAll();
+	    },
+	    renderLibraries: function renderLibraries() {
+	        return _.map(this.state.libraries, function (library) {
+	            return React.createElement(
+	                'option',
+	                { value: library.id,
+	                    title: library.description.text,
+	                    key: library.id },
+	                library.displayName.text
+	            );
+	        });
+	    },
+	    showItems: function showItems(e) {
+	        var option = e.currentTarget.selectedOptions[0],
+	            id = option.value,
+	            description = option.title;
+	        if (id !== '-1') {
+	            LibraryItemsStore.getItems(id);
+	            this.props.onSelect(id, description);
+	        } else {
+	            this.props.hideItems();
+	        }
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            FormGroup,
+	            { controlId: 'librarySelector' },
+	            React.createElement(
+	                ControlLabel,
+	                null,
+	                'Select class ...'
+	            ),
+	            React.createElement(
+	                FormControl,
+	                { componentClass: 'select',
+	                    placeholder: 'Select a class',
+	                    onChange: this.showItems },
+	                React.createElement(
+	                    'option',
+	                    { value: '-1' },
+	                    'Please select a content domain ... '
+	                ),
+	                this.renderLibraries()
+	            )
+	        );
+	    }
+	});
+
+	module.exports = LibrarySelector;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 73 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var LibrariesDispatcher = __webpack_require__(74);
+	var AuthoringConstants = __webpack_require__(14);
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+	var _ = __webpack_require__(5);
+	var MiddlewareService = __webpack_require__(17)
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _libraries = [];
+
+	var LibrariesStore = _.assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _libraries);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    getAll: function () {
+	        var _this = this;
+	        fetch(this.url(), {
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _libraries = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting libraries: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	        if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
+
+	        return MiddlewareService.host() + '/assessment/libraries/';
+	    }
+	});
+
+	LibrariesStore.dispatchToken = LibrariesDispatcher.register(function (action) {
+	    switch(action.type) {
+	    }
+	});
+
+	module.exports = LibrariesStore;
+
+
+/***/ },
+/* 74 */
+9
 /******/ ])));

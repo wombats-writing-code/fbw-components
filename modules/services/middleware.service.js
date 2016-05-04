@@ -18,6 +18,15 @@ let MiddlewareService = {
         return '/fbw-author/api/v1';
     }
   },
+  secureHost: () => {
+    let location = window.location.host;
+
+    if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
+        return '/touchstone/api/v1';
+    } else {
+        return '/fbw-author/touchstone/api/v1';
+    }
+  },
   staticFiles: () => {
     let location = window.location.host;
 
