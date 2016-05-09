@@ -1,4 +1,4 @@
-// CreateMultipleChoice.jsx
+// CreateSurveyMultipleChoice.jsx
 'use strict';
 
 var React = require('react');
@@ -25,24 +25,18 @@ var LibraryItemsStore = require('../stores/LibraryItemsStore');
 var MiddlewareService = require('../services/middleware.service.js');
 var WrongAnswerEditor = require('./wrong-answer-editor/WrongAnswerEditor');
 
-var CreateMultipleChoice = React.createClass({
+var CreateSurveyMultipleChoice = React.createClass({
     getInitialState: function () {
         return {
-            correctAnswer: '',
-            correctAnswerError: false,
-            correctAnswerFeedback: '',
+            choices: [''],
             itemDescription: '',
             itemDisplayName: '',
             itemDisplayNameError: false,
-            newWrongAnswerIndices: [],
             questionFile: '',
             questionString: '',
             questionStringError: false,
             showAlert: false,
-            showModal: true,
-            wrongAnswers: [''],
-            wrongAnswerErrors: [false],
-            wrongAnswerFeedbacks: ['']
+            showModal: true
         };
     },
     componentWillMount: function() {
@@ -50,16 +44,15 @@ var CreateMultipleChoice = React.createClass({
     componentDidUpdate: function () {
         setTimeout(this.checkNewEditorInstances, 500);
     },
-    addWrongAnswer: function () {
-        var newIndex = this.state.wrongAnswers.length + 1;
-        this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
-        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.concat([false]) });
-        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
+    addChoice: function () {
+        var newIndex = this.state.choices.length + 1;
 
-        this.setState({ newWrongAnswerIndices: [newIndex] });
+        this.setState({ choices: this.state.choices.concat(['']) });
+
+        this.setState({ newChoiceIndices: [newIndex] });
     },
     checkNewEditorInstances: function () {
-        if (this.state.newWrongAnswerIndices.length > 0) {
+        if (this.state.newChoiceIndices.length > 0) {
             this.initializeNewEditorInstances();
         }
     },
@@ -136,35 +129,18 @@ var CreateMultipleChoice = React.createClass({
             this.props.close();
         }
     },
-    formatWrongAnswers: function () {
+    formatChoices: function () {
         var _this = this;
-        return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
-            var errorState = _this.state.wrongAnswerErrors[index],
-                feedback = _this.state.wrongAnswerFeedbacks[index];
-
-            return <WrongAnswerEditor error={errorState}
-                                      feedback={feedback}
-                                      index={index}
-                                      key={index}
-                                      remove={_this.removeWrongAnswer}
-                                      text={wrongAnswer.text} />
+        return _.map(this.state.choices, function (choice, index) {
+            return <ChoiceEditor index={index}
+                                 key={index}
+                                 remove={_this.removeChoice}
+                                 text={choice.text} />
         });
     },
-    getWrongAnswerFeedbacks: function () {
+    getChoices: function () {
         var results = [];
-
-        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
-            var visibleIndex = index + 1,
-                editorInstance = 'wrongAnswer' + visibleIndex,
-                feedbackEditor = editorInstance + 'Feedback';
-            results.push(CKEDITOR.instances[feedbackEditor].getData());
-        });
-
-        return results;
-    },
-    getWrongAnswers: function () {
-        var results = [];
-        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
+        _.each(this.state.choices, function (wrongAnswer, index) {
             var visibleIndex = index + 1,
                 editorInstance = 'wrongAnswer' + visibleIndex;
             results.push(CKEDITOR.instances[editorInstance].getData());
@@ -186,25 +162,19 @@ var CreateMultipleChoice = React.createClass({
         CKEditorModalHack();
         $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
             ConfigureCKEditor(CKEDITOR, repositoryId);
-            _this.initializeEditorInstance('correctAnswer');
-            _this.initializeEditorInstance('correctAnswerFeedback');
             _this.initializeEditorInstance('questionString');
-            _this.initializeEditorInstance('wrongAnswer1');
-            _this.initializeEditorInstance('wrongAnswer1Feedback');
         });
     },
     initializeNewEditorInstances: function () {
         var _this = this;
-        _.each(this.state.newWrongAnswerIndices, function (index) {
+        _.each(this.state.newChoiceIndices, function (index) {
             var visibleIndex = index,
-                editorInstance = 'wrongAnswer' + visibleIndex,
-                feedbackInstance = editorInstance + 'Feedback';
+                editorInstance = 'choice' + visibleIndex;
 
             _this.initializeEditorInstance(editorInstance);
-            _this.initializeEditorInstance(feedbackInstance);
         });
 
-        this.setState({ newWrongAnswerIndices: [] });
+        this.setState({ newChoiceIndices: [] });
     },
     onChange: function(e) {
         var inputId = e.currentTarget.id,
@@ -214,30 +184,20 @@ var CreateMultipleChoice = React.createClass({
         update[inputId] = inputValue;
         this.setState(update);
     },
-    removeWrongAnswer: function (index) {
-        var editorInstance = 'wrongAnswer' + (index + 1),
-            feedbackEditor = editorInstance + 'Feedback',
-            updatedWrongAnswers = this.state.wrongAnswers,
-            updatedWrongAnswerErrors = this.state.wrongAnswerErrors,
-            updatedWrongAnswerFeedbacks = this.state.wrongAnswerFeedbacks;
+    removeChoice: function (index) {
+        var editorInstance = 'choice' + (index + 1),
+            updatedChoices = this.state.choices;
 
-        updatedWrongAnswers.splice(index, 1);
-        updatedWrongAnswerErrors.splice(index, 1);
-        updatedWrongAnswerFeedbacks.splice(index, 1);
+        updatedChoices.splice(index, 1);
 
-        // remove wrong answer & feedback & errors with the given index
-        this.setState({ wrongAnswers: updatedWrongAnswers });
-        this.setState({ wrongAnswerErrors: updatedWrongAnswerErrors });
-        this.setState({ wrongAnswerFeedbacks: updatedWrongAnswerFeedbacks });
+        // remove choice with the given index
+        this.setState({ choices: updatedChoices });
 
-        if (this.state.wrongAnswers.length === 0) {
-            this.setState({ wrongAnswers: [''] });
-            this.setState({ wrongAnswerErrors: [false] });
-            this.setState({ wrongAnswerFeedbacks: [''] });
+        if (this.state.choices.length === 0) {
+            this.setState({ choices: [''] });
         }
 
         this.resetEditorInstance(editorInstance);
-        this.resetEditorInstance(feedbackEditor);
     },
     resetEditorInstance: function (instance) {
         $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
@@ -248,31 +208,11 @@ var CreateMultipleChoice = React.createClass({
     },
     render: function () {
         var alert = '',
-            wrongAnswers = this.formatWrongAnswers(),
-            correctAnswer, itemDisplayName, questionString;
+            choices = this.formatChoices(),
+            itemDisplayName, questionString;
 
         if (this.state.showAlert) {
             alert = <Alert bsStyle="danger">You are missing some required fields</Alert>
-        }
-
-        if (this.state.correctAnswerError) {
-            correctAnswer = <FormGroup controlId="correctAnswer"
-                                       validationState="error">
-                <ControlLabel>Correct Answer</ControlLabel>
-                <FormControl componentClass="textarea"
-                             value={this.state.correctAnswer}
-                             onChange={this.onChange}
-                             placeholder="The correct answer"/>
-                <FormControl.Feedback />
-            </FormGroup>
-        } else {
-            correctAnswer = <FormGroup controlId="correctAnswer">
-                <ControlLabel>Correct Answer</ControlLabel>
-                <FormControl componentClass="textarea"
-                             value={this.state.correctAnswer}
-                             onChange={this.onChange}
-                             placeholder="The correct answer"/>
-            </FormGroup>
         }
 
         if (this.state.itemDisplayNameError) {
@@ -320,7 +260,7 @@ var CreateMultipleChoice = React.createClass({
                       onHide={this.props.close}
                       onEntered={this.initializeEditors}>
             <Modal.Header closeButton>
-                <Modal.Title>New Multiple Choice Question</Modal.Title>
+                <Modal.Title>New Multiple Choice Survey Question</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 {alert}
@@ -334,19 +274,11 @@ var CreateMultipleChoice = React.createClass({
                                      placeholder="A description for this item" />
                     </FormGroup>
                     {questionString}
-                    {correctAnswer}
-                    <FormGroup controlId="correctAnswerFeedback">
-                        <ControlLabel>Correct Answer Feedback (recommended)</ControlLabel>
-                        <FormControl componentClass="textarea"
-                                     value={this.state.correctAnswerFeedback}
-                                     onChange={this.onChange}
-                                     placeholder="Feedback for the correct answer" />
-                    </FormGroup>
-                    {wrongAnswers}
-                    <Button onClick={this.addWrongAnswer}
+                    {choices}
+                    <Button onClick={this.addChoice}
                             bsStyle="success">
                         <Glyphicon glyph="plus" />
-                        Add Wrong Answer
+                        Add Choice
                     </Button>
                 </form>
             </Modal.Body>
@@ -358,4 +290,4 @@ var CreateMultipleChoice = React.createClass({
     }
 });
 
-module.exports = CreateMultipleChoice;
+module.exports = CreateSurveyMultipleChoice;

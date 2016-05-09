@@ -2,10 +2,10 @@
 
 'use strict';
 
-let $ = require('jquery');
+var $ = require('jquery');
 
-let ConfigureCKEditor = function (editor, repositoryId) {
-    let MiddlewareService = require('../services/middleware.service.js');
+var ConfigureCKEditor = function (editor, repositoryId) {
+    var MiddlewareService = require('../services/middleware.service.js');
 
     editor.config.extraPlugins = 'uploadimage';
     editor.config.filebrowserUploadUrl = MiddlewareService.host() + '/repository/repositories/' + repositoryId + '/assets';

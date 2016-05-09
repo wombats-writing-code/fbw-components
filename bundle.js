@@ -35507,6 +35507,7 @@
 	        }
 
 	        fetch(url, {
+	            cache: "no-store",
 	            credentials: "same-origin"
 	        }).then(function (response) {
 	            response.json().then(function (data) {
@@ -35526,6 +35527,7 @@
 	        }
 
 	        fetch(url, {
+	            cache: "no-store",
 	            credentials: "same-origin"
 	        }).then(function (response) {
 	            response.json().then(function (data) {
@@ -36557,17 +36559,10 @@
 
 	var _ = __webpack_require__(5);
 
-	var $s = __webpack_require__(24);
-
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CKEditorModalHack = __webpack_require__(25);
-	var ConfigureCKEditor = __webpack_require__(28);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(29);
 	var CreateMultipleChoice = __webpack_require__(30);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var ItemTypesStore = __webpack_require__(34);
-	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(31);
 
 	var AddItem = React.createClass({
 	    displayName: 'AddItem',
@@ -36686,7 +36681,7 @@
 	                    React.createElement(
 	                        Button,
 	                        { onClick: this.closeTypeModal },
-	                        'Close'
+	                        'Cancel'
 	                    ),
 	                    React.createElement(
 	                        Button,
@@ -46511,10 +46506,10 @@
 
 	'use strict';
 
-	let $ = __webpack_require__(26);
+	var $ = __webpack_require__(26);
 
-	let ConfigureCKEditor = function (editor, repositoryId) {
-	    let MiddlewareService = __webpack_require__(17);
+	var ConfigureCKEditor = function (editor, repositoryId) {
+	    var MiddlewareService = __webpack_require__(17);
 
 	    editor.config.extraPlugins = 'uploadimage';
 	    editor.config.filebrowserUploadUrl = MiddlewareService.host() + '/repository/repositories/' + repositoryId + '/assets';
@@ -46756,11 +46751,19 @@
 	    },
 	    removeWrongAnswer: function removeWrongAnswer(index) {
 	        var editorInstance = 'wrongAnswer' + (index + 1),
-	            feedbackEditor = editorInstance + 'Feedback';
+	            feedbackEditor = editorInstance + 'Feedback',
+	            updatedWrongAnswers = this.state.wrongAnswers,
+	            updatedWrongAnswerErrors = this.state.wrongAnswerErrors,
+	            updatedWrongAnswerFeedbacks = this.state.wrongAnswerFeedbacks;
+
+	        updatedWrongAnswers.splice(index, 1);
+	        updatedWrongAnswerErrors.splice(index, 1);
+	        updatedWrongAnswerFeedbacks.splice(index, 1);
+
 	        // remove wrong answer & feedback & errors with the given index
-	        this.setState({ wrongAnswers: this.state.wrongAnswers.splice(index, 1) });
-	        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.splice(index, 1) });
-	        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.splice(index, 1) });
+	        this.setState({ wrongAnswers: updatedWrongAnswers });
+	        this.setState({ wrongAnswerErrors: updatedWrongAnswerErrors });
+	        this.setState({ wrongAnswerFeedbacks: updatedWrongAnswerFeedbacks });
 
 	        if (this.state.wrongAnswers.length === 0) {
 	            this.setState({ wrongAnswers: [''] });
@@ -46956,7 +46959,7 @@
 	                React.createElement(
 	                    Button,
 	                    { onClick: this.props.close },
-	                    'Close'
+	                    'Cancel'
 	                ),
 	                React.createElement(
 	                    Button,
@@ -47181,6 +47184,7 @@
 	            _this = this;
 
 	        fetch(url, {
+	            cache: "no-store",
 	            credentials: "same-origin"
 	        }).then(function (response) {
 	            if (response.ok) {
@@ -49622,6 +49626,7 @@
 	    getAll: function () {
 	        var _this = this;
 	        fetch(this.url(), {
+	            cache: "no-store",
 	            credentials: "same-origin"
 	        }).then(function (response) {
 	            response.json().then(function (data) {
@@ -49844,28 +49849,12 @@
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormControl = ReactBS.FormControl;
-	var FormGroup = ReactBS.FormGroup;
 	var Glyphicon = ReactBS.Glyphicon;
-	var ListGroup = ReactBS.ListGroup;
-	var Modal = ReactBS.Modal;
-
-	var $s = __webpack_require__(24);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(39);
-	var CKEditorModalHack = __webpack_require__(25);
-	var ConfigureCKEditor = __webpack_require__(28);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(29);
-	var Dispatcher = __webpack_require__(9);
 	var EditMultipleChoice = __webpack_require__(77);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var LibraryItemsStore = __webpack_require__(8);
-	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(31);
 
 	var EditItem = React.createClass({
 	    displayName: 'EditItem',
@@ -50567,6 +50556,7 @@
 	    getAll: function () {
 	        var _this = this;
 	        fetch(this.url(), {
+	            cache: "no-store",
 	            credentials: "same-origin"
 	        }).then(function (response) {
 	            response.json().then(function (data) {
@@ -51190,7 +51180,7 @@
 	                React.createElement(
 	                    Button,
 	                    { onClick: this.closeAndReset },
-	                    'Close'
+	                    'Cancel'
 	                ),
 	                React.createElement(
 	                    Button,

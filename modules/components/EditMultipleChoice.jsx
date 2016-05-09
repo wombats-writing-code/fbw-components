@@ -517,7 +517,7 @@ var EditMultipleChoice = React.createClass({
                 </form>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={this.closeAndReset}>Close</Button>
+                <Button onClick={this.closeAndReset}>Cancel</Button>
                 <Button bsStyle="success" onClick={this.save}>Save</Button>
             </Modal.Footer>
         </Modal>

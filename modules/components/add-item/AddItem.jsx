@@ -15,17 +15,11 @@ var Modal = ReactBS.Modal;
 
 var _ = require('lodash');
 
-var $s = require('scriptjs');
-
 var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
-var CKEditorModalHack = require('../../utilities/CKEditorModalHack');
-var ConfigureCKEditor = require('../../utilities/ConfigureCKEditor');
-var ConvertLibraryId2RepositoryId = require('../../utilities/ConvertLibraryId2RepositoryId');
 var CreateMultipleChoice = require('../CreateMultipleChoice');
 var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
 var ItemTypesStore = require('../../stores/ItemTypesStore');
-var MiddlewareService = require('../../services/middleware.service.js');
-var WrongAnswerEditor = require('../wrong-answer-editor/WrongAnswerEditor');
+
 
 var AddItem = React.createClass({
     getInitialState: function () {
@@ -105,7 +99,7 @@ var AddItem = React.createClass({
                     </form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.closeTypeModal}>Close</Button>
+                    <Button onClick={this.closeTypeModal}>Cancel</Button>
                     <Button bsStyle="success" onClick={this.showForm}>Next</Button>
                 </Modal.Footer>
             </Modal>
