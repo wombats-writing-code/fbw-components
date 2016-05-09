@@ -35523,7 +35523,8 @@
 	        if (MiddlewareService.shouldReturnStatic()) {
 	          url = '/raw_data/CAD_items.json';
 	        } else {
-	          url = this.url() + id + '/items?wronganswers';
+	            var ts = new Date();
+	          url = this.url() + id + '/items?wronganswers&ts=' + ts.toISOString();
 	        }
 
 	        fetch(url, {
