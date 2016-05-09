@@ -31,6 +31,7 @@ var OutcomesStore = _.assign({}, EventEmitter.prototype, {
     getAll: function () {
         var _this = this;
         fetch(this.url(), {
+            cache: "no-store",
             credentials: "same-origin"
         }).then(function (response) {
             response.json().then(function (data) {

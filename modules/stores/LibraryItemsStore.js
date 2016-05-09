@@ -90,6 +90,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         }
 
         fetch(url, {
+            cache: "no-store",
             credentials: "same-origin"
         }).then(function (response) {
             response.json().then(function (data) {
@@ -109,6 +110,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         }
 
         fetch(url, {
+            cache: "no-store",
             credentials: "same-origin"
         }).then(function (response) {
             response.json().then(function (data) {

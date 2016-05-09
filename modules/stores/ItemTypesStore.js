@@ -26,6 +26,7 @@ var ItemTypesStore = _.assign({}, EventEmitter.prototype, {
             _this = this;
 
         fetch(url, {
+            cache: "no-store",
             credentials: "same-origin"
         }).then(function (response) {
             if (response.ok) {
