@@ -7,6 +7,7 @@ var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Glyphicon = ReactBS.Glyphicon;
 var Label = ReactBS.Label;
+var ReactTooltip = require('react-tooltip');
 
 var AuthoringConstants = require('../../constants/AuthoringConstants');
 var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
@@ -54,8 +55,9 @@ var ItemStatus = React.createClass({
                 Number of uncurated questions: {uncuratedLabel}
                 <Glyphicon className="uncurated-help-icon"
                            glyph="question-sign"
-                           title="Questions not tagged with learning outcomes (or have wrong answers not tagged)"/>
+                           data-tip="Questions not tagged with learning outcomes (or have wrong answers not tagged)"/>
             </div>
+            <ReactTooltip />
         </div>
     }
 });
