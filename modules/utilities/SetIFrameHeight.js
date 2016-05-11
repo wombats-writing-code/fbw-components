@@ -26,7 +26,11 @@ var SetIFrameHeight = function (frame) {
     // it sets the height before the iframe content
     // has fully rendered, making the height 10px;
     window.setTimeout(function () {
-        setIframeHeight(frame);
+        try {
+            setIframeHeight(frame);
+        } catch (e) {
+            //console.log('iFrame disappeared before it could be re-sized.');
+        }
     }, 2000);
 };
 

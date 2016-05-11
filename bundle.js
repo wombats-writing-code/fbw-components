@@ -47236,13 +47236,19 @@
 /* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// ItemSearch.js
+	/* WEBPACK VAR INJECTION */(function(_) {// ItemSearch.js
 
 	'use strict';
+
+	__webpack_require__(81);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Badge = ReactBS.Badge;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var InputGroup = ReactBS.InputGroup;
 
 	var ItemsList = __webpack_require__(36);
 	var LibraryItemsStore = __webpack_require__(8);
@@ -47268,7 +47274,28 @@
 	    },
 	    filterItems: function filterItems() {
 	        // TODO: take this.props.items and filter them according to the query term
-	        var filteredItems = this.props.items;
+	        var filteredItems = [],
+	            q = this.state.searchQuery;
+
+	        if (q != '') {
+	            _.each(this.props.items, function (item) {
+	                var choices = item.question.choices,
+	                    choiceMatch = false;
+
+	                _.each(choices, function (choice) {
+	                    if (choice.text.indexOf(q) >= 0) {
+	                        choiceMatch = true;
+	                    }
+	                });
+
+	                if (item.displayName.text.indexOf(q) >= 0 || item.description.text.indexOf(q) >= 0 || item.question.text.text.indexOf(q) >= 0 || choiceMatch) {
+	                    filteredItems.push(item);
+	                }
+	            });
+	        } else {
+	            filteredItems = this.props.items;
+	        }
+
 	        this.setState({ filteredItems: filteredItems });
 	    },
 	    render: function render() {
@@ -47276,10 +47303,22 @@
 	            'div',
 	            null,
 	            React.createElement(
-	                'div',
-	                { 'class': 'item-search' },
-	                React.createElement('input', { type: 'search', 'class': 'item-search__input', placeholder: 'Search question items by question text',
-	                    onChange: this._onChange, value: this.state.searchQuery })
+	                FormGroup,
+	                { className: 'item-search' },
+	                React.createElement(
+	                    InputGroup,
+	                    null,
+	                    React.createElement(
+	                        InputGroup.Addon,
+	                        null,
+	                        React.createElement(Glyphicon, { glyph: 'search' })
+	                    ),
+	                    React.createElement(FormControl, { type: 'search',
+	                        className: 'item-search__input',
+	                        placeholder: 'Search question items (text in questions / choices)',
+	                        onChange: this._onChange,
+	                        value: this.state.searchQuery })
+	                )
 	            ),
 	            React.createElement(ItemsList, { items: this.state.filteredItems,
 	                libraryId: this.props.libraryId,
@@ -47287,14 +47326,16 @@
 	        );
 	    },
 	    _onChange: function _onChange(event) {
-	        this.setState({ searchQuery: event.target.value });
-	        // TODO: ask cole what the purpose of ItemWrapper is. let's pass down a filtered list of items to ItemsList
-	        // this.props.onChange();
+	        var _this = this;
+	        this.setState({ searchQuery: event.target.value }, function () {
+	            _this.filterItems();
+	        });
 	    }
 
 	});
 
 	module.exports = ItemSearch;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
 /* 36 */
@@ -49709,7 +49750,11 @@
 	    // it sets the height before the iframe content
 	    // has fully rendered, making the height 10px;
 	    window.setTimeout(function () {
-	        setIframeHeight(frame);
+	        try {
+	            setIframeHeight(frame);
+	        } catch (e) {
+	            //console.log('iFrame disappeared before it could be re-sized.');
+	        }
 	    }, 2000);
 	};
 
@@ -50369,7 +50414,7 @@
 	                type: ActionTypes.UPDATE_ITEM,
 	                content: payload
 	            });
-	            this.close();
+	            this.closeAndReset();
 	            setTimeout(_this.reset, 500);
 	        }
 	    },
@@ -51259,6 +51304,46 @@
 
 	// module
 	exports.push([module.id, ".uncurated-help-icon {\n    margin-left: 5px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 81 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(82);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(23)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemSearch.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemSearch.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 82 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(22)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "\n.item-search__input {\n  \n}\n\n.item-search {\n    margin-top: 10px;\n    margin-left: 14px;\n    width: 60%;\n}", ""]);
 
 	// exports
 

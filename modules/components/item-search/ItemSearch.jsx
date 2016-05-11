@@ -1,10 +1,15 @@
 // ItemSearch.js
 
 'use strict';
+require('./ItemSearch.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Badge = ReactBS.Badge;
+var FormControl = ReactBS.FormControl;
+var FormGroup = ReactBS.FormGroup;
+var Glyphicon = ReactBS.Glyphicon;
+var InputGroup = ReactBS.InputGroup;
 
 
 var ItemsList = require('../items-list/ItemsList');
@@ -29,24 +34,57 @@ var ItemSearch = React.createClass({
     },
     filterItems: function () {
         // TODO: take this.props.items and filter them according to the query term
-        var filteredItems = this.props.items;
+        var filteredItems = [],
+            q = this.state.searchQuery;
+
+        if (q != '') {
+            _.each(this.props.items, function (item) {
+                var choices = item.question.choices,
+                    choiceMatch = false;
+
+                _.each(choices, function (choice) {
+                    if (choice.text.indexOf(q) >= 0) {
+                        choiceMatch = true;
+                    }
+                });
+
+                if (item.displayName.text.indexOf(q) >= 0 ||
+                    item.description.text.indexOf(q) >= 0 ||
+                    item.question.text.text.indexOf(q) >= 0 ||
+                    choiceMatch) {
+                    filteredItems.push(item);
+                }
+            });
+        } else {
+            filteredItems = this.props.items;
+        }
+
         this.setState({ filteredItems: filteredItems });
     },
     render: function () {
         return <div>
-            <div class="item-search">
-             <input type="search" class="item-search__input" placeholder="Search question items by question text"
-               onChange={this._onChange} value={this.state.searchQuery}/>
-            </div>
+            <FormGroup className="item-search">
+                <InputGroup>
+                    <InputGroup.Addon>
+                        <Glyphicon glyph="search"/>
+                    </InputGroup.Addon>
+                    <FormControl type="search"
+                                 className="item-search__input"
+                                 placeholder="Search question items (text in questions / choices)"
+                                 onChange={this._onChange}
+                                 value={this.state.searchQuery} />
+                </InputGroup>
+            </FormGroup>
             <ItemsList items={this.state.filteredItems}
                        libraryId={this.props.libraryId}
                        enableClickthrough={true}/>
         </div>
     },
     _onChange: function(event) {
-      this.setState({searchQuery: event.target.value});
-      // TODO: ask cole what the purpose of ItemWrapper is. let's pass down a filtered list of items to ItemsList
-      // this.props.onChange();
+        var _this = this;
+        this.setState({searchQuery: event.target.value}, function () {
+            _this.filterItems();
+        });
     }
 
 });
