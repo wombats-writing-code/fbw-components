@@ -1,8 +1,8 @@
 // WrapHTML.js
 'use strict';
 
-let WrapHTML = function (str) {
-    let wrappedStr;
+var WrapHTML = function (str) {
+    var wrappedStr;
     if (str.indexOf("math-tex") >= 0) {
         wrappedStr = '<html>' +
             '<head>' +

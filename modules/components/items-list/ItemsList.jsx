@@ -70,6 +70,13 @@ var ItemsList = React.createClass({
             return [];
         }
     },
+    filterOutcomes: function (item) {
+        // return outcomes that are not currently being used somewhere
+        // in a specific item
+        return _.filter(this.state.outcomes, function (outcome) {
+            return item.usedLOs.indexOf(outcome.id) < 0;
+        })
+    },
     renderItemAnswerLOs: function (item) {
         // just generate the answer los
         var _this = this;
@@ -88,7 +95,7 @@ var ItemsList = React.createClass({
                         libraryId={_this.props.libraryId}
                         outcomeDisplayName={_this.getOutcomeDisplayName(outcomeId)}
                         outcomeId={_this.getQuestionLO(item)}
-                        outcomes={_this.state.outcomes}
+                        outcomes={_this.filterOutcomes(item)}
                         relatedItems={relatedItems} />
             </div>
         });
@@ -121,6 +128,7 @@ var ItemsList = React.createClass({
             item['correctAnswer'] = answers.correctAnswerText.text;
             item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
             item['questionRelatedItems'] = _this.getRelatedItems(item.learningObjectiveIds[0]);
+            item['usedLOs'] = answers.wrongAnswerLOs.concat(item.learningObjectiveIds);
             item['wrongAnswers'] = answers.wrongAnswerTexts;
             item['wrongAnswerFeedbacks'] = answers.wrongAnswerFeedbacks;
             item['wrongAnswerIds'] = answers.wrongAnswerIds;
@@ -177,7 +185,7 @@ var ItemsList = React.createClass({
                                     libraryId={_this.props.libraryId}
                                     outcomeDisplayName={_this.getOutcomeDisplayName(questionLO)}
                                     outcomeId={questionLO}
-                                    outcomes={_this.state.outcomes}
+                                    outcomes={_this.filterOutcomes(item)}
                                     relatedItems={item.questionRelatedItems} />
                         </div>
                         <div className="text-row-wrapper">

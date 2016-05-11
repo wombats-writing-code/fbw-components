@@ -47418,6 +47418,13 @@
 	            return [];
 	        }
 	    },
+	    filterOutcomes: function filterOutcomes(item) {
+	        // return outcomes that are not currently being used somewhere
+	        // in a specific item
+	        return _.filter(this.state.outcomes, function (outcome) {
+	            return item.usedLOs.indexOf(outcome.id) < 0;
+	        });
+	    },
 	    renderItemAnswerLOs: function renderItemAnswerLOs(item) {
 	        // just generate the answer los
 	        var _this = this;
@@ -47443,7 +47450,7 @@
 	                    libraryId: _this.props.libraryId,
 	                    outcomeDisplayName: _this.getOutcomeDisplayName(outcomeId),
 	                    outcomeId: _this.getQuestionLO(item),
-	                    outcomes: _this.state.outcomes,
+	                    outcomes: _this.filterOutcomes(item),
 	                    relatedItems: relatedItems })
 	            );
 	        });
@@ -47484,6 +47491,7 @@
 	            item['correctAnswer'] = answers.correctAnswerText.text;
 	            item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
 	            item['questionRelatedItems'] = _this.getRelatedItems(item.learningObjectiveIds[0]);
+	            item['usedLOs'] = answers.wrongAnswerLOs.concat(item.learningObjectiveIds);
 	            item['wrongAnswers'] = answers.wrongAnswerTexts;
 	            item['wrongAnswerFeedbacks'] = answers.wrongAnswerFeedbacks;
 	            item['wrongAnswerIds'] = answers.wrongAnswerIds;
@@ -47569,7 +47577,7 @@
 	                                libraryId: _this.props.libraryId,
 	                                outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
 	                                outcomeId: questionLO,
-	                                outcomes: _this.state.outcomes,
+	                                outcomes: _this.filterOutcomes(item),
 	                                relatedItems: item.questionRelatedItems })
 	                        ),
 	                        React.createElement(
@@ -47752,7 +47760,6 @@
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var AnswerFeedback = __webpack_require__(52);
 	var Dispatcher = __webpack_require__(9);
-	var LORelatedItemsBadge = __webpack_require__(54);
 	var SetIFrameHeight = __webpack_require__(59);
 	var WrapHTML = __webpack_require__(53);
 
@@ -49493,8 +49500,8 @@
 	// WrapHTML.js
 	'use strict';
 
-	let WrapHTML = function (str) {
-	    let wrappedStr;
+	var WrapHTML = function (str) {
+	    var wrappedStr;
 	    if (str.indexOf("math-tex") >= 0) {
 	        wrappedStr = '<html>' +
 	            '<head>' +

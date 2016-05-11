@@ -18,7 +18,6 @@ var Modal = ReactBS.Modal;
 var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
 var AnswerFeedback = require('../AnswerFeedback');
 var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
-var LORelatedItemsBadge = require('../lo-related-items-badge/LORelatedItemsBadge');
 var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
 var WrapHTML = require('../../utilities/WrapHTML');
 
