@@ -63,6 +63,10 @@ var CreateMultipleChoice = React.createClass({
             this.initializeNewEditorInstances();
         }
     },
+    close: function () {
+        this.reset();
+        this.props.close();
+    },
     create: function (e) {
         // With CKEditor, need to get the data from CKEditor,
         // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
@@ -133,7 +137,7 @@ var CreateMultipleChoice = React.createClass({
                 type: ActionTypes.CREATE_ITEM,
                 content: payload
             });
-            this.props.close();
+            this.close();
         }
     },
     formatWrongAnswers: function () {
@@ -239,6 +243,22 @@ var CreateMultipleChoice = React.createClass({
         this.resetEditorInstance(editorInstance);
         this.resetEditorInstance(feedbackEditor);
     },
+    reset: function () {
+        this.setState({ correctAnswer: '' });
+        this.setState({ correctAnswerError: false });
+        this.setState({ correctAnswerFeedback: '' });
+        this.setState({ itemDescription: '' });
+        this.setState({ itemDisplayName: '' });
+        this.setState({ itemDisplayNameError: false });
+        this.setState({ newWrongAnswerIndices: [] });
+        this.setState({ questionFile: '' });
+        this.setState({ questionString: '' });
+        this.setState({ questionStringError: false });
+        this.setState({ showAlert: false });
+        this.setState({ wrongAnswers: [''] });
+        this.setState({ wrongAnswerErrors: [false] });
+        this.setState({ wrongAnswerFeedbacks: [''] });
+    },
     resetEditorInstance: function (instance) {
         $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
             CKEDITOR.instances[instance].setData('');
@@ -317,7 +337,7 @@ var CreateMultipleChoice = React.createClass({
 
         return <Modal bsSize="lg"
                       show={this.props.showModal}
-                      onHide={this.props.close}
+                      onHide={this.close}
                       onEntered={this.initializeEditors}>
             <Modal.Header closeButton>
                 <Modal.Title>New Multiple Choice Question</Modal.Title>
@@ -351,7 +371,7 @@ var CreateMultipleChoice = React.createClass({
                 </form>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={this.props.close}>Cancel</Button>
+                <Button onClick={this.close}>Cancel</Button>
                 <Button bsStyle="success" onClick={this.create}>Create</Button>
             </Modal.Footer>
         </Modal>

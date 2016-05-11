@@ -37116,6 +37116,10 @@
 	            this.initializeNewEditorInstances();
 	        }
 	    },
+	    close: function close() {
+	        this.reset();
+	        this.props.close();
+	    },
 	    create: function create(e) {
 	        // With CKEditor, need to get the data from CKEditor,
 	        // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
@@ -37183,7 +37187,7 @@
 	                type: ActionTypes.CREATE_ITEM,
 	                content: payload
 	            });
-	            this.props.close();
+	            this.close();
 	        }
 	    },
 	    formatWrongAnswers: function formatWrongAnswers() {
@@ -37288,6 +37292,22 @@
 
 	        this.resetEditorInstance(editorInstance);
 	        this.resetEditorInstance(feedbackEditor);
+	    },
+	    reset: function reset() {
+	        this.setState({ correctAnswer: '' });
+	        this.setState({ correctAnswerError: false });
+	        this.setState({ correctAnswerFeedback: '' });
+	        this.setState({ itemDescription: '' });
+	        this.setState({ itemDisplayName: '' });
+	        this.setState({ itemDisplayNameError: false });
+	        this.setState({ newWrongAnswerIndices: [] });
+	        this.setState({ questionFile: '' });
+	        this.setState({ questionString: '' });
+	        this.setState({ questionStringError: false });
+	        this.setState({ showAlert: false });
+	        this.setState({ wrongAnswers: [''] });
+	        this.setState({ wrongAnswerErrors: [false] });
+	        this.setState({ wrongAnswerFeedbacks: [''] });
 	    },
 	    resetEditorInstance: function resetEditorInstance(instance) {
 	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
@@ -37411,7 +37431,7 @@
 	            Modal,
 	            { bsSize: 'lg',
 	                show: this.props.showModal,
-	                onHide: this.props.close,
+	                onHide: this.close,
 	                onEntered: this.initializeEditors },
 	            React.createElement(
 	                Modal.Header,
@@ -37473,7 +37493,7 @@
 	                null,
 	                React.createElement(
 	                    Button,
-	                    { onClick: this.props.close },
+	                    { onClick: this.close },
 	                    'Cancel'
 	                ),
 	                React.createElement(
