@@ -12,8 +12,8 @@ var Row = ReactBS.Row;
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
 
 var AddItem = require('./add-item/AddItem');
-var ItemSearch = require('./item-search/ItemSearch.jsx');
-var ItemStatus = require('./ItemStatus');
+var ItemSearch = require('./item-search/ItemSearch');
+var ItemStatus = require('./item-status/ItemStatus');
 
 var ItemWrapper = React.createClass({
     getInitialState: function () {

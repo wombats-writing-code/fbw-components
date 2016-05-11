@@ -1,14 +1,16 @@
 // ItemStatus.js
 
 'use strict';
+require('./ItemStatus.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
+var Glyphicon = ReactBS.Glyphicon;
 var Label = ReactBS.Label;
 
-var AuthoringConstants = require('../constants/AuthoringConstants');
-var GenusTypes = require('../constants/AuthoringConstants').GenusTypes;
-var LibraryItemsStore = require('../stores/LibraryItemsStore');
+var AuthoringConstants = require('../../constants/AuthoringConstants');
+var GenusTypes = require('../../constants/AuthoringConstants').GenusTypes;
+var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 
 var ItemStatus = React.createClass({
     getInitialState: function () {
@@ -50,6 +52,9 @@ var ItemStatus = React.createClass({
             </div>
             <div>
                 Number of uncurated questions: {uncuratedLabel}
+                <Glyphicon className="uncurated-help-icon"
+                           glyph="question-sign"
+                           title="Questions not tagged with learning outcomes (or have wrong answers not tagged)"/>
             </div>
         </div>
     }

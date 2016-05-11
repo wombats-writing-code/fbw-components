@@ -105,7 +105,7 @@
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemWrapper = __webpack_require__(18);
-	var LibrarySelector = __webpack_require__(74);
+	var LibrarySelector = __webpack_require__(75);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
@@ -36492,7 +36492,7 @@
 
 	var AddItem = __webpack_require__(19);
 	var ItemSearch = __webpack_require__(35);
-	var ItemStatus = __webpack_require__(73);
+	var ItemStatus = __webpack_require__(78);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -36561,7 +36561,7 @@
 	var _ = __webpack_require__(5);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CreateMultipleChoice = __webpack_require__(30);
+	var CreateMultipleChoice = __webpack_require__(24);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var ItemTypesStore = __webpack_require__(34);
 
@@ -37050,6 +37050,448 @@
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
+	// CreateMultipleChoice.jsx
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Alert = ReactBS.Alert;
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var _ = __webpack_require__(5);
+
+	var $s = __webpack_require__(25);
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var CKEditorModalHack = __webpack_require__(26);
+	var ConfigureCKEditor = __webpack_require__(29);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(30);
+	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var Dispatcher = __webpack_require__(9);
+	var LibraryItemsStore = __webpack_require__(8);
+	var MiddlewareService = __webpack_require__(17);
+	var WrongAnswerEditor = __webpack_require__(31);
+
+	var CreateMultipleChoice = React.createClass({
+	    displayName: 'CreateMultipleChoice',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            correctAnswer: '',
+	            correctAnswerError: false,
+	            correctAnswerFeedback: '',
+	            itemDescription: '',
+	            itemDisplayName: '',
+	            itemDisplayNameError: false,
+	            newWrongAnswerIndices: [],
+	            questionFile: '',
+	            questionString: '',
+	            questionStringError: false,
+	            showAlert: false,
+	            showModal: true,
+	            wrongAnswers: [''],
+	            wrongAnswerErrors: [false],
+	            wrongAnswerFeedbacks: ['']
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidUpdate: function componentDidUpdate() {
+	        setTimeout(this.checkNewEditorInstances, 500);
+	    },
+	    addWrongAnswer: function addWrongAnswer() {
+	        var newIndex = this.state.wrongAnswers.length + 1;
+	        this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
+	        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.concat([false]) });
+	        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
+
+	        this.setState({ newWrongAnswerIndices: [newIndex] });
+	    },
+	    checkNewEditorInstances: function checkNewEditorInstances() {
+	        if (this.state.newWrongAnswerIndices.length > 0) {
+	            this.initializeNewEditorInstances();
+	        }
+	    },
+	    create: function create(e) {
+	        // With CKEditor, need to get the data from CKEditor,
+	        // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
+	        // var data = CKEDITOR.instances.correctAnswer.getData();
+	        var payload = {
+	            libraryId: this.props.libraryId
+	        },
+	            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
+	            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
+	            questionString = CKEDITOR.instances.questionString.getData(),
+	            wrongAnswers = this.getWrongAnswers(),
+	            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks();
+
+	        if (this.state.itemDisplayName === '' || correctAnswer === '' || questionString === '' || wrongAnswers.indexOf('') >= 0) {
+
+	            var firstEmptyWrongAnswer = wrongAnswers.indexOf(''),
+	                validationState = [];
+	            _.each(this.state.wrongAnswerErrors, function (errorState) {
+	                validationState.push(false);
+	            });
+
+	            if (firstEmptyWrongAnswer >= 0) {
+	                _.each(wrongAnswers, function (wrongAnswer, index) {
+	                    if (wrongAnswer === '') {
+	                        validationState[index] = true;
+	                    }
+	                });
+	            }
+
+	            this.setState({ showAlert: true });
+
+	            this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
+	            this.setState({ correctAnswerError: correctAnswer === '' });
+	            this.setState({ questionStringError: questionString === '' });
+	            this.setState({ wrongAnswerErrors: validationState });
+	        } else {
+	            payload['itemType'] = 'multiple-choice';
+	            payload['displayName'] = this.state.itemDisplayName;
+	            payload['description'] = this.state.itemDescription;
+	            payload['question'] = {
+	                text: questionString,
+	                choices: [correctAnswer]
+	            };
+
+	            _.each(wrongAnswers, function (wrongAnswer) {
+	                payload['question']['choices'].push(wrongAnswer);
+	            });
+	            payload['answers'] = [{
+	                genusTypeId: GenusTypes.CORRECT_ANSWER,
+	                choiceId: 0,
+	                feedback: correctAnswerFeedback
+	            }];
+
+	            _.each(wrongAnswerFeedbacks, function (feedback, index) {
+	                var choiceIndex = index + 1,
+	                    data = {
+	                    genusTypeId: GenusTypes.WRONG_ANSWER,
+	                    choiceId: choiceIndex,
+	                    feedback: feedback
+	                };
+	                payload['answers'].push(data);
+	            });
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.CREATE_ITEM,
+	                content: payload
+	            });
+	            this.props.close();
+	        }
+	    },
+	    formatWrongAnswers: function formatWrongAnswers() {
+	        var _this = this;
+	        return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
+	            var errorState = _this.state.wrongAnswerErrors[index],
+	                feedback = _this.state.wrongAnswerFeedbacks[index];
+
+	            return React.createElement(WrongAnswerEditor, { error: errorState,
+	                feedback: feedback,
+	                index: index,
+	                key: index,
+	                remove: _this.removeWrongAnswer,
+	                text: wrongAnswer.text });
+	        });
+	    },
+	    getWrongAnswerFeedbacks: function getWrongAnswerFeedbacks() {
+	        var results = [];
+
+	        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
+	            var visibleIndex = index + 1,
+	                editorInstance = 'wrongAnswer' + visibleIndex,
+	                feedbackEditor = editorInstance + 'Feedback';
+	            results.push(CKEDITOR.instances[feedbackEditor].getData());
+	        });
+
+	        return results;
+	    },
+	    getWrongAnswers: function getWrongAnswers() {
+	        var results = [];
+	        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
+	            var visibleIndex = index + 1,
+	                editorInstance = 'wrongAnswer' + visibleIndex;
+	            results.push(CKEDITOR.instances[editorInstance].getData());
+	        });
+
+	        return results;
+	    },
+	    initializeEditorInstance: function initializeEditorInstance(instance) {
+	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.replace(instance);
+	        });
+	    },
+	    initializeEditors: function initializeEditors(e) {
+	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId),
+	            _this = this;
+	        // CKEditor
+	        // Instructions from here
+	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
+	        CKEditorModalHack();
+	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            ConfigureCKEditor(CKEDITOR, repositoryId);
+	            _this.initializeEditorInstance('correctAnswer');
+	            _this.initializeEditorInstance('correctAnswerFeedback');
+	            _this.initializeEditorInstance('questionString');
+	            _this.initializeEditorInstance('wrongAnswer1');
+	            _this.initializeEditorInstance('wrongAnswer1Feedback');
+	        });
+	    },
+	    initializeNewEditorInstances: function initializeNewEditorInstances() {
+	        var _this = this;
+	        _.each(this.state.newWrongAnswerIndices, function (index) {
+	            var visibleIndex = index,
+	                editorInstance = 'wrongAnswer' + visibleIndex,
+	                feedbackInstance = editorInstance + 'Feedback';
+
+	            _this.initializeEditorInstance(editorInstance);
+	            _this.initializeEditorInstance(feedbackInstance);
+	        });
+
+	        this.setState({ newWrongAnswerIndices: [] });
+	    },
+	    onChange: function onChange(e) {
+	        var inputId = e.currentTarget.id,
+	            inputValue = e.target.value,
+	            update = {};
+
+	        update[inputId] = inputValue;
+	        this.setState(update);
+	    },
+	    removeWrongAnswer: function removeWrongAnswer(index) {
+	        var editorInstance = 'wrongAnswer' + (index + 1),
+	            feedbackEditor = editorInstance + 'Feedback',
+	            updatedWrongAnswers = this.state.wrongAnswers,
+	            updatedWrongAnswerErrors = this.state.wrongAnswerErrors,
+	            updatedWrongAnswerFeedbacks = this.state.wrongAnswerFeedbacks;
+
+	        updatedWrongAnswers.splice(index, 1);
+	        updatedWrongAnswerErrors.splice(index, 1);
+	        updatedWrongAnswerFeedbacks.splice(index, 1);
+
+	        // remove wrong answer & feedback & errors with the given index
+	        this.setState({ wrongAnswers: updatedWrongAnswers });
+	        this.setState({ wrongAnswerErrors: updatedWrongAnswerErrors });
+	        this.setState({ wrongAnswerFeedbacks: updatedWrongAnswerFeedbacks });
+
+	        if (this.state.wrongAnswers.length === 0) {
+	            this.setState({ wrongAnswers: [''] });
+	            this.setState({ wrongAnswerErrors: [false] });
+	            this.setState({ wrongAnswerFeedbacks: [''] });
+	        }
+
+	        this.resetEditorInstance(editorInstance);
+	        this.resetEditorInstance(feedbackEditor);
+	    },
+	    resetEditorInstance: function resetEditorInstance(instance) {
+	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.instances[instance].setData('');
+	            CKEDITOR.instances[instance].destroy();
+	            CKEDITOR.replace(instance);
+	        });
+	    },
+	    render: function render() {
+	        var alert = '',
+	            wrongAnswers = this.formatWrongAnswers(),
+	            correctAnswer,
+	            itemDisplayName,
+	            questionString;
+
+	        if (this.state.showAlert) {
+	            alert = React.createElement(
+	                Alert,
+	                { bsStyle: 'danger' },
+	                'You are missing some required fields'
+	            );
+	        }
+
+	        if (this.state.correctAnswerError) {
+	            correctAnswer = React.createElement(
+	                FormGroup,
+	                { controlId: 'correctAnswer',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Correct Answer'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.correctAnswer,
+	                    onChange: this.onChange,
+	                    placeholder: 'The correct answer' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            correctAnswer = React.createElement(
+	                FormGroup,
+	                { controlId: 'correctAnswer' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Correct Answer'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.correctAnswer,
+	                    onChange: this.onChange,
+	                    placeholder: 'The correct answer' })
+	            );
+	        }
+
+	        if (this.state.itemDisplayNameError) {
+	            itemDisplayName = React.createElement(
+	                FormGroup,
+	                { controlId: 'itemDisplayName',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Item Name'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.itemDisplayName,
+	                    onChange: this.onChange,
+	                    placeholder: 'A name for the item' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            itemDisplayName = React.createElement(
+	                FormGroup,
+	                { controlId: 'itemDisplayName' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Item Name'
+	                ),
+	                React.createElement(FormControl, { type: 'text',
+	                    value: this.state.itemDisplayName,
+	                    onChange: this.onChange,
+	                    placeholder: 'A name for the item' })
+	            );
+	        }
+
+	        if (this.state.questionStringError) {
+	            questionString = React.createElement(
+	                FormGroup,
+	                { controlId: 'questionString',
+	                    validationState: 'error' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Question'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.questionString,
+	                    onChange: this.onChange,
+	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' }),
+	                React.createElement(FormControl.Feedback, null)
+	            );
+	        } else {
+	            questionString = React.createElement(
+	                FormGroup,
+	                { controlId: 'questionString' },
+	                React.createElement(
+	                    ControlLabel,
+	                    null,
+	                    'Question'
+	                ),
+	                React.createElement(FormControl, { componentClass: 'textarea',
+	                    value: this.state.questionString,
+	                    onChange: this.onChange,
+	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' })
+	            );
+	        }
+
+	        return React.createElement(
+	            Modal,
+	            { bsSize: 'lg',
+	                show: this.props.showModal,
+	                onHide: this.props.close,
+	                onEntered: this.initializeEditors },
+	            React.createElement(
+	                Modal.Header,
+	                { closeButton: true },
+	                React.createElement(
+	                    Modal.Title,
+	                    null,
+	                    'New Multiple Choice Question'
+	                )
+	            ),
+	            React.createElement(
+	                Modal.Body,
+	                null,
+	                alert,
+	                React.createElement(
+	                    'form',
+	                    null,
+	                    itemDisplayName,
+	                    React.createElement(
+	                        FormGroup,
+	                        { controlId: 'itemDescription' },
+	                        React.createElement(
+	                            ControlLabel,
+	                            null,
+	                            'Item Description (optional)'
+	                        ),
+	                        React.createElement(FormControl, { type: 'text',
+	                            value: this.state.itemDescription,
+	                            onChange: this.onChange,
+	                            placeholder: 'A description for this item' })
+	                    ),
+	                    questionString,
+	                    correctAnswer,
+	                    React.createElement(
+	                        FormGroup,
+	                        { controlId: 'correctAnswerFeedback' },
+	                        React.createElement(
+	                            ControlLabel,
+	                            null,
+	                            'Correct Answer Feedback (recommended)'
+	                        ),
+	                        React.createElement(FormControl, { componentClass: 'textarea',
+	                            value: this.state.correctAnswerFeedback,
+	                            onChange: this.onChange,
+	                            placeholder: 'Feedback for the correct answer' })
+	                    ),
+	                    wrongAnswers,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.addWrongAnswer,
+	                            bsStyle: 'success' },
+	                        React.createElement(Glyphicon, { glyph: 'plus' }),
+	                        'Add Wrong Answer'
+	                    )
+	                )
+	            ),
+	            React.createElement(
+	                Modal.Footer,
+	                null,
+	                React.createElement(
+	                    Button,
+	                    { onClick: this.props.close },
+	                    'Cancel'
+	                ),
+	                React.createElement(
+	                    Button,
+	                    { bsStyle: 'success', onClick: this.create },
+	                    'Create'
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = CreateMultipleChoice;
+
+/***/ },
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 	  * $script.js JS loader & dependency manager
 	  * https://github.com/ded/script.js
@@ -37176,7 +37618,7 @@
 
 
 /***/ },
-/* 25 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CKEditorModalHack.js
@@ -37188,7 +37630,7 @@
 
 	'use strict';
 
-	var $ = __webpack_require__(26);
+	var $ = __webpack_require__(27);
 	var _ = __webpack_require__(5);
 
 
@@ -37199,7 +37641,7 @@
 	module.exports = CKEditorModalHack;
 
 /***/ },
-/* 26 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function() {
@@ -46465,7 +46907,7 @@
 	    // file names, and jQuery is normally delivered in a lowercase file name.
 	    // Do this after creating the global so that if an AMD module wants to call
 	    // noConflict to hide this version of jQuery, it will work.
-	    if ( "function" === "function" && __webpack_require__(27) && __webpack_require__(27).jQuery ) {
+	    if ( "function" === "function" && __webpack_require__(28) && __webpack_require__(28).jQuery ) {
 	    	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () { return jQuery; }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    }
 	    
@@ -46492,7 +46934,7 @@
 
 
 /***/ },
-/* 27 */
+/* 28 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
@@ -46500,14 +46942,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ },
-/* 28 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ConfigureCKEditor.js
 
 	'use strict';
 
-	var $ = __webpack_require__(26);
+	var $ = __webpack_require__(27);
 
 	var ConfigureCKEditor = function (editor, repositoryId) {
 	    var MiddlewareService = __webpack_require__(17);
@@ -46520,7 +46962,7 @@
 	module.exports = ConfigureCKEditor;
 
 /***/ },
-/* 29 */
+/* 30 */
 /***/ function(module, exports) {
 
 	// ConvertLibraryId2RepositoryId.js
@@ -46531,448 +46973,6 @@
 	};
 
 	module.exports = ConvertLibraryId2RepositoryId;
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// CreateMultipleChoice.jsx
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Alert = ReactBS.Alert;
-	var Button = ReactBS.Button;
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormControl = ReactBS.FormControl;
-	var FormGroup = ReactBS.FormGroup;
-	var Glyphicon = ReactBS.Glyphicon;
-	var Modal = ReactBS.Modal;
-
-	var _ = __webpack_require__(5);
-
-	var $s = __webpack_require__(24);
-
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CKEditorModalHack = __webpack_require__(25);
-	var ConfigureCKEditor = __webpack_require__(28);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(29);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var Dispatcher = __webpack_require__(9);
-	var LibraryItemsStore = __webpack_require__(8);
-	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(31);
-
-	var CreateMultipleChoice = React.createClass({
-	    displayName: 'CreateMultipleChoice',
-
-	    getInitialState: function getInitialState() {
-	        return {
-	            correctAnswer: '',
-	            correctAnswerError: false,
-	            correctAnswerFeedback: '',
-	            itemDescription: '',
-	            itemDisplayName: '',
-	            itemDisplayNameError: false,
-	            newWrongAnswerIndices: [],
-	            questionFile: '',
-	            questionString: '',
-	            questionStringError: false,
-	            showAlert: false,
-	            showModal: true,
-	            wrongAnswers: [''],
-	            wrongAnswerErrors: [false],
-	            wrongAnswerFeedbacks: ['']
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidUpdate: function componentDidUpdate() {
-	        setTimeout(this.checkNewEditorInstances, 500);
-	    },
-	    addWrongAnswer: function addWrongAnswer() {
-	        var newIndex = this.state.wrongAnswers.length + 1;
-	        this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
-	        this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.concat([false]) });
-	        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
-
-	        this.setState({ newWrongAnswerIndices: [newIndex] });
-	    },
-	    checkNewEditorInstances: function checkNewEditorInstances() {
-	        if (this.state.newWrongAnswerIndices.length > 0) {
-	            this.initializeNewEditorInstances();
-	        }
-	    },
-	    create: function create(e) {
-	        // With CKEditor, need to get the data from CKEditor,
-	        // not this.state. http://docs.ckeditor.com/#!/guide/dev_savedata
-	        // var data = CKEDITOR.instances.correctAnswer.getData();
-	        var payload = {
-	            libraryId: this.props.libraryId
-	        },
-	            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
-	            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
-	            questionString = CKEDITOR.instances.questionString.getData(),
-	            wrongAnswers = this.getWrongAnswers(),
-	            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks();
-
-	        if (this.state.itemDisplayName === '' || correctAnswer === '' || questionString === '' || wrongAnswers.indexOf('') >= 0) {
-
-	            var firstEmptyWrongAnswer = wrongAnswers.indexOf(''),
-	                validationState = [];
-	            _.each(this.state.wrongAnswerErrors, function (errorState) {
-	                validationState.push(false);
-	            });
-
-	            if (firstEmptyWrongAnswer >= 0) {
-	                _.each(wrongAnswers, function (wrongAnswer, index) {
-	                    if (wrongAnswer === '') {
-	                        validationState[index] = true;
-	                    }
-	                });
-	            }
-
-	            this.setState({ showAlert: true });
-
-	            this.setState({ itemDisplayNameError: this.state.itemDisplayName === '' });
-	            this.setState({ correctAnswerError: correctAnswer === '' });
-	            this.setState({ questionStringError: questionString === '' });
-	            this.setState({ wrongAnswerErrors: validationState });
-	        } else {
-	            payload['itemType'] = 'multiple-choice';
-	            payload['displayName'] = this.state.itemDisplayName;
-	            payload['description'] = this.state.itemDescription;
-	            payload['question'] = {
-	                text: questionString,
-	                choices: [correctAnswer]
-	            };
-
-	            _.each(wrongAnswers, function (wrongAnswer) {
-	                payload['question']['choices'].push(wrongAnswer);
-	            });
-	            payload['answers'] = [{
-	                genusTypeId: GenusTypes.CORRECT_ANSWER,
-	                choiceId: 0,
-	                feedback: correctAnswerFeedback
-	            }];
-
-	            _.each(wrongAnswerFeedbacks, function (feedback, index) {
-	                var choiceIndex = index + 1,
-	                    data = {
-	                    genusTypeId: GenusTypes.WRONG_ANSWER,
-	                    choiceId: choiceIndex,
-	                    feedback: feedback
-	                };
-	                payload['answers'].push(data);
-	            });
-
-	            Dispatcher.dispatch({
-	                type: ActionTypes.CREATE_ITEM,
-	                content: payload
-	            });
-	            this.props.close();
-	        }
-	    },
-	    formatWrongAnswers: function formatWrongAnswers() {
-	        var _this = this;
-	        return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
-	            var errorState = _this.state.wrongAnswerErrors[index],
-	                feedback = _this.state.wrongAnswerFeedbacks[index];
-
-	            return React.createElement(WrongAnswerEditor, { error: errorState,
-	                feedback: feedback,
-	                index: index,
-	                key: index,
-	                remove: _this.removeWrongAnswer,
-	                text: wrongAnswer.text });
-	        });
-	    },
-	    getWrongAnswerFeedbacks: function getWrongAnswerFeedbacks() {
-	        var results = [];
-
-	        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
-	            var visibleIndex = index + 1,
-	                editorInstance = 'wrongAnswer' + visibleIndex,
-	                feedbackEditor = editorInstance + 'Feedback';
-	            results.push(CKEDITOR.instances[feedbackEditor].getData());
-	        });
-
-	        return results;
-	    },
-	    getWrongAnswers: function getWrongAnswers() {
-	        var results = [];
-	        _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
-	            var visibleIndex = index + 1,
-	                editorInstance = 'wrongAnswer' + visibleIndex;
-	            results.push(CKEDITOR.instances[editorInstance].getData());
-	        });
-
-	        return results;
-	    },
-	    initializeEditorInstance: function initializeEditorInstance(instance) {
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
-	            CKEDITOR.replace(instance);
-	        });
-	    },
-	    initializeEditors: function initializeEditors(e) {
-	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId),
-	            _this = this;
-	        // CKEditor
-	        // Instructions from here
-	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
-	        CKEditorModalHack();
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
-	            ConfigureCKEditor(CKEDITOR, repositoryId);
-	            _this.initializeEditorInstance('correctAnswer');
-	            _this.initializeEditorInstance('correctAnswerFeedback');
-	            _this.initializeEditorInstance('questionString');
-	            _this.initializeEditorInstance('wrongAnswer1');
-	            _this.initializeEditorInstance('wrongAnswer1Feedback');
-	        });
-	    },
-	    initializeNewEditorInstances: function initializeNewEditorInstances() {
-	        var _this = this;
-	        _.each(this.state.newWrongAnswerIndices, function (index) {
-	            var visibleIndex = index,
-	                editorInstance = 'wrongAnswer' + visibleIndex,
-	                feedbackInstance = editorInstance + 'Feedback';
-
-	            _this.initializeEditorInstance(editorInstance);
-	            _this.initializeEditorInstance(feedbackInstance);
-	        });
-
-	        this.setState({ newWrongAnswerIndices: [] });
-	    },
-	    onChange: function onChange(e) {
-	        var inputId = e.currentTarget.id,
-	            inputValue = e.target.value,
-	            update = {};
-
-	        update[inputId] = inputValue;
-	        this.setState(update);
-	    },
-	    removeWrongAnswer: function removeWrongAnswer(index) {
-	        var editorInstance = 'wrongAnswer' + (index + 1),
-	            feedbackEditor = editorInstance + 'Feedback',
-	            updatedWrongAnswers = this.state.wrongAnswers,
-	            updatedWrongAnswerErrors = this.state.wrongAnswerErrors,
-	            updatedWrongAnswerFeedbacks = this.state.wrongAnswerFeedbacks;
-
-	        updatedWrongAnswers.splice(index, 1);
-	        updatedWrongAnswerErrors.splice(index, 1);
-	        updatedWrongAnswerFeedbacks.splice(index, 1);
-
-	        // remove wrong answer & feedback & errors with the given index
-	        this.setState({ wrongAnswers: updatedWrongAnswers });
-	        this.setState({ wrongAnswerErrors: updatedWrongAnswerErrors });
-	        this.setState({ wrongAnswerFeedbacks: updatedWrongAnswerFeedbacks });
-
-	        if (this.state.wrongAnswers.length === 0) {
-	            this.setState({ wrongAnswers: [''] });
-	            this.setState({ wrongAnswerErrors: [false] });
-	            this.setState({ wrongAnswerFeedbacks: [''] });
-	        }
-
-	        this.resetEditorInstance(editorInstance);
-	        this.resetEditorInstance(feedbackEditor);
-	    },
-	    resetEditorInstance: function resetEditorInstance(instance) {
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
-	            CKEDITOR.instances[instance].setData('');
-	            CKEDITOR.instances[instance].destroy();
-	            CKEDITOR.replace(instance);
-	        });
-	    },
-	    render: function render() {
-	        var alert = '',
-	            wrongAnswers = this.formatWrongAnswers(),
-	            correctAnswer,
-	            itemDisplayName,
-	            questionString;
-
-	        if (this.state.showAlert) {
-	            alert = React.createElement(
-	                Alert,
-	                { bsStyle: 'danger' },
-	                'You are missing some required fields'
-	            );
-	        }
-
-	        if (this.state.correctAnswerError) {
-	            correctAnswer = React.createElement(
-	                FormGroup,
-	                { controlId: 'correctAnswer',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Correct Answer'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.correctAnswer,
-	                    onChange: this.onChange,
-	                    placeholder: 'The correct answer' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            correctAnswer = React.createElement(
-	                FormGroup,
-	                { controlId: 'correctAnswer' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Correct Answer'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.correctAnswer,
-	                    onChange: this.onChange,
-	                    placeholder: 'The correct answer' })
-	            );
-	        }
-
-	        if (this.state.itemDisplayNameError) {
-	            itemDisplayName = React.createElement(
-	                FormGroup,
-	                { controlId: 'itemDisplayName',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Item Name'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.itemDisplayName,
-	                    onChange: this.onChange,
-	                    placeholder: 'A name for the item' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            itemDisplayName = React.createElement(
-	                FormGroup,
-	                { controlId: 'itemDisplayName' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Item Name'
-	                ),
-	                React.createElement(FormControl, { type: 'text',
-	                    value: this.state.itemDisplayName,
-	                    onChange: this.onChange,
-	                    placeholder: 'A name for the item' })
-	            );
-	        }
-
-	        if (this.state.questionStringError) {
-	            questionString = React.createElement(
-	                FormGroup,
-	                { controlId: 'questionString',
-	                    validationState: 'error' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Question'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.questionString,
-	                    onChange: this.onChange,
-	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' }),
-	                React.createElement(FormControl.Feedback, null)
-	            );
-	        } else {
-	            questionString = React.createElement(
-	                FormGroup,
-	                { controlId: 'questionString' },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Question'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.questionString,
-	                    onChange: this.onChange,
-	                    placeholder: 'Please enter the question string, like \'What is your favorite color?\'' })
-	            );
-	        }
-
-	        return React.createElement(
-	            Modal,
-	            { bsSize: 'lg',
-	                show: this.props.showModal,
-	                onHide: this.props.close,
-	                onEntered: this.initializeEditors },
-	            React.createElement(
-	                Modal.Header,
-	                { closeButton: true },
-	                React.createElement(
-	                    Modal.Title,
-	                    null,
-	                    'New Multiple Choice Question'
-	                )
-	            ),
-	            React.createElement(
-	                Modal.Body,
-	                null,
-	                alert,
-	                React.createElement(
-	                    'form',
-	                    null,
-	                    itemDisplayName,
-	                    React.createElement(
-	                        FormGroup,
-	                        { controlId: 'itemDescription' },
-	                        React.createElement(
-	                            ControlLabel,
-	                            null,
-	                            'Item Description (optional)'
-	                        ),
-	                        React.createElement(FormControl, { type: 'text',
-	                            value: this.state.itemDescription,
-	                            onChange: this.onChange,
-	                            placeholder: 'A description for this item' })
-	                    ),
-	                    questionString,
-	                    correctAnswer,
-	                    React.createElement(
-	                        FormGroup,
-	                        { controlId: 'correctAnswerFeedback' },
-	                        React.createElement(
-	                            ControlLabel,
-	                            null,
-	                            'Correct Answer Feedback (recommended)'
-	                        ),
-	                        React.createElement(FormControl, { componentClass: 'textarea',
-	                            value: this.state.correctAnswerFeedback,
-	                            onChange: this.onChange,
-	                            placeholder: 'Feedback for the correct answer' })
-	                    ),
-	                    wrongAnswers,
-	                    React.createElement(
-	                        Button,
-	                        { onClick: this.addWrongAnswer,
-	                            bsStyle: 'success' },
-	                        React.createElement(Glyphicon, { glyph: 'plus' }),
-	                        'Add Wrong Answer'
-	                    )
-	                )
-	            ),
-	            React.createElement(
-	                Modal.Footer,
-	                null,
-	                React.createElement(
-	                    Button,
-	                    { onClick: this.props.close },
-	                    'Cancel'
-	                ),
-	                React.createElement(
-	                    Button,
-	                    { bsStyle: 'success', onClick: this.create },
-	                    'Create'
-	                )
-	            )
-	        );
-	    }
-	});
-
-	module.exports = CreateMultipleChoice;
 
 /***/ },
 /* 31 */
@@ -47301,10 +47301,10 @@
 	var AnswerText = __webpack_require__(40);
 	var ItemControls = __webpack_require__(60);
 	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(65);
-	var LOText = __webpack_require__(66);
+	var LORelatedItems = __webpack_require__(66);
+	var LOText = __webpack_require__(67);
 	var OutcomesStore = __webpack_require__(57);
-	var QuestionText = __webpack_require__(70);
+	var QuestionText = __webpack_require__(71);
 
 	var ItemsList = React.createClass({
 	    displayName: 'ItemsList',
@@ -49854,7 +49854,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var EditMultipleChoice = __webpack_require__(77);
+	var EditMultipleChoice = __webpack_require__(65);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 
 	var EditItem = React.createClass({
@@ -49944,652 +49944,6 @@
 /* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// LORelatedItems.js
-	'use strict';
-
-	var _ = __webpack_require__(5);
-
-
-	var LORelatedItems = function (items, outcomes) {
-	    // given a list of items, and a list of learning outcomes,
-	    // returns a sorted dictionary of the items where the question itself
-	    // is tagged with each given LO.
-	    // loId => [itemsList]
-
-	    var returnData = {};
-
-	    _.each(items, function (item) {
-	        _.each(outcomes, function (outcome) {
-	            var outcomeId = outcome.id;
-	            if (!returnData.hasOwnProperty(outcomeId)) {
-	                returnData[outcomeId] = [];
-	            }
-	            if (item.learningObjectiveIds[0] == outcomeId) {
-	                returnData[outcomeId].push(item);
-	            }
-	        });
-	    });
-
-	    return returnData;
-	};
-
-	module.exports = LORelatedItems;
-
-/***/ },
-/* 66 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// LOText.js
-
-	'use strict';
-
-	__webpack_require__(67);
-
-	var React = __webpack_require__(1);
-
-	var LinkLO = __webpack_require__(69);
-	var LORelatedItemsBadge = __webpack_require__(54);
-
-	var LOText = React.createClass({
-	    displayName: 'LOText',
-
-	    getInitialState: function getInitialState() {
-	        return {};
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    render: function render() {
-	        return React.createElement(
-	            'div',
-	            { className: 'outcome-text' },
-	            React.createElement(
-	                'div',
-	                { className: 'outcome-display-name' },
-	                this.props.outcomeDisplayName
-	            ),
-	            React.createElement(LORelatedItemsBadge, { outcomeId: this.props.outcomeId,
-	                libraryId: this.props.libraryId,
-	                relatedItems: this.props.relatedItems }),
-	            React.createElement(LinkLO, { answerId: this.props.answerId,
-	                component: this.props.component,
-	                itemId: this.props.itemId,
-	                libraryId: this.props.libraryId,
-	                outcomeId: this.state.outcomeId,
-	                outcomes: this.props.outcomes })
-	        );
-	    }
-	});
-
-	module.exports = LOText;
-
-/***/ },
-/* 67 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(68);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./LOText.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./LOText.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 68 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(22)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
-
-	// exports
-
-
-/***/ },
-/* 69 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
-
-	'use strict';
-
-	__webpack_require__(43);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(45);
-
-	var Button = ReactBS.Button;
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormGroup = ReactBS.FormGroup;
-	var Glyphicon = ReactBS.Glyphicon;
-	var Modal = ReactBS.Modal;
-
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-
-	var LinkLO = React.createClass({
-	    displayName: 'LinkLO',
-
-	    getInitialState: function getInitialState() {
-	        var outcomeId = this.props.outcomeId === 'None linked yet' ? '' : this.props.outcomeId;
-	        return {
-	            outcomeId: outcomeId,
-	            showModal: false
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    close: function close() {
-	        this.setState({ showModal: false });
-	        this.reset();
-	    },
-	    onChange: function onChange(e) {
-	        if (e == null) {
-	            this.setState({ outcomeId: '' });
-	        } else {
-	            this.setState({ outcomeId: e.value });
-	        }
-	    },
-	    open: function open(e) {
-	        this.setState({ showModal: true }, function () {});
-	    },
-	    renderOutcomes: function renderOutcomes() {
-	        return _.map(this.props.outcomes, function (outcome) {
-	            return React.createElement(
-	                'option',
-	                { value: outcome.id,
-	                    title: outcome.description.text,
-	                    key: outcome.id },
-	                outcome.displayName.text
-	            );
-	        });
-	    },
-	    reset: function reset() {},
-	    save: function save(e) {
-	        if (this.props.component == 'answer') {
-	            var payload = {
-	                answerId: this.props.answerId,
-	                confusedLearningObjectiveId: this.state.outcomeId,
-	                itemId: this.props.itemId,
-	                libraryId: this.props.libraryId
-	            };
-
-	            Dispatcher.dispatch({
-	                type: ActionTypes.LINK_ANSWER_LO,
-	                content: payload
-	            });
-	        } else {
-	            // question
-	            var payload = {
-	                learningObjectiveId: this.state.outcomeId,
-	                itemId: this.props.itemId,
-	                libraryId: this.props.libraryId
-	            };
-
-	            Dispatcher.dispatch({
-	                type: ActionTypes.LINK_ITEM_LO,
-	                content: payload
-	            });
-	        }
-	        this.close();
-	    },
-	    render: function render() {
-	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
-	            return {
-	                value: outcome.id,
-	                label: outcome.displayName.text
-	            };
-	        });
-
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                Button,
-	                { onClick: this.open,
-	                    title: 'Link to an Outcome' },
-	                React.createElement(Glyphicon, { glyph: 'link' })
-	            ),
-	            React.createElement(
-	                Modal,
-	                { show: this.state.showModal, onHide: this.close },
-	                React.createElement(
-	                    Modal.Header,
-	                    { closeButton: true },
-	                    React.createElement(
-	                        Modal.Title,
-	                        null,
-	                        'Link to Outcome'
-	                    )
-	                ),
-	                React.createElement(
-	                    Modal.Body,
-	                    null,
-	                    React.createElement(
-	                        'form',
-	                        null,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'outcomeSelector' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Select a learning outcome ...'
-	                            ),
-	                            React.createElement(Select, { name: 'confusedOutcomeSelector',
-	                                placeholder: 'Select an outcome ... ',
-	                                value: this.state.outcomeId,
-	                                onChange: this.onChange,
-	                                options: formattedOutcomes })
-	                        )
-	                    )
-	                ),
-	                React.createElement(
-	                    Modal.Footer,
-	                    null,
-	                    React.createElement(
-	                        Button,
-	                        { onClick: this.close },
-	                        'Close'
-	                    ),
-	                    React.createElement(
-	                        Button,
-	                        { bsStyle: 'success', onClick: this.save },
-	                        'Save'
-	                    )
-	                )
-	            )
-	        );
-	    }
-	});
-
-	module.exports = LinkLO;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 70 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
-
-	'use strict';
-
-	__webpack_require__(71);
-	__webpack_require__(43);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(45);
-
-	var Button = ReactBS.Button;
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormGroup = ReactBS.FormGroup;
-	var Glyphicon = ReactBS.Glyphicon;
-	var Modal = ReactBS.Modal;
-
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-	var SetIFrameHeight = __webpack_require__(59);
-	var WrapHTML = __webpack_require__(53);
-
-	var QuestionText = React.createClass({
-	    displayName: 'QuestionText',
-
-	    getInitialState: function getInitialState() {
-	        var questionLO = this.props.questionLO === '' ? '' : this.props.questionLO;
-	        return {
-	            questionLO: questionLO,
-	            showModal: false
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {
-	        SetIFrameHeight(this.refs.myFrame);
-	    },
-	    close: function close() {
-	        this.setState({ showModal: false });
-	        this.reset();
-	    },
-	    onChange: function onChange(e) {
-	        if (e == null) {
-	            this.setState({ questionLO: '' });
-	        } else {
-	            this.setState({ questionLO: e.value });
-	        }
-	    },
-	    open: function open(e) {
-	        this.setState({ showModal: true }, function () {});
-	    },
-	    renderOutcomes: function renderOutcomes() {
-	        return _.map(this.props.outcomes, function (outcome) {
-	            return React.createElement(
-	                'option',
-	                { value: outcome.id,
-	                    title: outcome.description.text,
-	                    key: outcome.id },
-	                outcome.displayName.text
-	            );
-	        });
-	    },
-	    reset: function reset() {},
-	    save: function save(e) {
-	        var payload = {
-	            learningObjectiveId: this.state.questionLO,
-	            itemId: this.props.questionId,
-	            libraryId: this.props.libraryId
-	        };
-
-	        Dispatcher.dispatch({
-	            type: ActionTypes.LINK_ITEM_LO,
-	            content: payload
-	        });
-	        this.close();
-	    },
-	    render: function render() {
-	        var questionText = WrapHTML(this.props.questionText);
-
-	        return React.createElement(
-	            'div',
-	            { className: 'taggable-text' },
-	            React.createElement(
-	                'div',
-	                { className: 'text-blob' },
-	                React.createElement('iframe', { ref: 'myFrame',
-	                    srcDoc: questionText,
-	                    frameBorder: 0,
-	                    width: '100%',
-	                    sandbox: 'allow-same-origin allow-scripts'
-	                })
-	            )
-	        );
-	    }
-	});
-
-	module.exports = QuestionText;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 71 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(72);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./QuestionText.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./QuestionText.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 72 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(22)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".question-actions  button {\n    height: 34px;\n}", ""]);
-
-	// exports
-
-
-/***/ },
-/* 73 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
-
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Label = ReactBS.Label;
-
-	var AuthoringConstants = __webpack_require__(14);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var LibraryItemsStore = __webpack_require__(8);
-
-	var ItemStatus = React.createClass({
-	    displayName: 'ItemStatus',
-
-	    getInitialState: function getInitialState() {
-	        return {};
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    render: function render() {
-	        // How to figure out how many are uncurated?
-	        var libraryName = this.props.libraryDescription,
-	            numberItems = this.props.items.length,
-	            numberUncuratedItems = 0,
-	            uncuratedLabel;
-
-	        _.each(this.props.items, function (item) {
-	            var unlinkedAnswers = _.find(item.answers, function (answer) {
-	                return answer.confusedLearningObjectiveIds.length === 0 && answer.genusTypeId === GenusTypes.WRONG_ANSWER;
-	            });
-	            if (item.question.learningObjectiveIds.length === 0 || unlinkedAnswers != null) {
-	                numberUncuratedItems++;
-	            }
-	        });
-
-	        if (numberUncuratedItems === 0) {
-	            uncuratedLabel = React.createElement(
-	                Label,
-	                { bsStyle: 'success' },
-	                numberUncuratedItems
-	            );
-	        } else {
-	            uncuratedLabel = React.createElement(
-	                Label,
-	                { bsStyle: 'danger' },
-	                numberUncuratedItems
-	            );
-	        }
-
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                'div',
-	                null,
-	                libraryName,
-	                ': ',
-	                numberItems,
-	                ' questions'
-	            ),
-	            React.createElement(
-	                'div',
-	                null,
-	                'Number of uncurated questions: ',
-	                uncuratedLabel
-	            )
-	        );
-	    }
-	});
-
-	module.exports = ItemStatus;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 74 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormControl = ReactBS.FormControl;
-	var FormGroup = ReactBS.FormGroup;
-
-	var LibraryItemsStore = __webpack_require__(8);
-	var LibrariesStore = __webpack_require__(75);
-
-	var LibrarySelector = React.createClass({
-	    displayName: 'LibrarySelector',
-
-	    getInitialState: function getInitialState() {
-	        return {
-	            libraries: []
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        LibrariesStore.addChangeListener(function (libraries) {
-	            _this.setState({ libraries: libraries });
-	        });
-	    },
-	    componentDidMount: function componentDidMount() {
-	        LibrariesStore.getAll();
-	    },
-	    renderLibraries: function renderLibraries() {
-	        return _.map(this.state.libraries, function (library) {
-	            return React.createElement(
-	                'option',
-	                { value: library.id,
-	                    title: library.description.text,
-	                    key: library.id },
-	                library.displayName.text
-	            );
-	        });
-	    },
-	    showItems: function showItems(e) {
-	        var option = e.currentTarget.selectedOptions[0],
-	            id = option.value,
-	            description = option.title;
-	        if (id !== '-1') {
-	            LibraryItemsStore.getItems(id);
-	            this.props.onSelect(id, description);
-	        } else {
-	            this.props.hideItems();
-	        }
-	    },
-	    render: function render() {
-	        return React.createElement(
-	            FormGroup,
-	            { controlId: 'librarySelector' },
-	            React.createElement(
-	                ControlLabel,
-	                null,
-	                'Select class ...'
-	            ),
-	            React.createElement(
-	                FormControl,
-	                { componentClass: 'select',
-	                    placeholder: 'Select a class',
-	                    onChange: this.showItems },
-	                React.createElement(
-	                    'option',
-	                    { value: '-1' },
-	                    'Please select a content domain ... '
-	                ),
-	                this.renderLibraries()
-	            )
-	        );
-	    }
-	});
-
-	module.exports = LibrarySelector;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 75 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var LibrariesDispatcher = __webpack_require__(76);
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-	var _ = __webpack_require__(5);
-	var MiddlewareService = __webpack_require__(17)
-
-	var ActionTypes = AuthoringConstants.ActionTypes;
-	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
-
-	var _libraries = [];
-
-	var LibrariesStore = _.assign({}, EventEmitter.prototype, {
-	    emitChange: function () {
-	        this.emit(CHANGE_EVENT, _libraries);
-	    },
-	    addChangeListener: function (callback) {
-	        this.on(CHANGE_EVENT, callback);
-	    },
-	    removeChangeListener: function (callback) {
-	        this.removeListener(CHANGE_EVENT, callback);
-	    },
-	    getAll: function () {
-	        var _this = this;
-	        fetch(this.url(), {
-	            cache: "no-store",
-	            credentials: "same-origin"
-	        }).then(function (response) {
-	            response.json().then(function (data) {
-	                _libraries = data;
-	                _this.emitChange();
-	            });
-	        })
-	        .catch(function (error) {
-	            console.log('Problem with getting libraries: ' + error.message);
-	        });
-	    },
-	    url: function () {
-	        if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
-
-	        return MiddlewareService.host() + '/assessment/libraries/';
-	    }
-	});
-
-	LibrariesStore.dispatchToken = LibrariesDispatcher.register(function (action) {
-	    switch(action.type) {
-	    }
-	});
-
-	module.exports = LibrariesStore;
-
-
-/***/ },
-/* 76 */
-9,
-/* 77 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/* WEBPACK VAR INJECTION */(function(_) {// EditMultipleChoice.jsx
 	'use strict';
 
@@ -50604,13 +49958,13 @@
 	var ListGroup = ReactBS.ListGroup;
 	var Modal = ReactBS.Modal;
 
-	var $s = __webpack_require__(24);
+	var $s = __webpack_require__(25);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var AnswerExtraction = __webpack_require__(39);
-	var CKEditorModalHack = __webpack_require__(25);
-	var ConfigureCKEditor = __webpack_require__(28);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(29);
+	var CKEditorModalHack = __webpack_require__(26);
+	var ConfigureCKEditor = __webpack_require__(29);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(30);
 	var Dispatcher = __webpack_require__(9);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var LibraryItemsStore = __webpack_require__(8);
@@ -51195,6 +50549,699 @@
 
 	module.exports = EditMultipleChoice;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 66 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// LORelatedItems.js
+	'use strict';
+
+	var _ = __webpack_require__(5);
+
+
+	var LORelatedItems = function (items, outcomes) {
+	    // given a list of items, and a list of learning outcomes,
+	    // returns a sorted dictionary of the items where the question itself
+	    // is tagged with each given LO.
+	    // loId => [itemsList]
+
+	    var returnData = {};
+
+	    _.each(items, function (item) {
+	        _.each(outcomes, function (outcome) {
+	            var outcomeId = outcome.id;
+	            if (!returnData.hasOwnProperty(outcomeId)) {
+	                returnData[outcomeId] = [];
+	            }
+	            if (item.learningObjectiveIds[0] == outcomeId) {
+	                returnData[outcomeId].push(item);
+	            }
+	        });
+	    });
+
+	    return returnData;
+	};
+
+	module.exports = LORelatedItems;
+
+/***/ },
+/* 67 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// LOText.js
+
+	'use strict';
+
+	__webpack_require__(68);
+
+	var React = __webpack_require__(1);
+
+	var LinkLO = __webpack_require__(70);
+	var LORelatedItemsBadge = __webpack_require__(54);
+
+	var LOText = React.createClass({
+	    displayName: 'LOText',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    render: function render() {
+	        return React.createElement(
+	            'div',
+	            { className: 'outcome-text' },
+	            React.createElement(
+	                'div',
+	                { className: 'outcome-display-name' },
+	                this.props.outcomeDisplayName
+	            ),
+	            React.createElement(LORelatedItemsBadge, { outcomeId: this.props.outcomeId,
+	                libraryId: this.props.libraryId,
+	                relatedItems: this.props.relatedItems }),
+	            React.createElement(LinkLO, { answerId: this.props.answerId,
+	                component: this.props.component,
+	                itemId: this.props.itemId,
+	                libraryId: this.props.libraryId,
+	                outcomeId: this.state.outcomeId,
+	                outcomes: this.props.outcomes })
+	        );
+	    }
+	});
+
+	module.exports = LOText;
+
+/***/ },
+/* 68 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(69);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(23)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./LOText.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./LOText.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 69 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(22)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 70 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
+
+	'use strict';
+
+	__webpack_require__(43);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Select = __webpack_require__(45);
+
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var Dispatcher = __webpack_require__(9);
+
+	var LinkLO = React.createClass({
+	    displayName: 'LinkLO',
+
+	    getInitialState: function getInitialState() {
+	        var outcomeId = this.props.outcomeId === 'None linked yet' ? '' : this.props.outcomeId;
+	        return {
+	            outcomeId: outcomeId,
+	            showModal: false
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    close: function close() {
+	        this.setState({ showModal: false });
+	        this.reset();
+	    },
+	    onChange: function onChange(e) {
+	        if (e == null) {
+	            this.setState({ outcomeId: '' });
+	        } else {
+	            this.setState({ outcomeId: e.value });
+	        }
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    renderOutcomes: function renderOutcomes() {
+	        return _.map(this.props.outcomes, function (outcome) {
+	            return React.createElement(
+	                'option',
+	                { value: outcome.id,
+	                    title: outcome.description.text,
+	                    key: outcome.id },
+	                outcome.displayName.text
+	            );
+	        });
+	    },
+	    reset: function reset() {},
+	    save: function save(e) {
+	        if (this.props.component == 'answer') {
+	            var payload = {
+	                answerId: this.props.answerId,
+	                confusedLearningObjectiveId: this.state.outcomeId,
+	                itemId: this.props.itemId,
+	                libraryId: this.props.libraryId
+	            };
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.LINK_ANSWER_LO,
+	                content: payload
+	            });
+	        } else {
+	            // question
+	            var payload = {
+	                learningObjectiveId: this.state.outcomeId,
+	                itemId: this.props.itemId,
+	                libraryId: this.props.libraryId
+	            };
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.LINK_ITEM_LO,
+	                content: payload
+	            });
+	        }
+	        this.close();
+	    },
+	    render: function render() {
+	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
+	            return {
+	                value: outcome.id,
+	                label: outcome.displayName.text
+	            };
+	        });
+
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open,
+	                    title: 'Link to an Outcome' },
+	                React.createElement(Glyphicon, { glyph: 'link' })
+	            ),
+	            React.createElement(
+	                Modal,
+	                { show: this.state.showModal, onHide: this.close },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Link to Outcome'
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    React.createElement(
+	                        'form',
+	                        null,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'outcomeSelector' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Select a learning outcome ...'
+	                            ),
+	                            React.createElement(Select, { name: 'confusedOutcomeSelector',
+	                                placeholder: 'Select an outcome ... ',
+	                                value: this.state.outcomeId,
+	                                onChange: this.onChange,
+	                                options: formattedOutcomes })
+	                        )
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.close },
+	                        'Close'
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { bsStyle: 'success', onClick: this.save },
+	                        'Save'
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = LinkLO;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 71 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
+
+	'use strict';
+
+	__webpack_require__(72);
+	__webpack_require__(43);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Select = __webpack_require__(45);
+
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var Dispatcher = __webpack_require__(9);
+	var SetIFrameHeight = __webpack_require__(59);
+	var WrapHTML = __webpack_require__(53);
+
+	var QuestionText = React.createClass({
+	    displayName: 'QuestionText',
+
+	    getInitialState: function getInitialState() {
+	        var questionLO = this.props.questionLO === '' ? '' : this.props.questionLO;
+	        return {
+	            questionLO: questionLO,
+	            showModal: false
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {
+	        SetIFrameHeight(this.refs.myFrame);
+	    },
+	    close: function close() {
+	        this.setState({ showModal: false });
+	        this.reset();
+	    },
+	    onChange: function onChange(e) {
+	        if (e == null) {
+	            this.setState({ questionLO: '' });
+	        } else {
+	            this.setState({ questionLO: e.value });
+	        }
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true }, function () {});
+	    },
+	    renderOutcomes: function renderOutcomes() {
+	        return _.map(this.props.outcomes, function (outcome) {
+	            return React.createElement(
+	                'option',
+	                { value: outcome.id,
+	                    title: outcome.description.text,
+	                    key: outcome.id },
+	                outcome.displayName.text
+	            );
+	        });
+	    },
+	    reset: function reset() {},
+	    save: function save(e) {
+	        var payload = {
+	            learningObjectiveId: this.state.questionLO,
+	            itemId: this.props.questionId,
+	            libraryId: this.props.libraryId
+	        };
+
+	        Dispatcher.dispatch({
+	            type: ActionTypes.LINK_ITEM_LO,
+	            content: payload
+	        });
+	        this.close();
+	    },
+	    render: function render() {
+	        var questionText = WrapHTML(this.props.questionText);
+
+	        return React.createElement(
+	            'div',
+	            { className: 'taggable-text' },
+	            React.createElement(
+	                'div',
+	                { className: 'text-blob' },
+	                React.createElement('iframe', { ref: 'myFrame',
+	                    srcDoc: questionText,
+	                    frameBorder: 0,
+	                    width: '100%',
+	                    sandbox: 'allow-same-origin allow-scripts'
+	                })
+	            )
+	        );
+	    }
+	});
+
+	module.exports = QuestionText;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 72 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(73);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(23)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./QuestionText.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./QuestionText.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 73 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(22)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".question-actions  button {\n    height: 34px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 74 */,
+/* 75 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+
+	var LibraryItemsStore = __webpack_require__(8);
+	var LibrariesStore = __webpack_require__(76);
+
+	var LibrarySelector = React.createClass({
+	    displayName: 'LibrarySelector',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            libraries: []
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {
+	        var _this = this;
+	        LibrariesStore.addChangeListener(function (libraries) {
+	            _this.setState({ libraries: libraries });
+	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        LibrariesStore.getAll();
+	    },
+	    renderLibraries: function renderLibraries() {
+	        return _.map(this.state.libraries, function (library) {
+	            return React.createElement(
+	                'option',
+	                { value: library.id,
+	                    title: library.description.text,
+	                    key: library.id },
+	                library.displayName.text
+	            );
+	        });
+	    },
+	    showItems: function showItems(e) {
+	        var option = e.currentTarget.selectedOptions[0],
+	            id = option.value,
+	            description = option.title;
+	        if (id !== '-1') {
+	            LibraryItemsStore.getItems(id);
+	            this.props.onSelect(id, description);
+	        } else {
+	            this.props.hideItems();
+	        }
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            FormGroup,
+	            { controlId: 'librarySelector' },
+	            React.createElement(
+	                ControlLabel,
+	                null,
+	                'Select class ...'
+	            ),
+	            React.createElement(
+	                FormControl,
+	                { componentClass: 'select',
+	                    placeholder: 'Select a class',
+	                    onChange: this.showItems },
+	                React.createElement(
+	                    'option',
+	                    { value: '-1' },
+	                    'Please select a content domain ... '
+	                ),
+	                this.renderLibraries()
+	            )
+	        );
+	    }
+	});
+
+	module.exports = LibrarySelector;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 76 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var LibrariesDispatcher = __webpack_require__(77);
+	var AuthoringConstants = __webpack_require__(14);
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+	var _ = __webpack_require__(5);
+	var MiddlewareService = __webpack_require__(17)
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _libraries = [];
+
+	var LibrariesStore = _.assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _libraries);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    getAll: function () {
+	        var _this = this;
+	        fetch(this.url(), {
+	            cache: "no-store",
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _libraries = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting libraries: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	        if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
+
+	        return MiddlewareService.host() + '/assessment/libraries/';
+	    }
+	});
+
+	LibrariesStore.dispatchToken = LibrariesDispatcher.register(function (action) {
+	    switch(action.type) {
+	    }
+	});
+
+	module.exports = LibrariesStore;
+
+
+/***/ },
+/* 77 */
+9,
+/* 78 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
+
+	'use strict';
+
+	__webpack_require__(79);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Glyphicon = ReactBS.Glyphicon;
+	var Label = ReactBS.Label;
+
+	var AuthoringConstants = __webpack_require__(14);
+	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var LibraryItemsStore = __webpack_require__(8);
+
+	var ItemStatus = React.createClass({
+	    displayName: 'ItemStatus',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    render: function render() {
+	        // How to figure out how many are uncurated?
+	        var libraryName = this.props.libraryDescription,
+	            numberItems = this.props.items.length,
+	            numberUncuratedItems = 0,
+	            uncuratedLabel;
+
+	        _.each(this.props.items, function (item) {
+	            var unlinkedAnswers = _.find(item.answers, function (answer) {
+	                return answer.confusedLearningObjectiveIds.length === 0 && answer.genusTypeId === GenusTypes.WRONG_ANSWER;
+	            });
+	            if (item.question.learningObjectiveIds.length === 0 || unlinkedAnswers != null) {
+	                numberUncuratedItems++;
+	            }
+	        });
+
+	        if (numberUncuratedItems === 0) {
+	            uncuratedLabel = React.createElement(
+	                Label,
+	                { bsStyle: 'success' },
+	                numberUncuratedItems
+	            );
+	        } else {
+	            uncuratedLabel = React.createElement(
+	                Label,
+	                { bsStyle: 'danger' },
+	                numberUncuratedItems
+	            );
+	        }
+
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                'div',
+	                null,
+	                libraryName,
+	                ': ',
+	                numberItems,
+	                ' questions'
+	            ),
+	            React.createElement(
+	                'div',
+	                null,
+	                'Number of uncurated questions: ',
+	                uncuratedLabel,
+	                React.createElement(Glyphicon, { className: 'uncurated-help-icon',
+	                    glyph: 'question-sign',
+	                    title: 'Questions not tagged with learning outcomes (or have wrong answers not tagged)' })
+	            )
+	        );
+	    }
+	});
+
+	module.exports = ItemStatus;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 79 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(80);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(23)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemStatus.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemStatus.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 80 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(22)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".uncurated-help-icon {\n    margin-left: 5px;\n}", ""]);
+
+	// exports
+
 
 /***/ }
 /******/ ])));
