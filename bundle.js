@@ -47493,6 +47493,7 @@
 
 	        return _.map(items, function (item) {
 	            var questionLO = _this.getQuestionLO(item),
+	                itemCreator = 'Unknown',
 	                itemControls;
 
 	            if (_this.props.enableClickthrough) {
@@ -47504,6 +47505,12 @@
 	                );
 	            } else {
 	                itemControls = '';
+	            }
+
+	            if (item.hasOwnProperty('providerId')) {
+	                if (item.providerId != '') {
+	                    itemCreator = item.providerId;
+	                }
 	            }
 
 	            return React.createElement(
@@ -47523,7 +47530,8 @@
 	                                { className: 'question-label' },
 	                                'Q:'
 	                            ),
-	                            React.createElement(QuestionText, { questionText: item.question.text.text })
+	                            React.createElement(QuestionText, { questionText: item.question.text.text,
+	                                itemCreator: itemCreator })
 	                        ),
 	                        React.createElement(
 	                            'div',
@@ -50913,6 +50921,7 @@
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Select = __webpack_require__(45);
+	var ReactTooltip = __webpack_require__(83);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -50922,6 +50931,7 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
+	var OsidId = __webpack_require__(86);
 	var SetIFrameHeight = __webpack_require__(59);
 	var WrapHTML = __webpack_require__(53);
 
@@ -50979,7 +50989,8 @@
 	        this.close();
 	    },
 	    render: function render() {
-	        var questionText = WrapHTML(this.props.questionText);
+	        var questionText = WrapHTML(this.props.questionText),
+	            agent = OsidId.getIdentifier(this.props.itemCreator);
 
 	        return React.createElement(
 	            'div',
@@ -50993,7 +51004,10 @@
 	                    width: '100%',
 	                    sandbox: 'allow-same-origin allow-scripts'
 	                })
-	            )
+	            ),
+	            React.createElement(Glyphicon, { glyph: 'envelope',
+	                'data-tip': agent }),
+	            React.createElement(ReactTooltip, null)
 	        );
 	    }
 	});
@@ -52138,6 +52152,23 @@
 	});
 	exports.default = '.__react_component_tooltip{border-radius:3px;display:inline-block;font-size:13px;left:-999em;opacity:0;padding:8px 21px;position:fixed;pointer-events:none;transition:opacity 0.3s ease-out , margin-top 0.3s ease-out, margin-left 0.3s ease-out;top:-999em;visibility:hidden;z-index:999}.__react_component_tooltip:before,.__react_component_tooltip:after{content:"";width:0;height:0;position:absolute}.__react_component_tooltip.show{opacity:0.9;margin-top:0px;margin-left:0px;visibility:visible}.__react_component_tooltip.type-dark{color:#fff;background-color:#222}.__react_component_tooltip.type-dark.place-top:after{border-top:6px solid #222}.__react_component_tooltip.type-dark.place-bottom:after{border-bottom:6px solid #222}.__react_component_tooltip.type-dark.place-left:after{border-left:6px solid #222}.__react_component_tooltip.type-dark.place-right:after{border-right:6px solid #222}.__react_component_tooltip.type-dark.border{border:1px solid #fff}.__react_component_tooltip.type-dark.border.place-top:before{border-top:8px solid #fff}.__react_component_tooltip.type-dark.border.place-bottom:before{border-bottom:8px solid #fff}.__react_component_tooltip.type-dark.border.place-left:before{border-left:8px solid #fff}.__react_component_tooltip.type-dark.border.place-right:before{border-right:8px solid #fff}.__react_component_tooltip.type-success{color:#fff;background-color:#8DC572}.__react_component_tooltip.type-success.place-top:after{border-top:6px solid #8DC572}.__react_component_tooltip.type-success.place-bottom:after{border-bottom:6px solid #8DC572}.__react_component_tooltip.type-success.place-left:after{border-left:6px solid #8DC572}.__react_component_tooltip.type-success.place-right:after{border-right:6px solid #8DC572}.__react_component_tooltip.type-success.border{border:1px solid #fff}.__react_component_tooltip.type-success.border.place-top:before{border-top:8px solid #fff}.__react_component_tooltip.type-success.border.place-bottom:before{border-bottom:8px solid #fff}.__react_component_tooltip.type-success.border.place-left:before{border-left:8px solid #fff}.__react_component_tooltip.type-success.border.place-right:before{border-right:8px solid #fff}.__react_component_tooltip.type-warning{color:#fff;background-color:#F0AD4E}.__react_component_tooltip.type-warning.place-top:after{border-top:6px solid #F0AD4E}.__react_component_tooltip.type-warning.place-bottom:after{border-bottom:6px solid #F0AD4E}.__react_component_tooltip.type-warning.place-left:after{border-left:6px solid #F0AD4E}.__react_component_tooltip.type-warning.place-right:after{border-right:6px solid #F0AD4E}.__react_component_tooltip.type-warning.border{border:1px solid #fff}.__react_component_tooltip.type-warning.border.place-top:before{border-top:8px solid #fff}.__react_component_tooltip.type-warning.border.place-bottom:before{border-bottom:8px solid #fff}.__react_component_tooltip.type-warning.border.place-left:before{border-left:8px solid #fff}.__react_component_tooltip.type-warning.border.place-right:before{border-right:8px solid #fff}.__react_component_tooltip.type-error{color:#fff;background-color:#BE6464}.__react_component_tooltip.type-error.place-top:after{border-top:6px solid #BE6464}.__react_component_tooltip.type-error.place-bottom:after{border-bottom:6px solid #BE6464}.__react_component_tooltip.type-error.place-left:after{border-left:6px solid #BE6464}.__react_component_tooltip.type-error.place-right:after{border-right:6px solid #BE6464}.__react_component_tooltip.type-error.border{border:1px solid #fff}.__react_component_tooltip.type-error.border.place-top:before{border-top:8px solid #fff}.__react_component_tooltip.type-error.border.place-bottom:before{border-bottom:8px solid #fff}.__react_component_tooltip.type-error.border.place-left:before{border-left:8px solid #fff}.__react_component_tooltip.type-error.border.place-right:before{border-right:8px solid #fff}.__react_component_tooltip.type-info{color:#fff;background-color:#337AB7}.__react_component_tooltip.type-info.place-top:after{border-top:6px solid #337AB7}.__react_component_tooltip.type-info.place-bottom:after{border-bottom:6px solid #337AB7}.__react_component_tooltip.type-info.place-left:after{border-left:6px solid #337AB7}.__react_component_tooltip.type-info.place-right:after{border-right:6px solid #337AB7}.__react_component_tooltip.type-info.border{border:1px solid #fff}.__react_component_tooltip.type-info.border.place-top:before{border-top:8px solid #fff}.__react_component_tooltip.type-info.border.place-bottom:before{border-bottom:8px solid #fff}.__react_component_tooltip.type-info.border.place-left:before{border-left:8px solid #fff}.__react_component_tooltip.type-info.border.place-right:before{border-right:8px solid #fff}.__react_component_tooltip.type-light{color:#222;background-color:#fff}.__react_component_tooltip.type-light.place-top:after{border-top:6px solid #fff}.__react_component_tooltip.type-light.place-bottom:after{border-bottom:6px solid #fff}.__react_component_tooltip.type-light.place-left:after{border-left:6px solid #fff}.__react_component_tooltip.type-light.place-right:after{border-right:6px solid #fff}.__react_component_tooltip.type-light.border{border:1px solid #222}.__react_component_tooltip.type-light.border.place-top:before{border-top:8px solid #222}.__react_component_tooltip.type-light.border.place-bottom:before{border-bottom:8px solid #222}.__react_component_tooltip.type-light.border.place-left:before{border-left:8px solid #222}.__react_component_tooltip.type-light.border.place-right:before{border-right:8px solid #222}.__react_component_tooltip.place-top{margin-top:-10px}.__react_component_tooltip.place-top:before{border-left:10px solid transparent;border-right:10px solid transparent;bottom:-8px;left:50%;margin-left:-10px}.__react_component_tooltip.place-top:after{border-left:8px solid transparent;border-right:8px solid transparent;bottom:-6px;left:50%;margin-left:-8px}.__react_component_tooltip.place-bottom{margin-top:10px}.__react_component_tooltip.place-bottom:before{border-left:10px solid transparent;border-right:10px solid transparent;top:-8px;left:50%;margin-left:-10px}.__react_component_tooltip.place-bottom:after{border-left:8px solid transparent;border-right:8px solid transparent;top:-6px;left:50%;margin-left:-8px}.__react_component_tooltip.place-left{margin-left:-10px}.__react_component_tooltip.place-left:before{border-top:6px solid transparent;border-bottom:6px solid transparent;right:-8px;top:50%;margin-top:-5px}.__react_component_tooltip.place-left:after{border-top:5px solid transparent;border-bottom:5px solid transparent;right:-6px;top:50%;margin-top:-4px}.__react_component_tooltip.place-right{margin-left:10px}.__react_component_tooltip.place-right:before{border-top:6px solid transparent;border-bottom:6px solid transparent;left:-8px;top:50%;margin-top:-5px}.__react_component_tooltip.place-right:after{border-top:5px solid transparent;border-bottom:5px solid transparent;left:-6px;top:50%;margin-top:-4px}.__react_component_tooltip .multi-line{display:block;padding:2px 0px;text-align:center}';
 
+
+/***/ },
+/* 86 */
+/***/ function(module, exports) {
+
+	// OsidId.js
+	'use strict';
+
+	var OsidId = {
+	    getIdentifier: function (idString) {
+	        var identifier = idString.slice(idString.indexOf('%3A') + 3,
+	                                        idString.indexOf('%40'));
+	        return decodeURIComponent(decodeURIComponent(identifier));
+	    }
+	};
+
+	module.exports = OsidId;
 
 /***/ }
 /******/ ])));

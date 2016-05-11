@@ -130,6 +130,7 @@ var ItemsList = React.createClass({
 
         return _.map(items, function (item) {
             var questionLO = _this.getQuestionLO(item),
+                itemCreator = 'Unknown',
                 itemControls;
 
             if (_this.props.enableClickthrough) {
@@ -141,12 +142,20 @@ var ItemsList = React.createClass({
                 itemControls = '';
             }
 
+            if (item.hasOwnProperty('providerId')) {
+                if (item.providerId != '') {
+                    itemCreator = item.providerId;
+                }
+            }
+
             return <Row key={item.id}>
                 <Col sm={6} md={6} lg={6}>
                     <Panel header={item.displayName.text}>
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
-                            <QuestionText questionText={item.question.text.text} />
+                            <QuestionText questionText={item.question.text.text}
+                                          itemCreator={itemCreator} />
+
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">a)</p>

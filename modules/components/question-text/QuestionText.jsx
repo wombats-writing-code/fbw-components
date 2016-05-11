@@ -8,6 +8,7 @@ require('../../../stylesheets/vendor/reactSelectOverride.css');
 var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Select = require('react-select');
+var ReactTooltip = require('react-tooltip');
 
 var Button = ReactBS.Button;
 var ControlLabel = ReactBS.ControlLabel;
@@ -17,6 +18,7 @@ var Modal = ReactBS.Modal;
 
 var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
 var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
+var OsidId = require('../../utilities/OsidId');
 var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
 var WrapHTML = require('../../utilities/WrapHTML');
 
@@ -75,7 +77,8 @@ var QuestionText = React.createClass({
         this.close();
     },
     render: function () {
-        var questionText = WrapHTML(this.props.questionText);
+        var questionText = WrapHTML(this.props.questionText),
+            agent = OsidId.getIdentifier(this.props.itemCreator);
 
         return <div className="taggable-text">
             <div className="text-blob">
@@ -86,6 +89,9 @@ var QuestionText = React.createClass({
                         sandbox="allow-same-origin allow-scripts"
                         ></iframe>
             </div>
+            <Glyphicon glyph="envelope"
+                       data-tip={agent} />
+            <ReactTooltip />
         </div>
 
     }
