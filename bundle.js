@@ -47275,7 +47275,7 @@
 	    filterItems: function filterItems() {
 	        // TODO: take this.props.items and filter them according to the query term
 	        var filteredItems = [],
-	            q = this.state.searchQuery;
+	            q = this.state.searchQuery.toLowerCase();
 
 	        if (q != '') {
 	            _.each(this.props.items, function (item) {
@@ -47283,12 +47283,12 @@
 	                    choiceMatch = false;
 
 	                _.each(choices, function (choice) {
-	                    if (choice.text.indexOf(q) >= 0) {
+	                    if (choice.text.toLowerCase().indexOf(q) >= 0) {
 	                        choiceMatch = true;
 	                    }
 	                });
 
-	                if (item.displayName.text.indexOf(q) >= 0 || item.description.text.indexOf(q) >= 0 || item.question.text.text.indexOf(q) >= 0 || choiceMatch) {
+	                if (item.displayName.text.toLowerCase().indexOf(q) >= 0 || item.description.text.toLowerCase().indexOf(q) >= 0 || item.question.text.text.toLowerCase().indexOf(q) >= 0 || choiceMatch) {
 	                    filteredItems.push(item);
 	                }
 	            });
