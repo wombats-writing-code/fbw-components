@@ -28,6 +28,7 @@ var QuestionText = require('../question-text/QuestionText');
 var ItemsList = React.createClass({
     getInitialState: function () {
         return {
+            itemExpandedState: {},
             outcomes: [],
             sortedItems: {}  // loId => [itemsList]
         };
@@ -41,9 +42,18 @@ var ItemsList = React.createClass({
         LibraryItemsStore.addChangeListener(function(items) {
             _this.sortItemsByOutcome();
         });
+
+        this.initializeItemsAsClosed();
     },
     componentDidMount: function () {
         OutcomesStore.getAll();
+    },
+    filterOutcomes: function (item) {
+        // return outcomes that are not currently being used somewhere
+        // in a specific item
+        return _.filter(this.state.outcomes, function (outcome) {
+            return item.usedLOs.indexOf(outcome.id) < 0;
+        })
     },
     getOutcomeDisplayName: function (outcomeId) {
         var outcome = OutcomesStore.get(outcomeId);
@@ -70,12 +80,16 @@ var ItemsList = React.createClass({
             return [];
         }
     },
-    filterOutcomes: function (item) {
-        // return outcomes that are not currently being used somewhere
-        // in a specific item
-        return _.filter(this.state.outcomes, function (outcome) {
-            return item.usedLOs.indexOf(outcome.id) < 0;
-        })
+    initializeItemsAsClosed: function () {
+        var itemState = {};
+        _.each(this.props.items, function (item) {
+            itemState[item.id] = false;
+        });
+
+        this.setState({ itemExpandedState: itemState });
+    },
+    itemState: function (itemId) {
+        return this.state.itemExpandedState[itemId];
     },
     renderItemAnswerLOs: function (item) {
         // just generate the answer los
@@ -164,7 +178,11 @@ var ItemsList = React.createClass({
 
             return <Row key={item.id}>
                 <Col sm={6} md={6} lg={6}>
-                    <Panel header={item.displayName.text}>
+                    <Panel header={item.displayName.text}
+                           collapsible
+                           data-id={item.id}
+                           expanded={_this.itemState(item.id)}
+                           onClick={_this.toggleItemState} >
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
                             <QuestionText questionText={item.question.text.text}
@@ -186,7 +204,9 @@ var ItemsList = React.createClass({
                     </Panel>
                 </Col>
                 <Col sm={6} md={6} lg={6}>
-                    <Panel header="Learning Outcomes">
+                    <Panel header="Learning Outcomes"
+                           collapsible
+                           expanded={_this.itemState(item.id)}>
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
                             <LOText component="question"
@@ -212,6 +232,14 @@ var ItemsList = React.createClass({
     sortItemsByOutcome: function () {
         // get a pre-sorted list of all items, organized by learning outcome
         this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
+    },
+    toggleItemState: function (e) {
+        var updatedState = this.state.itemExpandedState,
+            itemId = e.currentTarget.dataset.id;
+
+        updatedState[itemId] = !updatedState[itemId];
+
+        this.setState({ itemExpandedState: updatedState });
     },
     render: function () {
         return <Grid>

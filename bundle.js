@@ -47372,6 +47372,7 @@
 
 	    getInitialState: function getInitialState() {
 	        return {
+	            itemExpandedState: {},
 	            outcomes: [],
 	            sortedItems: {} // loId => [itemsList]
 	        };
@@ -47385,9 +47386,18 @@
 	        LibraryItemsStore.addChangeListener(function (items) {
 	            _this.sortItemsByOutcome();
 	        });
+
+	        this.initializeItemsAsClosed();
 	    },
 	    componentDidMount: function componentDidMount() {
 	        OutcomesStore.getAll();
+	    },
+	    filterOutcomes: function filterOutcomes(item) {
+	        // return outcomes that are not currently being used somewhere
+	        // in a specific item
+	        return _.filter(this.state.outcomes, function (outcome) {
+	            return item.usedLOs.indexOf(outcome.id) < 0;
+	        });
 	    },
 	    getOutcomeDisplayName: function getOutcomeDisplayName(outcomeId) {
 	        var outcome = OutcomesStore.get(outcomeId);
@@ -47418,12 +47428,16 @@
 	            return [];
 	        }
 	    },
-	    filterOutcomes: function filterOutcomes(item) {
-	        // return outcomes that are not currently being used somewhere
-	        // in a specific item
-	        return _.filter(this.state.outcomes, function (outcome) {
-	            return item.usedLOs.indexOf(outcome.id) < 0;
+	    initializeItemsAsClosed: function initializeItemsAsClosed() {
+	        var itemState = {};
+	        _.each(this.props.items, function (item) {
+	            itemState[item.id] = false;
 	        });
+
+	        this.setState({ itemExpandedState: itemState });
+	    },
+	    itemState: function itemState(itemId) {
+	        return this.state.itemExpandedState[itemId];
 	    },
 	    renderItemAnswerLOs: function renderItemAnswerLOs(item) {
 	        // just generate the answer los
@@ -47535,7 +47549,11 @@
 	                    { sm: 6, md: 6, lg: 6 },
 	                    React.createElement(
 	                        Panel,
-	                        { header: item.displayName.text },
+	                        { header: item.displayName.text,
+	                            collapsible: true,
+	                            'data-id': item.id,
+	                            expanded: _this.itemState(item.id),
+	                            onClick: _this.toggleItemState },
 	                        React.createElement(
 	                            'div',
 	                            { className: 'text-row-wrapper' },
@@ -47572,7 +47590,9 @@
 	                    { sm: 6, md: 6, lg: 6 },
 	                    React.createElement(
 	                        Panel,
-	                        { header: 'Learning Outcomes' },
+	                        { header: 'Learning Outcomes',
+	                            collapsible: true,
+	                            expanded: _this.itemState(item.id) },
 	                        React.createElement(
 	                            'div',
 	                            { className: 'text-row-wrapper' },
@@ -47612,6 +47632,14 @@
 	    sortItemsByOutcome: function sortItemsByOutcome() {
 	        // get a pre-sorted list of all items, organized by learning outcome
 	        this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
+	    },
+	    toggleItemState: function toggleItemState(e) {
+	        var updatedState = this.state.itemExpandedState,
+	            itemId = e.currentTarget.dataset.id;
+
+	        updatedState[itemId] = !updatedState[itemId];
+
+	        this.setState({ itemExpandedState: updatedState });
 	    },
 	    render: function render() {
 	        return React.createElement(
