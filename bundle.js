@@ -47456,9 +47456,11 @@
 	        });
 	    },
 	    renderItemAnswerTexts: function renderItemAnswerTexts(item) {
+	        var _this = this;
 	        // just generate the answer objects
 	        return _.map(item.wrongAnswers, function (answer, index) {
 	            var visibleIndex = index + 1,
+	                wrongAnswerId = item.wrongAnswerIds[index],
 	                wrongAnswerLabel = 'Wrong Answer ' + visibleIndex,
 	                feedback = item.wrongAnswerFeedbacks[index],
 	                choiceLetter = ChoiceLabels[visibleIndex];
@@ -47473,9 +47475,12 @@
 	                    choiceLetter,
 	                    ')'
 	                ),
-	                React.createElement(AnswerText, { answerText: answer.text,
+	                React.createElement(AnswerText, { answerId: wrongAnswerId,
+	                    answerText: answer.text,
 	                    feedback: feedback,
-	                    label: wrongAnswerLabel })
+	                    itemId: item.id,
+	                    label: wrongAnswerLabel,
+	                    libraryId: _this.props.libraryId })
 	            );
 	        });
 	    },
@@ -47489,6 +47494,7 @@
 	            var answers = AnswerExtraction(item);
 
 	            item['correctAnswer'] = answers.correctAnswerText.text;
+	            item['correctAnswerId'] = answers.correctAnswerId;
 	            item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
 	            item['questionRelatedItems'] = _this.getRelatedItems(item.learningObjectiveIds[0]);
 	            item['usedLOs'] = answers.wrongAnswerLOs.concat(item.learningObjectiveIds);
@@ -47549,10 +47555,13 @@
 	                                { className: 'answer-label' },
 	                                'a)'
 	                            ),
-	                            React.createElement(AnswerText, { answerText: item.correctAnswer,
+	                            React.createElement(AnswerText, { answerId: item.correctAnswerId,
+	                                answerText: item.correctAnswer,
 	                                correctAnswer: 'true',
 	                                feedback: item.correctAnswerFeedback,
-	                                label: 'Correct Answer' })
+	                                itemId: item.id,
+	                                label: 'Correct Answer',
+	                                libraryId: _this.props.libraryId })
 	                        ),
 	                        _this.renderItemAnswerTexts(item),
 	                        itemControls
@@ -47791,8 +47800,11 @@
 	            linkButton = React.createElement(
 	                'div',
 	                { className: 'wrong-answer-actions' },
-	                React.createElement(AnswerFeedback, { feedback: this.props.feedback,
-	                    feedbackSource: this.props.label })
+	                React.createElement(AnswerFeedback, { answerId: this.props.answerId,
+	                    feedback: this.props.feedback,
+	                    feedbackSource: this.props.label,
+	                    itemId: this.props.itemId,
+	                    libraryId: this.props.libraryId })
 	            );
 	        } else {
 	            linkButton = React.createElement(
@@ -47800,8 +47812,11 @@
 	                { className: 'right-answer-actions' },
 	                React.createElement(Glyphicon, { className: 'right-answer-check',
 	                    glyph: 'ok' }),
-	                React.createElement(AnswerFeedback, { feedback: this.props.feedback,
-	                    feedbackSource: this.props.label })
+	                React.createElement(AnswerFeedback, { answerId: this.props.answerId,
+	                    feedback: this.props.feedback,
+	                    feedbackSource: this.props.label,
+	                    itemId: this.props.itemId,
+	                    libraryId: this.props.libraryId })
 	            );
 	        }
 
@@ -49425,9 +49440,20 @@
 	var ReactBS = __webpack_require__(4);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
+	var $s = __webpack_require__(25);
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var CKEditorModalHack = __webpack_require__(26);
+	var ConfigureCKEditor = __webpack_require__(29);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(30);
+	var Dispatcher = __webpack_require__(9);
+	var LibraryItemsStore = __webpack_require__(8);
+	var MiddlewareService = __webpack_require__(17);
 	var WrapHTML = __webpack_require__(53);
 
 	var AnswerFeedback = React.createClass({
@@ -49439,11 +49465,52 @@
 	    close: function close() {
 	        this.setState({ showModal: false });
 	    },
+	    initializeEditors: function initializeEditors(e) {
+	        var repositoryId = ConvertLibraryId2RepositoryId(this.props.libraryId),
+	            _this = this;
+
+	        // CKEditor
+	        // Instructions from here
+	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
+	        CKEditorModalHack();
+	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            ConfigureCKEditor(CKEDITOR, repositoryId);
+	            _this.initializeEditorInstance('feedback');
+	        });
+	    },
+	    initializeEditorInstance: function initializeEditorInstance(instance) {
+	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	            CKEDITOR.replace(instance);
+	        });
+	    },
+	    onChange: function onChange(e) {
+	        // do nothing, since we have to grab the data from CKEditor
+	    },
 	    open: function open(e) {
 	        this.setState({ showModal: true }, function () {});
 	    },
+	    save: function save() {
+	        var feedback = CKEDITOR.instances.feedback.getData(),
+	            payload = {
+	            itemId: this.props.itemId,
+	            libraryId: this.props.libraryId
+	        };
+
+	        if (feedback != this.props.feedback) {
+	            payload['answers'] = [{
+	                answerId: this.props.answerId,
+	                feedback: feedback
+	            }];
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.UPDATE_ITEM,
+	                content: payload
+	            });
+	            this.close();
+	        }
+	    },
 	    render: function render() {
-	        var feedbackText = WrapHTML(this.props.feedback);
+	        var title = "Feedback for: " + this.props.feedbackSource;
 	        return React.createElement(
 	            'div',
 	            null,
@@ -49456,26 +49523,28 @@
 	            React.createElement(
 	                Modal,
 	                { bsSize: 'lg', show: this.state.showModal,
-	                    onHide: this.close },
+	                    onHide: this.close,
+	                    onEntered: this.initializeEditors },
 	                React.createElement(
 	                    Modal.Header,
 	                    { closeButton: true },
 	                    React.createElement(
 	                        Modal.Title,
 	                        null,
-	                        'Feedback for: ',
-	                        this.props.feedbackSource
+	                        title
 	                    )
 	                ),
 	                React.createElement(
 	                    Modal.Body,
 	                    null,
-	                    React.createElement('iframe', { ref: 'myFrame',
-	                        srcDoc: feedbackText,
-	                        frameBorder: 0,
-	                        width: '100%',
-	                        sandbox: 'allow-same-origin'
-	                    })
+	                    React.createElement(
+	                        FormGroup,
+	                        { controlId: 'feedback' },
+	                        React.createElement(FormControl, { componentClass: 'textarea',
+	                            value: this.props.feedback,
+	                            onChange: this.onChange,
+	                            placeholder: title })
+	                    )
 	                ),
 	                React.createElement(
 	                    Modal.Footer,
@@ -49484,6 +49553,11 @@
 	                        Button,
 	                        { onClick: this.close },
 	                        'Close'
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.save, bsStyle: 'success' },
+	                        'Save'
 	                    )
 	                )
 	            )
@@ -50088,6 +50162,9 @@
 	    componentDidUpdate: function componentDidUpdate() {
 	        setTimeout(this.checkNewEditorInstances, 500);
 	    },
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	        this.checkFeedbacks(nextProps);
+	    },
 	    addWrongAnswer: function addWrongAnswer() {
 	        var newIndex = this.state.wrongAnswers.length + 1;
 	        this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
@@ -50095,6 +50172,23 @@
 	        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
 
 	        this.setState({ newWrongAnswerIndices: [newIndex] });
+	    },
+	    checkFeedbacks: function checkFeedbacks(nextProps) {
+	        var me = nextProps.item,
+	            answers = AnswerExtraction(me),
+	            wrongAnswerFeedbacks = [];
+
+	        if (answers.correctAnswerFeedback != this.state.correctAnswerFeedback) {
+	            this.setState({ correctAnswerFeedback: answers.correctAnswerFeedback });
+	        }
+
+	        _.each(answers.wrongAnswerFeedbacks, function (feedback) {
+	            wrongAnswerFeedbacks.push(feedback);
+	        });
+
+	        if (wrongAnswerFeedbacks != this.state.wrongAnswerFeedbacks) {
+	            this.setState({ wrongAnswerFeedbacks: wrongAnswerFeedbacks });
+	        }
 	    },
 	    checkNewEditorInstances: function checkNewEditorInstances() {
 	        if (this.state.newWrongAnswerIndices.length > 0) {
@@ -50291,7 +50385,7 @@
 	        this.setState({ correctAnswer: answers.correctAnswerText.text });
 	        this.setState({ correctAnswerError: false });
 	        this.setState({ correctAnswerId: answers.correctAnswerId });
-	        this.setState({ correctAnswerFeedback: '' });
+	        this.setState({ correctAnswerFeedback: answers.correctAnswerFeedback });
 	        this.setState({ itemDescription: me.description.text });
 	        this.setState({ itemDisplayName: me.displayName.text });
 	        this.setState({ itemDisplayNameError: false });

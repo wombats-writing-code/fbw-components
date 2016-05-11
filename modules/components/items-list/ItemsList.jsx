@@ -101,9 +101,11 @@ var ItemsList = React.createClass({
         });
     },
     renderItemAnswerTexts: function (item) {
+        var _this = this;
         // just generate the answer objects
         return _.map(item.wrongAnswers, function (answer, index) {
             var visibleIndex = index + 1,
+                wrongAnswerId = item.wrongAnswerIds[index],
                 wrongAnswerLabel = 'Wrong Answer ' + visibleIndex,
                 feedback = item.wrongAnswerFeedbacks[index],
                 choiceLetter = ChoiceLabels[visibleIndex];
@@ -111,9 +113,12 @@ var ItemsList = React.createClass({
             return <div className="text-row-wrapper"
                         key={index}>
                 <p className="answer-label">{choiceLetter})</p>
-                <AnswerText answerText={answer.text}
+                <AnswerText answerId={wrongAnswerId}
+                            answerText={answer.text}
                             feedback={feedback}
-                            label={wrongAnswerLabel} />
+                            itemId={item.id}
+                            label={wrongAnswerLabel}
+                            libraryId={_this.props.libraryId} />
             </div>
         });
     },
@@ -126,6 +131,7 @@ var ItemsList = React.createClass({
             var answers = AnswerExtraction(item);
 
             item['correctAnswer'] = answers.correctAnswerText.text;
+            item['correctAnswerId'] = answers.correctAnswerId;
             item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
             item['questionRelatedItems'] = _this.getRelatedItems(item.learningObjectiveIds[0]);
             item['usedLOs'] = answers.wrongAnswerLOs.concat(item.learningObjectiveIds);
@@ -167,10 +173,13 @@ var ItemsList = React.createClass({
                         </div>
                         <div className="text-row-wrapper">
                             <p className="answer-label">a)</p>
-                            <AnswerText answerText={item.correctAnswer}
+                            <AnswerText answerId={item.correctAnswerId}
+                                        answerText={item.correctAnswer}
                                         correctAnswer="true"
                                         feedback={item.correctAnswerFeedback}
-                                        label="Correct Answer" />
+                                        itemId={item.id}
+                                        label="Correct Answer"
+                                        libraryId={_this.props.libraryId} />
                         </div>
                         {_this.renderItemAnswerTexts(item)}
                         {itemControls}

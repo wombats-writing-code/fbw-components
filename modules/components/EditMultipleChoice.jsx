@@ -57,10 +57,12 @@ var EditMultipleChoice = React.createClass({
         };
     },
     componentWillMount: function () {
-
     },
     componentDidUpdate: function () {
         setTimeout(this.checkNewEditorInstances, 500);
+    },
+    componentWillReceiveProps: function (nextProps) {
+        this.checkFeedbacks(nextProps);
     },
     addWrongAnswer: function () {
         var newIndex = this.state.wrongAnswers.length + 1;
@@ -69,6 +71,23 @@ var EditMultipleChoice = React.createClass({
         this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
 
         this.setState({ newWrongAnswerIndices: [newIndex] });
+    },
+    checkFeedbacks: function (nextProps) {
+        var me = nextProps.item,
+            answers = AnswerExtraction(me),
+            wrongAnswerFeedbacks = [];
+
+        if (answers.correctAnswerFeedback != this.state.correctAnswerFeedback) {
+            this.setState({ correctAnswerFeedback: answers.correctAnswerFeedback });
+        }
+
+        _.each(answers.wrongAnswerFeedbacks, function (feedback) {
+            wrongAnswerFeedbacks.push(feedback)
+        });
+
+        if (wrongAnswerFeedbacks != this.state.wrongAnswerFeedbacks) {
+            this.setState({ wrongAnswerFeedbacks: wrongAnswerFeedbacks });
+        }
     },
     checkNewEditorInstances: function () {
         if (this.state.newWrongAnswerIndices.length > 0) {
@@ -265,7 +284,7 @@ var EditMultipleChoice = React.createClass({
         this.setState({ correctAnswer: answers.correctAnswerText.text });
         this.setState({ correctAnswerError: false });
         this.setState({ correctAnswerId: answers.correctAnswerId });
-        this.setState({ correctAnswerFeedback: '' });
+        this.setState({ correctAnswerFeedback: answers.correctAnswerFeedback });
         this.setState({ itemDescription: me.description.text });
         this.setState({ itemDisplayName: me.displayName.text });
         this.setState({ itemDisplayNameError: false });

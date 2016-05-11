@@ -46,15 +46,21 @@ var AnswerText = React.createClass({
 
         if (!this.props.correctAnswer) {
             linkButton = <div className="wrong-answer-actions">
-                <AnswerFeedback feedback={this.props.feedback}
-                                feedbackSource={this.props.label} />
+                <AnswerFeedback answerId={this.props.answerId}
+                                feedback={this.props.feedback}
+                                feedbackSource={this.props.label}
+                                itemId={this.props.itemId}
+                                libraryId={this.props.libraryId} />
             </div>
         } else {
             linkButton = <div className="right-answer-actions">
                 <Glyphicon className="right-answer-check"
                            glyph="ok" />
-                <AnswerFeedback feedback={this.props.feedback}
-                                feedbackSource={this.props.label} />
+                <AnswerFeedback answerId={this.props.answerId}
+                                feedback={this.props.feedback}
+                                feedbackSource={this.props.label}
+                                itemId={this.props.itemId}
+                                libraryId={this.props.libraryId} />
             </div>
         }
 
