@@ -103,15 +103,17 @@
 	var _ = __webpack_require__(5);
 
 	var LibraryItemsStore = __webpack_require__(8);
+	var LibrariesStore = __webpack_require__(18);
 
-	var ItemWrapper = __webpack_require__(18);
-	var LibrarySelector = __webpack_require__(75);
+	var ItemWrapper = __webpack_require__(20);
+	var LibrarySelector = __webpack_require__(89);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
 
 	    getInitialState: function getInitialState() {
 	        return {
+	            libraries: [],
 	            libraryDescription: '',
 	            libraryId: '',
 	            items: [],
@@ -125,8 +127,13 @@
 	            _this.setState({ items: items });
 	            _this.setState({ showItems: true });
 	        });
+	        LibrariesStore.addChangeListener(function (libraries) {
+	            _this.setState({ libraries: libraries });
+	        });
 	    },
-	    componentDidMount: function componentDidMount() {},
+	    componentDidMount: function componentDidMount() {
+	        LibrariesStore.getAll();
+	    },
 	    hideItems: function hideItems() {
 	        this.setState({ showItems: false });
 	    },
@@ -138,6 +145,7 @@
 	        var itemsWrapper = '';
 	        if (this.state.showItems) {
 	            itemsWrapper = React.createElement(ItemWrapper, { items: this.state.items,
+	                libraries: this.state.libraries,
 	                libraryId: this.state.libraryId,
 	                libraryDescription: this.state.libraryDescription });
 	        }
@@ -150,7 +158,8 @@
 	                React.createElement(
 	                    Col,
 	                    { sm: 6, md: 3, lg: 3 },
-	                    React.createElement(LibrarySelector, { onSelect: this.librarySelected,
+	                    React.createElement(LibrarySelector, { libraries: this.state.libraries,
+	                        onSelect: this.librarySelected,
 	                        hideItems: this.hideItems })
 	                )
 	            ),
@@ -35606,7 +35615,7 @@
 	            data = new FormData();
 
 	        _.each(_.keys(payload), function (key) {
-	            if (key == 'question' || key == 'answers') {
+	            if (key == 'question' || key == 'answers' || key == 'assignedBankIds') {
 	                data.append(key, JSON.stringify(payload[key]));
 	            } else if (key != 'questionFile') {
 	                data.append(key, payload[key]);
@@ -36477,10 +36486,71 @@
 /* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	var LibrariesDispatcher = __webpack_require__(19);
+	var AuthoringConstants = __webpack_require__(14);
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+	var _ = __webpack_require__(5);
+	var MiddlewareService = __webpack_require__(17)
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _libraries = [];
+
+	var LibrariesStore = _.assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _libraries);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    getAll: function () {
+	        var _this = this;
+	        fetch(this.url(), {
+	            cache: "no-store",
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _libraries = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting libraries: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	        if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
+
+	        return MiddlewareService.host() + '/assessment/libraries/';
+	    }
+	});
+
+	LibrariesStore.dispatchToken = LibrariesDispatcher.register(function (action) {
+	    switch(action.type) {
+	    }
+	});
+
+	module.exports = LibrariesStore;
+
+
+/***/ },
+/* 19 */
+9,
+/* 20 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// ItemWrapper.js
 	// should include item status, item search, and then items list
 
 	'use strict';
+
+	__webpack_require__(21);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -36490,9 +36560,9 @@
 
 	var LibraryItemsStore = __webpack_require__(8);
 
-	var AddItem = __webpack_require__(19);
-	var ItemSearch = __webpack_require__(35);
-	var ItemStatus = __webpack_require__(78);
+	var AddItem = __webpack_require__(25);
+	var ItemSearch = __webpack_require__(39);
+	var ItemStatus = __webpack_require__(86);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -36530,6 +36600,7 @@
 	                    Col,
 	                    null,
 	                    React.createElement(ItemSearch, { items: this.props.items,
+	                        libraries: this.props.libraries,
 	                        libraryId: this.props.libraryId })
 	                )
 	            )
@@ -36540,182 +36611,23 @@
 	module.exports = ItemWrapper;
 
 /***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// AddItem.js
-	'use strict';
-
-	__webpack_require__(20);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Alert = ReactBS.Alert;
-	var Button = ReactBS.Button;
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormControl = ReactBS.FormControl;
-	var FormGroup = ReactBS.FormGroup;
-	var Glyphicon = ReactBS.Glyphicon;
-	var Modal = ReactBS.Modal;
-
-	var _ = __webpack_require__(5);
-
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CreateMultipleChoice = __webpack_require__(24);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var ItemTypesStore = __webpack_require__(34);
-
-	var AddItem = React.createClass({
-	    displayName: 'AddItem',
-
-	    getInitialState: function getInitialState() {
-	        return {
-	            itemTypes: [],
-	            questionType: '',
-	            showFormModal: false,
-	            showTypeModal: false
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        ItemTypesStore.addChangeListener(function (itemTypes) {
-	            _this.setState({ itemTypes: itemTypes });
-	        });
-	    },
-	    componentDidMount: function componentDidMount() {
-	        ItemTypesStore.getSupportedItemTypes(this.props.libraryId);
-	    },
-	    closeFormModal: function closeFormModal() {
-	        this.setState({ showFormModal: false });
-	    },
-	    closeTypeModal: function closeTypeModal() {
-	        this.setState({ showTypeModal: false });
-	    },
-	    onChange: function onChange(e) {
-	        var option = e.currentTarget.selectedOptions[0],
-	            questionType = option.value;
-	        if (questionType !== '-1') {
-	            this.setState({ questionType: questionType });
-	        }
-	    },
-	    openTypeModal: function openTypeModal() {
-	        this.setState({ showTypeModal: true });
-	    },
-	    renderQuestionTypes: function renderQuestionTypes() {
-	        return _.map(this.state.itemTypes, function (itemType, key) {
-	            return React.createElement(
-	                'option',
-	                { value: key,
-	                    key: key },
-	                itemType
-	            );
-	        });
-	    },
-	    showForm: function showForm() {
-	        this.closeTypeModal();
-	        this.setState({ showFormModal: true });
-	    },
-	    render: function render() {
-	        var questionForm = '';
-
-	        if (this.state.questionType === 'multiple-choice') {
-	            questionForm = React.createElement(CreateMultipleChoice, { close: this.closeFormModal,
-	                libraryId: this.props.libraryId,
-	                showModal: this.state.showFormModal });
-	        }
-
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                Button,
-	                { onClick: this.openTypeModal },
-	                React.createElement(Glyphicon, { glyph: 'plus' }),
-	                'New Question'
-	            ),
-	            React.createElement(
-	                Modal,
-	                { bsSize: 'lg',
-	                    show: this.state.showTypeModal,
-	                    onHide: this.closeTypeModal },
-	                React.createElement(
-	                    Modal.Header,
-	                    { closeButton: true },
-	                    React.createElement(
-	                        Modal.Title,
-	                        null,
-	                        'Select Question Type'
-	                    )
-	                ),
-	                React.createElement(
-	                    Modal.Body,
-	                    null,
-	                    React.createElement(
-	                        'form',
-	                        null,
-	                        React.createElement(
-	                            FormGroup,
-	                            { controlId: 'itemType' },
-	                            React.createElement(
-	                                ControlLabel,
-	                                null,
-	                                'Question Type'
-	                            ),
-	                            React.createElement(
-	                                FormControl,
-	                                { componentClass: 'select',
-	                                    onChange: this.onChange,
-	                                    placeholder: 'Select a question type ...' },
-	                                React.createElement(
-	                                    'option',
-	                                    { value: '-1' },
-	                                    'Please select a question type ... '
-	                                ),
-	                                this.renderQuestionTypes()
-	                            )
-	                        )
-	                    )
-	                ),
-	                React.createElement(
-	                    Modal.Footer,
-	                    null,
-	                    React.createElement(
-	                        Button,
-	                        { onClick: this.closeTypeModal },
-	                        'Cancel'
-	                    ),
-	                    React.createElement(
-	                        Button,
-	                        { bsStyle: 'success', onClick: this.showForm },
-	                        'Next'
-	                    )
-	                )
-	            ),
-	            questionForm
-	        );
-	    }
-	});
-
-	module.exports = AddItem;
-
-/***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(21);
+	var content = __webpack_require__(22);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./AddItem.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./AddItem.css");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemWrapper.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemWrapper.css");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -36725,21 +36637,21 @@
 	}
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
 	// module
-	exports.push([module.id, ".has-error .form-control-feedback {\n    top: 34px;\n}", ""]);
+	exports.push([module.id, "", ""]);
 
 	// exports
 
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports) {
 
 	/*
@@ -36795,7 +36707,7 @@
 
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -37047,7 +36959,206 @@
 
 
 /***/ },
-/* 24 */
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// AddItem.js
+	'use strict';
+
+	__webpack_require__(26);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Alert = ReactBS.Alert;
+	var Button = ReactBS.Button;
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var _ = __webpack_require__(5);
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var CreateMultipleChoice = __webpack_require__(28);
+	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var ItemTypesStore = __webpack_require__(38);
+
+	var AddItem = React.createClass({
+	    displayName: 'AddItem',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            itemTypes: [],
+	            questionType: '',
+	            showFormModal: false,
+	            showTypeModal: false
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {
+	        var _this = this;
+	        ItemTypesStore.addChangeListener(function (itemTypes) {
+	            _this.setState({ itemTypes: itemTypes });
+	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        ItemTypesStore.getSupportedItemTypes(this.props.libraryId);
+	    },
+	    closeFormModal: function closeFormModal() {
+	        this.setState({ showFormModal: false });
+	    },
+	    closeTypeModal: function closeTypeModal() {
+	        this.setState({ showTypeModal: false });
+	    },
+	    onChange: function onChange(e) {
+	        var option = e.currentTarget.selectedOptions[0],
+	            questionType = option.value;
+	        if (questionType !== '-1') {
+	            this.setState({ questionType: questionType });
+	        }
+	    },
+	    openTypeModal: function openTypeModal() {
+	        this.setState({ showTypeModal: true });
+	    },
+	    renderQuestionTypes: function renderQuestionTypes() {
+	        return _.map(this.state.itemTypes, function (itemType, key) {
+	            return React.createElement(
+	                'option',
+	                { value: key,
+	                    key: key },
+	                itemType
+	            );
+	        });
+	    },
+	    showForm: function showForm() {
+	        this.closeTypeModal();
+	        this.setState({ showFormModal: true });
+	    },
+	    render: function render() {
+	        var questionForm = '';
+
+	        if (this.state.questionType === 'multiple-choice') {
+	            questionForm = React.createElement(CreateMultipleChoice, { close: this.closeFormModal,
+	                libraryId: this.props.libraryId,
+	                showModal: this.state.showFormModal });
+	        }
+
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.openTypeModal },
+	                React.createElement(Glyphicon, { glyph: 'plus' }),
+	                'New Question'
+	            ),
+	            React.createElement(
+	                Modal,
+	                { bsSize: 'lg',
+	                    show: this.state.showTypeModal,
+	                    onHide: this.closeTypeModal },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Select Question Type'
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    React.createElement(
+	                        'form',
+	                        null,
+	                        React.createElement(
+	                            FormGroup,
+	                            { controlId: 'itemType' },
+	                            React.createElement(
+	                                ControlLabel,
+	                                null,
+	                                'Question Type'
+	                            ),
+	                            React.createElement(
+	                                FormControl,
+	                                { componentClass: 'select',
+	                                    onChange: this.onChange,
+	                                    placeholder: 'Select a question type ...' },
+	                                React.createElement(
+	                                    'option',
+	                                    { value: '-1' },
+	                                    'Please select a question type ... '
+	                                ),
+	                                this.renderQuestionTypes()
+	                            )
+	                        )
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.closeTypeModal },
+	                        'Cancel'
+	                    ),
+	                    React.createElement(
+	                        Button,
+	                        { bsStyle: 'success', onClick: this.showForm },
+	                        'Next'
+	                    )
+	                )
+	            ),
+	            questionForm
+	        );
+	    }
+	});
+
+	module.exports = AddItem;
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(27);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./AddItem.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./AddItem.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".has-error .form-control-feedback {\n    top: 34px;\n}\n\n.glyphicon {\n    margin-right: 5px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CreateMultipleChoice.jsx
@@ -37065,17 +37176,17 @@
 
 	var _ = __webpack_require__(5);
 
-	var $s = __webpack_require__(25);
+	var $s = __webpack_require__(29);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CKEditorModalHack = __webpack_require__(26);
-	var ConfigureCKEditor = __webpack_require__(29);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(30);
+	var CKEditorModalHack = __webpack_require__(30);
+	var ConfigureCKEditor = __webpack_require__(33);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(34);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(31);
+	var WrongAnswerEditor = __webpack_require__(35);
 
 	var CreateMultipleChoice = React.createClass({
 	    displayName: 'CreateMultipleChoice',
@@ -37509,7 +37620,7 @@
 	module.exports = CreateMultipleChoice;
 
 /***/ },
-/* 25 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -37638,7 +37749,7 @@
 
 
 /***/ },
-/* 26 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CKEditorModalHack.js
@@ -37650,7 +37761,7 @@
 
 	'use strict';
 
-	var $ = __webpack_require__(27);
+	var $ = __webpack_require__(31);
 	var _ = __webpack_require__(5);
 
 
@@ -37661,7 +37772,7 @@
 	module.exports = CKEditorModalHack;
 
 /***/ },
-/* 27 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function() {
@@ -46927,7 +47038,7 @@
 	    // file names, and jQuery is normally delivered in a lowercase file name.
 	    // Do this after creating the global so that if an AMD module wants to call
 	    // noConflict to hide this version of jQuery, it will work.
-	    if ( "function" === "function" && __webpack_require__(28) && __webpack_require__(28).jQuery ) {
+	    if ( "function" === "function" && __webpack_require__(32) && __webpack_require__(32).jQuery ) {
 	    	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () { return jQuery; }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    }
 	    
@@ -46954,7 +47065,7 @@
 
 
 /***/ },
-/* 28 */
+/* 32 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
@@ -46962,14 +47073,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ },
-/* 29 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ConfigureCKEditor.js
 
 	'use strict';
 
-	var $ = __webpack_require__(27);
+	var $ = __webpack_require__(31);
 
 	var ConfigureCKEditor = function (editor, repositoryId) {
 	    var MiddlewareService = __webpack_require__(17);
@@ -46982,7 +47093,7 @@
 	module.exports = ConfigureCKEditor;
 
 /***/ },
-/* 30 */
+/* 34 */
 /***/ function(module, exports) {
 
 	// ConvertLibraryId2RepositoryId.js
@@ -46995,13 +47106,13 @@
 	module.exports = ConvertLibraryId2RepositoryId;
 
 /***/ },
-/* 31 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// WrongAnswerEditor.js
 	'use strict';
 
-	__webpack_require__(32);
+	__webpack_require__(36);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -47134,16 +47245,16 @@
 	module.exports = WrongAnswerEditor;
 
 /***/ },
-/* 32 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(33);
+	var content = __webpack_require__(37);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -47160,10 +47271,10 @@
 	}
 
 /***/ },
-/* 33 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
@@ -47174,7 +47285,7 @@
 
 
 /***/ },
-/* 34 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemTypesStore.js
@@ -47233,14 +47344,14 @@
 
 
 /***/ },
-/* 35 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemSearch.js
 
 	'use strict';
 
-	__webpack_require__(81);
+	__webpack_require__(40);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -47250,7 +47361,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var InputGroup = ReactBS.InputGroup;
 
-	var ItemsList = __webpack_require__(36);
+	var ItemsList = __webpack_require__(42);
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemSearch = React.createClass({
@@ -47321,6 +47432,7 @@
 	                )
 	            ),
 	            React.createElement(ItemsList, { items: this.state.filteredItems,
+	                libraries: this.props.libraries,
 	                libraryId: this.props.libraryId,
 	                enableClickthrough: true })
 	        );
@@ -47338,14 +47450,54 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 36 */
+/* 40 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(41);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemSearch.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemSearch.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 41 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, "\n.item-search__input {\n  \n}\n\n.item-search {\n    margin-top: 10px;\n    margin-left: 14px;\n    width: 60%;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemsList.js
 
 	'use strict';
 
-	__webpack_require__(37);
+	__webpack_require__(43);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -47358,14 +47510,14 @@
 	var ChoiceLabels = AuthoringConstants.ChoiceLabels;
 	var GenusTypes = AuthoringConstants.GenusTypes;
 
-	var AnswerExtraction = __webpack_require__(39);
-	var AnswerText = __webpack_require__(40);
-	var ItemControls = __webpack_require__(60);
+	var AnswerExtraction = __webpack_require__(45);
+	var AnswerText = __webpack_require__(46);
+	var ItemControls = __webpack_require__(61);
 	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(66);
-	var LOText = __webpack_require__(67);
-	var OutcomesStore = __webpack_require__(57);
-	var QuestionText = __webpack_require__(71);
+	var LORelatedItems = __webpack_require__(69);
+	var LOText = __webpack_require__(70);
+	var OutcomesStore = __webpack_require__(77);
+	var QuestionText = __webpack_require__(79);
 
 	var ItemsList = React.createClass({
 	    displayName: 'ItemsList',
@@ -47529,6 +47681,7 @@
 	                    'div',
 	                    { className: 'item-controls' },
 	                    React.createElement(ItemControls, { item: item,
+	                        libraries: _this.props.libraries,
 	                        libraryId: _this.props.libraryId })
 	                );
 	            } else {
@@ -47634,12 +47787,15 @@
 	        this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
 	    },
 	    toggleItemState: function toggleItemState(e) {
-	        var updatedState = this.state.itemExpandedState,
+	        var targetClassName = e.target.className,
+	            updatedState = this.state.itemExpandedState,
 	            itemId = e.currentTarget.dataset.id;
 
-	        updatedState[itemId] = !updatedState[itemId];
+	        if (targetClassName.indexOf('panel-title') >= 0) {
+	            updatedState[itemId] = !updatedState[itemId];
 
-	        this.setState({ itemExpandedState: updatedState });
+	            this.setState({ itemExpandedState: updatedState });
+	        }
 	    },
 	    render: function render() {
 	        return React.createElement(
@@ -47654,16 +47810,16 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 37 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(38);
+	var content = __webpack_require__(44);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -47680,10 +47836,10 @@
 	}
 
 /***/ },
-/* 38 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
@@ -47694,7 +47850,7 @@
 
 
 /***/ },
-/* 39 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerExtraction.js
@@ -47774,19 +47930,19 @@
 	module.exports = AnswerExtraction;
 
 /***/ },
-/* 40 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
 
 	'use strict';
 
-	__webpack_require__(41);
-	__webpack_require__(43);
+	__webpack_require__(47);
+	__webpack_require__(49);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(45);
+	var Select = __webpack_require__(51);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -47795,10 +47951,10 @@
 	var Modal = ReactBS.Modal;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerFeedback = __webpack_require__(52);
+	var AnswerFeedback = __webpack_require__(58);
 	var Dispatcher = __webpack_require__(9);
-	var SetIFrameHeight = __webpack_require__(59);
-	var WrapHTML = __webpack_require__(53);
+	var SetIFrameHeight = __webpack_require__(60);
+	var WrapHTML = __webpack_require__(59);
 
 	var AnswerText = React.createClass({
 	    displayName: 'AnswerText',
@@ -47870,16 +48026,16 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 41 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(42);
+	var content = __webpack_require__(48);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -47896,10 +48052,10 @@
 	}
 
 /***/ },
-/* 42 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
@@ -47910,16 +48066,16 @@
 
 
 /***/ },
-/* 43 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(44);
+	var content = __webpack_require__(50);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -47936,10 +48092,10 @@
 	}
 
 /***/ },
-/* 44 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
@@ -47950,7 +48106,7 @@
 
 
 /***/ },
-/* 45 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47971,27 +48127,27 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _reactInputAutosize = __webpack_require__(46);
+	var _reactInputAutosize = __webpack_require__(52);
 
 	var _reactInputAutosize2 = _interopRequireDefault(_reactInputAutosize);
 
-	var _classnames = __webpack_require__(47);
+	var _classnames = __webpack_require__(53);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsStripDiacritics = __webpack_require__(48);
+	var _utilsStripDiacritics = __webpack_require__(54);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
-	var _Async = __webpack_require__(49);
+	var _Async = __webpack_require__(55);
 
 	var _Async2 = _interopRequireDefault(_Async);
 
-	var _Option = __webpack_require__(50);
+	var _Option = __webpack_require__(56);
 
 	var _Option2 = _interopRequireDefault(_Option);
 
-	var _Value = __webpack_require__(51);
+	var _Value = __webpack_require__(57);
 
 	var _Value2 = _interopRequireDefault(_Value);
 
@@ -48867,7 +49023,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 46 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48998,7 +49154,7 @@
 	module.exports = AutosizeInput;
 
 /***/ },
-/* 47 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -49052,7 +49208,7 @@
 
 
 /***/ },
-/* 48 */
+/* 54 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -49067,7 +49223,7 @@
 	};
 
 /***/ },
-/* 49 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49080,11 +49236,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Select = __webpack_require__(45);
+	var _Select = __webpack_require__(51);
 
 	var _Select2 = _interopRequireDefault(_Select);
 
-	var _utilsStripDiacritics = __webpack_require__(48);
+	var _utilsStripDiacritics = __webpack_require__(54);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
@@ -49240,7 +49396,7 @@
 	module.exports = Async;
 
 /***/ },
-/* 50 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49251,7 +49407,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(47);
+	var _classnames = __webpack_require__(53);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49349,7 +49505,7 @@
 	module.exports = Option;
 
 /***/ },
-/* 51 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49360,7 +49516,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(47);
+	var _classnames = __webpack_require__(53);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49458,7 +49614,7 @@
 	module.exports = Value;
 
 /***/ },
-/* 52 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerFeedback.jsx
@@ -49473,16 +49629,16 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var $s = __webpack_require__(25);
+	var $s = __webpack_require__(29);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CKEditorModalHack = __webpack_require__(26);
-	var ConfigureCKEditor = __webpack_require__(29);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(30);
+	var CKEditorModalHack = __webpack_require__(30);
+	var ConfigureCKEditor = __webpack_require__(33);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(34);
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-	var WrapHTML = __webpack_require__(53);
+	var WrapHTML = __webpack_require__(59);
 
 	var AnswerFeedback = React.createClass({
 	    displayName: 'AnswerFeedback',
@@ -49596,7 +49752,7 @@
 	module.exports = AnswerFeedback;
 
 /***/ },
-/* 53 */
+/* 59 */
 /***/ function(module, exports) {
 
 	// WrapHTML.js
@@ -49627,216 +49783,7 @@
 	module.exports = WrapHTML;
 
 /***/ },
-/* 54 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// LORelatedItemsBadge.jsx
-	'use strict';
-
-	__webpack_require__(55);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Alert = ReactBS.Alert;
-	var Badge = ReactBS.Badge;
-	var Button = ReactBS.Button;
-	var Glyphicon = ReactBS.Glyphicon;
-	var Modal = ReactBS.Modal;
-
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-	var LibraryItemsStore = __webpack_require__(8);
-	var OutcomesStore = __webpack_require__(57);
-
-	var LORelatedItemsBadge = React.createClass({
-	    displayName: 'LORelatedItemsBadge',
-
-	    getInitialState: function getInitialState() {
-	        return {};
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    close: function close() {
-	        this.setState({ showModal: false });
-	    },
-	    open: function open() {
-	        this.setState({ showModal: true });
-	    },
-	    render: function render() {
-	        var ItemsList = __webpack_require__(36);
-	        var items, lo;
-
-	        lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;
-
-	        if (this.props.relatedItems.length > 0) {
-	            items = React.createElement(ItemsList, { items: this.props.relatedItems,
-	                libraryId: this.props.libraryId,
-	                enableClickthrough: false });
-	        } else {
-	            items = React.createElement(
-	                Alert,
-	                { bsStyle: 'danger' },
-	                'No items with this LO'
-	            );
-	        }
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                Button,
-	                { onClick: this.open, title: 'Related Items' },
-	                React.createElement(
-	                    Badge,
-	                    null,
-	                    this.props.relatedItems.length
-	                ),
-	                'Items'
-	            ),
-	            React.createElement(
-	                Modal,
-	                { bsSize: 'lg', show: this.state.showModal,
-	                    onHide: this.close,
-	                    dialogClassName: 'extra-wide-modal' },
-	                React.createElement(
-	                    Modal.Header,
-	                    { closeButton: true },
-	                    React.createElement(
-	                        Modal.Title,
-	                        null,
-	                        'Items related to: ',
-	                        lo
-	                    )
-	                ),
-	                React.createElement(
-	                    Modal.Body,
-	                    null,
-	                    items
-	                ),
-	                React.createElement(
-	                    Modal.Footer,
-	                    null,
-	                    React.createElement(
-	                        Button,
-	                        { onClick: this.close },
-	                        'Close'
-	                    )
-	                )
-	            )
-	        );
-	    }
-	});
-
-	module.exports = LORelatedItemsBadge;
-
-/***/ },
-/* 55 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(56);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./LORelatedItemsBadge.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./LORelatedItemsBadge.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 56 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(22)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".extra-wide-modal {\n    width: 90%;\n}", ""]);
-
-	// exports
-
-
-/***/ },
-/* 57 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// OutcomesStore.js
-
-	'use strict';
-
-	var OutcomesDispatcher = __webpack_require__(58);
-	var AuthoringConstants = __webpack_require__(14);
-	var MiddlewareService = __webpack_require__(17);
-
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-
-	var ActionTypes = AuthoringConstants.ActionTypes;
-	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
-
-	var _outcomes = [];
-
-	var OutcomesStore = _.assign({}, EventEmitter.prototype, {
-	    emitChange: function () {
-	        this.emit(CHANGE_EVENT, _outcomes);
-	    },
-	    addChangeListener: function (callback) {
-	        this.on(CHANGE_EVENT, callback);
-	    },
-	    removeChangeListener: function (callback) {
-	        this.removeListener(CHANGE_EVENT, callback);
-	    },
-	    get: function (id) {
-	        return _.find(_outcomes, function (outcome) {
-	            return outcome.id == id;
-	        });
-	    },
-	    getAll: function () {
-	        var _this = this;
-	        fetch(this.url(), {
-	            cache: "no-store",
-	            credentials: "same-origin"
-	        }).then(function (response) {
-	            response.json().then(function (data) {
-	                _outcomes = data;
-	                _this.emitChange();
-	            });
-	        })
-	        .catch(function (error) {
-	            console.log('Problem with getting objectives: ' + error.message);
-	        });
-	    },
-	    url: function () {
-	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
-
-	      return MiddlewareService.host() + '/learning/objectives/';
-	    }
-	});
-
-	OutcomesStore.dispatchToken = OutcomesDispatcher.register(function (action) {
-	    switch(action.type) {
-	    }
-	});
-
-	module.exports = OutcomesStore;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 58 */
-9,
-/* 59 */
+/* 60 */
 /***/ function(module, exports) {
 
 	// SetIFrameHeight.js
@@ -49878,7 +49825,7 @@
 	module.exports = SetIFrameHeight;
 
 /***/ },
-/* 60 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemControls.js
@@ -49887,8 +49834,9 @@
 
 	var React = __webpack_require__(1);
 
-	var DeleteItem = __webpack_require__(61);
-	var EditItem = __webpack_require__(62);
+	var DeleteItem = __webpack_require__(62);
+	var EditItem = __webpack_require__(63);
+	var TransferItem = __webpack_require__(67);
 
 	var ItemControls = React.createClass({
 	    displayName: 'ItemControls',
@@ -49902,6 +49850,9 @@
 	        return React.createElement(
 	            'div',
 	            null,
+	            React.createElement(TransferItem, { item: this.props.item,
+	                libraries: this.props.libraries,
+	                libraryId: this.props.libraryId }),
 	            React.createElement(EditItem, { item: this.props.item,
 	                libraryId: this.props.libraryId }),
 	            React.createElement(DeleteItem, { item: this.props.item,
@@ -49913,7 +49864,7 @@
 	module.exports = ItemControls;
 
 /***/ },
-/* 61 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// DeleteItem.jsx
@@ -50022,13 +49973,13 @@
 	module.exports = DeleteItem;
 
 /***/ },
-/* 62 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// EditItem.jsx
 	'use strict';
 
-	__webpack_require__(63);
+	__webpack_require__(64);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -50036,7 +49987,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var EditMultipleChoice = __webpack_require__(65);
+	var EditMultipleChoice = __webpack_require__(66);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 
 	var EditItem = React.createClass({
@@ -50083,16 +50034,16 @@
 	module.exports = EditItem;
 
 /***/ },
-/* 63 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(64);
+	var content = __webpack_require__(65);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -50109,10 +50060,10 @@
 	}
 
 /***/ },
-/* 64 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
@@ -50123,7 +50074,7 @@
 
 
 /***/ },
-/* 65 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// EditMultipleChoice.jsx
@@ -50140,18 +50091,18 @@
 	var ListGroup = ReactBS.ListGroup;
 	var Modal = ReactBS.Modal;
 
-	var $s = __webpack_require__(25);
+	var $s = __webpack_require__(29);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(39);
-	var CKEditorModalHack = __webpack_require__(26);
-	var ConfigureCKEditor = __webpack_require__(29);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(30);
+	var AnswerExtraction = __webpack_require__(45);
+	var CKEditorModalHack = __webpack_require__(30);
+	var ConfigureCKEditor = __webpack_require__(33);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(34);
 	var Dispatcher = __webpack_require__(9);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(31);
+	var WrongAnswerEditor = __webpack_require__(35);
 
 	var EditMultipleChoice = React.createClass({
 	    displayName: 'EditMultipleChoice',
@@ -50753,7 +50704,255 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 66 */
+/* 67 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// TransferItem.jsx
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Button = ReactBS.Button;
+	var Glyphicon = ReactBS.Glyphicon;
+
+	var AssignableBanks = __webpack_require__(68);
+
+	var TransferItem = React.createClass({
+	    displayName: 'TransferItem',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            showModal: false
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidUpdate: function componentDidUpdate() {},
+	    close: function close() {
+	        this.setState({ showModal: false });
+	    },
+	    open: function open(e) {
+	        this.setState({ showModal: true });
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open,
+	                    bsSize: 'large',
+	                    title: 'Transfer Item' },
+	                React.createElement(Glyphicon, { glyph: 'transfer' })
+	            ),
+	            React.createElement(AssignableBanks, { close: this.close,
+	                item: this.props.item,
+	                libraries: this.props.libraries,
+	                libraryId: this.props.libraryId,
+	                showModal: this.state.showModal })
+	        );
+	    }
+	});
+
+	module.exports = TransferItem;
+
+/***/ },
+/* 68 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// AssignableBanks.jsx
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Alert = ReactBS.Alert;
+	var Button = ReactBS.Button;
+	var Checkbox = ReactBS.Checkbox;
+	var FormGroup = ReactBS.FormGroup;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var Dispatcher = __webpack_require__(9);
+	var LibraryItemsStore = __webpack_require__(8);
+	var MiddlewareService = __webpack_require__(17);
+
+	var AssignableBanks = React.createClass({
+	    displayName: 'AssignableBanks',
+
+	    getInitialState: function getInitialState() {
+	        var state = {
+	            showAlert: false
+	        },
+	            _this = this;
+
+	        _.each(this.props.libraries, function (library, index) {
+	            if (_this.props.item.assignedBankIds.indexOf(library.id) >= 0) {
+	                state['assignedBankId' + index] = true;
+	            } else {
+	                state['assignedBankId' + index] = false;
+	            }
+	        });
+
+	        return state;
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidUpdate: function componentDidUpdate() {},
+	    close: function close() {
+	        this.props.close();
+	    },
+	    closeAndReset: function closeAndReset() {
+	        this.reset();
+	        this.close();
+	    },
+	    onChange: function onChange(e) {
+	        var checked = e.currentTarget.checked,
+	            index = 'assignedBankId' + e.currentTarget.id,
+	            state = {};
+
+	        state[index] = checked;
+	        this.setState(state);
+	    },
+	    renderBanks: function renderBanks() {
+	        var _this = this;
+	        return _.map(this.props.libraries, function (library, index) {
+	            var valueState = 'assignedBankId' + index;
+	            if (_this.state[valueState]) {
+	                return React.createElement(
+	                    Checkbox,
+	                    { checked: true,
+	                        id: index,
+	                        key: library.id,
+	                        onChange: _this.onChange,
+	                        value: _this.state[valueState] },
+	                    library.displayName.text
+	                );
+	            } else {
+	                return React.createElement(
+	                    Checkbox,
+	                    { id: index,
+	                        key: library.id,
+	                        onChange: _this.onChange,
+	                        value: _this.state[valueState] },
+	                    library.displayName.text
+	                );
+	            }
+	        });
+	    },
+	    reset: function reset() {
+	        var state = {
+	            showAlert: false
+	        },
+	            _this = this;
+
+	        _.each(this.props.libraries, function (library, index) {
+	            if (_this.props.item.assignedBankIds.indexOf(library.id) >= 0) {
+	                state['assignedBankId' + index] = true;
+	            } else {
+	                state['assignedBankId' + index] = false;
+	            }
+	        });
+	        this.setState(state);
+	    },
+	    save: function save(e) {
+	        var payload = {
+	            itemId: this.props.item.id,
+	            libraryId: this.props.libraryId
+	        },
+	            _this = this,
+	            assignedBankIds = this.props.item.assignedBankIds,
+	            bankFields = [];
+
+	        _.each(this.props.libraries, function (library, index) {
+	            var valueState = 'assignedBankId' + index;
+	            if (_this.state[valueState]) {
+	                bankFields.push(library.id);
+	            }
+	        });
+
+	        if (bankFields.length === 0) {
+	            this.setState({ showAlert: true });
+	        } else {
+	            _.each(this.props.libraries, function (library, index) {
+	                var valueState = 'assignedBankId' + index;
+
+	                if (_this.state[valueState] && assignedBankIds.indexOf(library.id) < 0) {
+	                    assignedBankIds.push(library.id);
+	                } else if (!_this.state[valueState] && assignedBankIds.indexOf(library.id) >= 0) {
+	                    assignedBankIds.splice(assignedBankIds.indexOf(library.id), 1);
+	                }
+	            });
+	            payload['assignedBankIds'] = assignedBankIds;
+
+	            Dispatcher.dispatch({
+	                type: ActionTypes.UPDATE_ITEM,
+	                content: payload
+	            });
+	            this.closeAndReset();
+	            setTimeout(_this.reset, 500);
+	        }
+	    },
+	    render: function render() {
+	        var alert = '';
+
+	        if (this.state.showAlert) {
+	            alert = React.createElement(
+	                Alert,
+	                { bsStyle: 'danger' },
+	                'You must keep the question in at least one domain, otherwise you will lose access to it forever.'
+	            );
+	        }
+
+	        return React.createElement(
+	            Modal,
+	            { bsSize: 'lg',
+	                show: this.props.showModal,
+	                onHide: this.closeAndReset },
+	            React.createElement(
+	                Modal.Header,
+	                { closeButton: true },
+	                React.createElement(
+	                    Modal.Title,
+	                    null,
+	                    'Assign to Domains'
+	                )
+	            ),
+	            React.createElement(
+	                Modal.Body,
+	                null,
+	                alert,
+	                React.createElement(
+	                    'form',
+	                    null,
+	                    React.createElement(
+	                        FormGroup,
+	                        null,
+	                        this.renderBanks()
+	                    )
+	                )
+	            ),
+	            React.createElement(
+	                Modal.Footer,
+	                null,
+	                React.createElement(
+	                    Button,
+	                    { onClick: this.closeAndReset },
+	                    'Cancel'
+	                ),
+	                React.createElement(
+	                    Button,
+	                    { bsStyle: 'success', onClick: this.save },
+	                    'Save'
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = AssignableBanks;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItems.js
@@ -50788,19 +50987,19 @@
 	module.exports = LORelatedItems;
 
 /***/ },
-/* 67 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LOText.js
 
 	'use strict';
 
-	__webpack_require__(68);
+	__webpack_require__(71);
 
 	var React = __webpack_require__(1);
 
-	var LinkLO = __webpack_require__(70);
-	var LORelatedItemsBadge = __webpack_require__(54);
+	var LinkLO = __webpack_require__(73);
+	var LORelatedItemsBadge = __webpack_require__(74);
 
 	var LOText = React.createClass({
 	    displayName: 'LOText',
@@ -50835,16 +51034,16 @@
 	module.exports = LOText;
 
 /***/ },
-/* 68 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(69);
+	var content = __webpack_require__(72);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -50861,10 +51060,10 @@
 	}
 
 /***/ },
-/* 69 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
@@ -50875,18 +51074,18 @@
 
 
 /***/ },
-/* 70 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
 
 	'use strict';
 
-	__webpack_require__(43);
+	__webpack_require__(49);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(45);
+	var Select = __webpack_require__(51);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -51037,20 +51236,229 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 71 */
+/* 74 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// LORelatedItemsBadge.jsx
+	'use strict';
+
+	__webpack_require__(75);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Alert = ReactBS.Alert;
+	var Badge = ReactBS.Badge;
+	var Button = ReactBS.Button;
+	var Glyphicon = ReactBS.Glyphicon;
+	var Modal = ReactBS.Modal;
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var Dispatcher = __webpack_require__(9);
+	var LibraryItemsStore = __webpack_require__(8);
+	var OutcomesStore = __webpack_require__(77);
+
+	var LORelatedItemsBadge = React.createClass({
+	    displayName: 'LORelatedItemsBadge',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    close: function close() {
+	        this.setState({ showModal: false });
+	    },
+	    open: function open() {
+	        this.setState({ showModal: true });
+	    },
+	    render: function render() {
+	        var ItemsList = __webpack_require__(42);
+	        var items, lo;
+
+	        lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;
+
+	        if (this.props.relatedItems.length > 0) {
+	            items = React.createElement(ItemsList, { items: this.props.relatedItems,
+	                libraryId: this.props.libraryId,
+	                enableClickthrough: false });
+	        } else {
+	            items = React.createElement(
+	                Alert,
+	                { bsStyle: 'danger' },
+	                'No items with this LO'
+	            );
+	        }
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                Button,
+	                { onClick: this.open, title: 'Related Items' },
+	                React.createElement(
+	                    Badge,
+	                    null,
+	                    this.props.relatedItems.length
+	                ),
+	                'Items'
+	            ),
+	            React.createElement(
+	                Modal,
+	                { bsSize: 'lg', show: this.state.showModal,
+	                    onHide: this.close,
+	                    dialogClassName: 'extra-wide-modal' },
+	                React.createElement(
+	                    Modal.Header,
+	                    { closeButton: true },
+	                    React.createElement(
+	                        Modal.Title,
+	                        null,
+	                        'Items related to: ',
+	                        lo
+	                    )
+	                ),
+	                React.createElement(
+	                    Modal.Body,
+	                    null,
+	                    items
+	                ),
+	                React.createElement(
+	                    Modal.Footer,
+	                    null,
+	                    React.createElement(
+	                        Button,
+	                        { onClick: this.close },
+	                        'Close'
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	module.exports = LORelatedItemsBadge;
+
+/***/ },
+/* 75 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(76);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./LORelatedItemsBadge.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./LORelatedItemsBadge.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 76 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".extra-wide-modal {\n    width: 90%;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 77 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// OutcomesStore.js
+
+	'use strict';
+
+	var OutcomesDispatcher = __webpack_require__(78);
+	var AuthoringConstants = __webpack_require__(14);
+	var MiddlewareService = __webpack_require__(17);
+
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _outcomes = [];
+
+	var OutcomesStore = _.assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _outcomes);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    get: function (id) {
+	        return _.find(_outcomes, function (outcome) {
+	            return outcome.id == id;
+	        });
+	    },
+	    getAll: function () {
+	        var _this = this;
+	        fetch(this.url(), {
+	            cache: "no-store",
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _outcomes = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting objectives: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
+
+	      return MiddlewareService.host() + '/learning/objectives/';
+	    }
+	});
+
+	OutcomesStore.dispatchToken = OutcomesDispatcher.register(function (action) {
+	    switch(action.type) {
+	    }
+	});
+
+	module.exports = OutcomesStore;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 78 */
+9,
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
 
 	'use strict';
 
-	__webpack_require__(72);
-	__webpack_require__(43);
+	__webpack_require__(80);
+	__webpack_require__(49);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(45);
-	var ReactTooltip = __webpack_require__(83);
+	var Select = __webpack_require__(51);
+	var ReactTooltip = __webpack_require__(82);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -51060,9 +51468,9 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
-	var OsidId = __webpack_require__(86);
-	var SetIFrameHeight = __webpack_require__(59);
-	var WrapHTML = __webpack_require__(53);
+	var OsidId = __webpack_require__(85);
+	var SetIFrameHeight = __webpack_require__(60);
+	var WrapHTML = __webpack_require__(59);
 
 	var QuestionText = React.createClass({
 	    displayName: 'QuestionText',
@@ -51145,16 +51553,16 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 72 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(73);
+	var content = __webpack_require__(81);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
+	var update = __webpack_require__(24)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -51171,10 +51579,10 @@
 	}
 
 /***/ },
-/* 73 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(22)();
+	exports = module.exports = __webpack_require__(23)();
 	// imports
 
 
@@ -51185,325 +51593,16 @@
 
 
 /***/ },
-/* 74 */,
-/* 75 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormControl = ReactBS.FormControl;
-	var FormGroup = ReactBS.FormGroup;
-
-	var LibraryItemsStore = __webpack_require__(8);
-	var LibrariesStore = __webpack_require__(76);
-
-	var LibrarySelector = React.createClass({
-	    displayName: 'LibrarySelector',
-
-	    getInitialState: function getInitialState() {
-	        return {
-	            libraries: []
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        LibrariesStore.addChangeListener(function (libraries) {
-	            _this.setState({ libraries: libraries });
-	        });
-	    },
-	    componentDidMount: function componentDidMount() {
-	        LibrariesStore.getAll();
-	    },
-	    renderLibraries: function renderLibraries() {
-	        return _.map(this.state.libraries, function (library) {
-	            return React.createElement(
-	                'option',
-	                { value: library.id,
-	                    title: library.description.text,
-	                    key: library.id },
-	                library.displayName.text
-	            );
-	        });
-	    },
-	    showItems: function showItems(e) {
-	        var option = e.currentTarget.selectedOptions[0],
-	            id = option.value,
-	            description = option.title;
-	        if (id !== '-1') {
-	            LibraryItemsStore.getItems(id);
-	            this.props.onSelect(id, description);
-	        } else {
-	            this.props.hideItems();
-	        }
-	    },
-	    render: function render() {
-	        return React.createElement(
-	            FormGroup,
-	            { controlId: 'librarySelector' },
-	            React.createElement(
-	                ControlLabel,
-	                null,
-	                'Select class ...'
-	            ),
-	            React.createElement(
-	                FormControl,
-	                { componentClass: 'select',
-	                    placeholder: 'Select a class',
-	                    onChange: this.showItems },
-	                React.createElement(
-	                    'option',
-	                    { value: '-1' },
-	                    'Please select a content domain ... '
-	                ),
-	                this.renderLibraries()
-	            )
-	        );
-	    }
-	});
-
-	module.exports = LibrarySelector;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 76 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	var LibrariesDispatcher = __webpack_require__(77);
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-	var _ = __webpack_require__(5);
-	var MiddlewareService = __webpack_require__(17)
-
-	var ActionTypes = AuthoringConstants.ActionTypes;
-	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
-
-	var _libraries = [];
-
-	var LibrariesStore = _.assign({}, EventEmitter.prototype, {
-	    emitChange: function () {
-	        this.emit(CHANGE_EVENT, _libraries);
-	    },
-	    addChangeListener: function (callback) {
-	        this.on(CHANGE_EVENT, callback);
-	    },
-	    removeChangeListener: function (callback) {
-	        this.removeListener(CHANGE_EVENT, callback);
-	    },
-	    getAll: function () {
-	        var _this = this;
-	        fetch(this.url(), {
-	            cache: "no-store",
-	            credentials: "same-origin"
-	        }).then(function (response) {
-	            response.json().then(function (data) {
-	                _libraries = data;
-	                _this.emitChange();
-	            });
-	        })
-	        .catch(function (error) {
-	            console.log('Problem with getting libraries: ' + error.message);
-	        });
-	    },
-	    url: function () {
-	        if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
-
-	        return MiddlewareService.host() + '/assessment/libraries/';
-	    }
-	});
-
-	LibrariesStore.dispatchToken = LibrariesDispatcher.register(function (action) {
-	    switch(action.type) {
-	    }
-	});
-
-	module.exports = LibrariesStore;
-
-
-/***/ },
-/* 77 */
-9,
-/* 78 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
-
-	'use strict';
-
-	__webpack_require__(79);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Glyphicon = ReactBS.Glyphicon;
-	var Label = ReactBS.Label;
-	var ReactTooltip = __webpack_require__(83);
-
-	var AuthoringConstants = __webpack_require__(14);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var LibraryItemsStore = __webpack_require__(8);
-
-	var ItemStatus = React.createClass({
-	    displayName: 'ItemStatus',
-
-	    getInitialState: function getInitialState() {
-	        return {};
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    render: function render() {
-	        // How to figure out how many are uncurated?
-	        var libraryName = this.props.libraryDescription,
-	            numberItems = this.props.items.length,
-	            numberUncuratedItems = 0,
-	            uncuratedLabel;
-
-	        _.each(this.props.items, function (item) {
-	            var unlinkedAnswers = _.find(item.answers, function (answer) {
-	                return answer.confusedLearningObjectiveIds.length === 0 && answer.genusTypeId === GenusTypes.WRONG_ANSWER;
-	            });
-	            if (item.question.learningObjectiveIds.length === 0 || unlinkedAnswers != null) {
-	                numberUncuratedItems++;
-	            }
-	        });
-
-	        if (numberUncuratedItems === 0) {
-	            uncuratedLabel = React.createElement(
-	                Label,
-	                { bsStyle: 'success' },
-	                numberUncuratedItems
-	            );
-	        } else {
-	            uncuratedLabel = React.createElement(
-	                Label,
-	                { bsStyle: 'danger' },
-	                numberUncuratedItems
-	            );
-	        }
-
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(
-	                'div',
-	                null,
-	                libraryName,
-	                ': ',
-	                numberItems,
-	                ' questions'
-	            ),
-	            React.createElement(
-	                'div',
-	                null,
-	                'Number of uncurated questions: ',
-	                uncuratedLabel,
-	                React.createElement(Glyphicon, { className: 'uncurated-help-icon',
-	                    glyph: 'question-sign',
-	                    'data-tip': 'Questions not tagged with learning outcomes (or have wrong answers not tagged)' })
-	            ),
-	            React.createElement(ReactTooltip, null)
-	        );
-	    }
-	});
-
-	module.exports = ItemStatus;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 79 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(80);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemStatus.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemStatus.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 80 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(22)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".uncurated-help-icon {\n    margin-left: 5px;\n}", ""]);
-
-	// exports
-
-
-/***/ },
-/* 81 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(82);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(23)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemSearch.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemSearch.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
 /* 82 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(22)();
-	// imports
-
-
-	// module
-	exports.push([module.id, "\n.item-search__input {\n  \n}\n\n.item-search {\n    margin-top: 10px;\n    margin-left: 14px;\n    width: 60%;\n}", ""]);
-
-	// exports
-
-
-/***/ },
-/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	module.exports = __webpack_require__(84)
+	module.exports = __webpack_require__(83)
 
 
 /***/ },
-/* 84 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51518,11 +51617,11 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _classnames = __webpack_require__(47);
+	var _classnames = __webpack_require__(53);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _style = __webpack_require__(85);
+	var _style = __webpack_require__(84);
 
 	var _style2 = _interopRequireDefault(_style);
 
@@ -52271,7 +52370,7 @@
 
 
 /***/ },
-/* 85 */
+/* 84 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -52283,7 +52382,7 @@
 
 
 /***/ },
-/* 86 */
+/* 85 */
 /***/ function(module, exports) {
 
 	// OsidId.js
@@ -52298,6 +52397,205 @@
 	};
 
 	module.exports = OsidId;
+
+/***/ },
+/* 86 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
+
+	'use strict';
+
+	__webpack_require__(87);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Glyphicon = ReactBS.Glyphicon;
+	var Label = ReactBS.Label;
+	var ReactTooltip = __webpack_require__(82);
+
+	var AuthoringConstants = __webpack_require__(14);
+	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var LibraryItemsStore = __webpack_require__(8);
+
+	var ItemStatus = React.createClass({
+	    displayName: 'ItemStatus',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    render: function render() {
+	        // How to figure out how many are uncurated?
+	        var libraryName = this.props.libraryDescription,
+	            numberItems = this.props.items.length,
+	            numberUncuratedItems = 0,
+	            uncuratedLabel;
+
+	        _.each(this.props.items, function (item) {
+	            var unlinkedAnswers = _.find(item.answers, function (answer) {
+	                return answer.confusedLearningObjectiveIds.length === 0 && answer.genusTypeId === GenusTypes.WRONG_ANSWER;
+	            });
+	            if (item.question.learningObjectiveIds.length === 0 || unlinkedAnswers != null) {
+	                numberUncuratedItems++;
+	            }
+	        });
+
+	        if (numberUncuratedItems === 0) {
+	            uncuratedLabel = React.createElement(
+	                Label,
+	                { bsStyle: 'success' },
+	                numberUncuratedItems
+	            );
+	        } else {
+	            uncuratedLabel = React.createElement(
+	                Label,
+	                { bsStyle: 'danger' },
+	                numberUncuratedItems
+	            );
+	        }
+
+	        return React.createElement(
+	            'div',
+	            null,
+	            React.createElement(
+	                'div',
+	                null,
+	                libraryName,
+	                ': ',
+	                numberItems,
+	                ' questions'
+	            ),
+	            React.createElement(
+	                'div',
+	                null,
+	                'Number of uncurated questions: ',
+	                uncuratedLabel,
+	                React.createElement(Glyphicon, { className: 'uncurated-help-icon',
+	                    glyph: 'question-sign',
+	                    'data-tip': 'Questions not tagged with learning outcomes (or have wrong answers not tagged)' })
+	            ),
+	            React.createElement(ReactTooltip, null)
+	        );
+	    }
+	});
+
+	module.exports = ItemStatus;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 87 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(88);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemStatus.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemStatus.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 88 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".uncurated-help-icon {\n    margin-left: 5px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 89 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+
+	var LibraryItemsStore = __webpack_require__(8);
+
+	var LibrarySelector = React.createClass({
+	    displayName: 'LibrarySelector',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    renderLibraries: function renderLibraries() {
+	        return _.map(this.props.libraries, function (library) {
+	            return React.createElement(
+	                'option',
+	                { value: library.id,
+	                    title: library.description.text,
+	                    key: library.id },
+	                library.displayName.text
+	            );
+	        });
+	    },
+	    showItems: function showItems(e) {
+	        var option = e.currentTarget.selectedOptions[0],
+	            id = option.value,
+	            description = option.title;
+	        if (id !== '-1') {
+	            LibraryItemsStore.getItems(id);
+	            this.props.onSelect(id, description);
+	        } else {
+	            this.props.hideItems();
+	        }
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            FormGroup,
+	            { controlId: 'librarySelector' },
+	            React.createElement(
+	                ControlLabel,
+	                null,
+	                'Select class ...'
+	            ),
+	            React.createElement(
+	                FormControl,
+	                { componentClass: 'select',
+	                    placeholder: 'Select a class',
+	                    onChange: this.showItems },
+	                React.createElement(
+	                    'option',
+	                    { value: '-1' },
+	                    'Please select a content domain ... '
+	                ),
+	                this.renderLibraries()
+	            )
+	        );
+	    }
+	});
+
+	module.exports = LibrarySelector;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }
 /******/ ])));

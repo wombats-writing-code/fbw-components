@@ -164,6 +164,7 @@ var ItemsList = React.createClass({
             if (_this.props.enableClickthrough) {
                 itemControls = <div className="item-controls">
                     <ItemControls item={item}
+                                  libraries={_this.props.libraries}
                                   libraryId={_this.props.libraryId} />
                 </div>
             } else {
@@ -234,12 +235,15 @@ var ItemsList = React.createClass({
         this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
     },
     toggleItemState: function (e) {
-        var updatedState = this.state.itemExpandedState,
+        var targetClassName = e.target.className,
+            updatedState = this.state.itemExpandedState,
             itemId = e.currentTarget.dataset.id;
 
-        updatedState[itemId] = !updatedState[itemId];
+        if (targetClassName.indexOf('panel-title') >= 0) {
+            updatedState[itemId] = !updatedState[itemId];
 
-        this.setState({ itemExpandedState: updatedState });
+            this.setState({ itemExpandedState: updatedState });
+        }
     },
     render: function () {
         return <Grid>

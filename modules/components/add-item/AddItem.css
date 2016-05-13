@@ -1,3 +1,7 @@
 .has-error .form-control-feedback {
     top: 34px;
 }
+
+.glyphicon {
+    margin-right: 5px;
+}

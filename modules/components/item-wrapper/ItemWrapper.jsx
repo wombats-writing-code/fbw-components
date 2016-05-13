@@ -2,6 +2,7 @@
 // should include item status, item search, and then items list
 
 'use strict';
+require('./ItemWrapper.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
@@ -9,11 +10,11 @@ var Badge = ReactBS.Badge;
 var Col = ReactBS.Col;
 var Row = ReactBS.Row;
 
-var LibraryItemsStore = require('../stores/LibraryItemsStore');
+var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 
-var AddItem = require('./add-item/AddItem');
-var ItemSearch = require('./item-search/ItemSearch');
-var ItemStatus = require('./item-status/ItemStatus');
+var AddItem = require('../add-item/AddItem');
+var ItemSearch = require('../item-search/ItemSearch');
+var ItemStatus = require('../item-status/ItemStatus');
 
 var ItemWrapper = React.createClass({
     getInitialState: function () {
@@ -39,6 +40,7 @@ var ItemWrapper = React.createClass({
             <Row>
                 <Col>
                     <ItemSearch items={this.props.items}
+                                libraries={this.props.libraries}
                                 libraryId={this.props.libraryId} />
                 </Col>
             </Row>

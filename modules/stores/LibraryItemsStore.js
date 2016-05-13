@@ -189,7 +189,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             data = new FormData();
 
         _.each(_.keys(payload), function (key) {
-            if (key == 'question' || key == 'answers') {
+            if (key == 'question' || key == 'answers' || key == 'assignedBankIds') {
                 data.append(key, JSON.stringify(payload[key]));
             } else if (key != 'questionFile') {
                 data.append(key, payload[key]);

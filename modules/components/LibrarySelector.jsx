@@ -9,25 +9,18 @@ var FormGroup = ReactBS.FormGroup;
 
 
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
-var LibrariesStore = require('../stores/LibrariesStore');
 
 var LibrarySelector = React.createClass({
     getInitialState: function () {
         return {
-            libraries: []
         }
     },
     componentWillMount: function() {
-        var _this = this;
-        LibrariesStore.addChangeListener(function(libraries) {
-            _this.setState({ libraries: libraries });
-        });
     },
     componentDidMount: function () {
-        LibrariesStore.getAll();
     },
     renderLibraries: function () {
-        return _.map(this.state.libraries, function (library) {
+        return _.map(this.props.libraries, function (library) {
             return <option value={library.id}
                            title={library.description.text}
                            key={library.id}>

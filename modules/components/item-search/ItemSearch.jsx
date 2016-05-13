@@ -76,6 +76,7 @@ var ItemSearch = React.createClass({
                 </InputGroup>
             </FormGroup>
             <ItemsList items={this.state.filteredItems}
+                       libraries={this.props.libraries}
                        libraryId={this.props.libraryId}
                        enableClickthrough={true}/>
         </div>

@@ -9,13 +9,15 @@ var Col = ReactBS.Col;
 var _ = require('lodash');
 
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
+var LibrariesStore = require('../stores/LibrariesStore');
 
-var ItemWrapper = require('./ItemWrapper');
+var ItemWrapper = require('./item-wrapper/ItemWrapper');
 var LibrarySelector = require('./LibrarySelector');
 
 var ItemAuthoring = React.createClass({
     getInitialState: function () {
         return {
+            libraries: [],
             libraryDescription: '',
             libraryId: '',
             items: [],
@@ -29,8 +31,12 @@ var ItemAuthoring = React.createClass({
             _this.setState({ items: items });
             _this.setState({ showItems: true });
         });
+        LibrariesStore.addChangeListener(function(libraries) {
+            _this.setState({ libraries: libraries });
+        });
     },
     componentDidMount: function () {
+        LibrariesStore.getAll();
     },
     hideItems: function () {
         this.setState({ showItems: false });
@@ -43,13 +49,15 @@ var ItemAuthoring = React.createClass({
         var itemsWrapper = '';
         if (this.state.showItems) {
             itemsWrapper = <ItemWrapper items={this.state.items}
+                                        libraries={this.state.libraries}
                                         libraryId={this.state.libraryId}
                                         libraryDescription={this.state.libraryDescription} />;
         }
         return <Grid>
             <Row>
                 <Col sm={6} md={3} lg={3}>
-                    <LibrarySelector onSelect={this.librarySelected}
+                    <LibrarySelector libraries={this.state.libraries}
+                                     onSelect={this.librarySelected}
                                      hideItems={this.hideItems} />
                 </Col>
             </Row>
