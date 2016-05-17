@@ -52704,19 +52704,29 @@
 	        items = [],
 	            sortedModuleNames = [];
 
-	        _.each(this.state.sortedItemsByModule, function (itemIds, moduleId) {
+	        _.each(this.state.modules, function (module) {
 	            sortedModuleNames.push({
-	                displayName: _this.getModuleDisplayName(moduleId),
-	                id: moduleId
+	                displayName: _this.getModuleDisplayName(module.id),
+	                id: module.id
 	            });
 	        });
 
 	        sortedModuleNames = _.sortBy(sortedModuleNames, ['displayName']);
 
+	        sortedModuleNames.push({
+	            displayName: "Uncategorized",
+	            id: 'uncategorized'
+	        });
+
 	        return _.map(sortedModuleNames, function (moduleData) {
 	            var moduleItems = _this.state.sortedItemsByModule[moduleData.id],
-	                numItems = moduleItems.length,
-	                header = React.createElement(
+	                numItems = 0,
+	                header;
+
+	            if (typeof moduleItems !== 'undefined') {
+	                numItems = moduleItems.length;
+	            }
+	            header = React.createElement(
 	                'div',
 	                null,
 	                moduleData.displayName,
