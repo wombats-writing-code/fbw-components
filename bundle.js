@@ -47643,6 +47643,7 @@
 	                ),
 	                React.createElement(AnswerText, { answerId: wrongAnswerId,
 	                    answerText: answer.text,
+	                    expanded: _this.itemState(item.id),
 	                    feedback: feedback,
 	                    itemId: item.id,
 	                    label: wrongAnswerLabel,
@@ -47715,7 +47716,8 @@
 	                                { className: 'question-label' },
 	                                'Q:'
 	                            ),
-	                            React.createElement(QuestionText, { questionText: item.question.text.text,
+	                            React.createElement(QuestionText, { expanded: _this.itemState(item.id),
+	                                questionText: item.question.text.text,
 	                                itemCreator: itemCreator })
 	                        ),
 	                        React.createElement(
@@ -47729,6 +47731,7 @@
 	                            React.createElement(AnswerText, { answerId: item.correctAnswerId,
 	                                answerText: item.correctAnswer,
 	                                correctAnswer: 'true',
+	                                expanded: _this.itemState(item.id),
 	                                feedback: item.correctAnswerFeedback,
 	                                itemId: item.id,
 	                                label: 'Correct Answer',
@@ -47967,8 +47970,11 @@
 	        };
 	    },
 	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {
-	        SetIFrameHeight(this.refs.myFrame);
+	    componentDidMount: function componentDidMount() {},
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	        if (nextProps.expanded) {
+	            SetIFrameHeight(this.refs.myFrame);
+	        }
 	    },
 	    render: function render() {
 	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
@@ -49819,7 +49825,7 @@
 	        } catch (e) {
 	            //console.log('iFrame disappeared before it could be re-sized.');
 	        }
-	    }, 2000);
+	    }, 250);
 	};
 
 	module.exports = SetIFrameHeight;
@@ -51483,8 +51489,11 @@
 	        };
 	    },
 	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {
-	        SetIFrameHeight(this.refs.myFrame);
+	    componentDidMount: function componentDidMount() {},
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	        if (nextProps.expanded) {
+	            SetIFrameHeight(this.refs.myFrame);
+	        }
 	    },
 	    close: function close() {
 	        this.setState({ showModal: false });

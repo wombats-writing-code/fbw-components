@@ -33,7 +33,11 @@ var QuestionText = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
-        SetIFrameHeight(this.refs.myFrame);
+    },
+    componentWillReceiveProps: function (nextProps) {
+        if (nextProps.expanded) {
+            SetIFrameHeight(this.refs.myFrame);
+        }
     },
     close: function () {
         this.setState({showModal: false});

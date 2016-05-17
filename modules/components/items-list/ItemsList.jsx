@@ -129,6 +129,7 @@ var ItemsList = React.createClass({
                 <p className="answer-label">{choiceLetter})</p>
                 <AnswerText answerId={wrongAnswerId}
                             answerText={answer.text}
+                            expanded={_this.itemState(item.id)}
                             feedback={feedback}
                             itemId={item.id}
                             label={wrongAnswerLabel}
@@ -186,7 +187,8 @@ var ItemsList = React.createClass({
                            onClick={_this.toggleItemState} >
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
-                            <QuestionText questionText={item.question.text.text}
+                            <QuestionText expanded={_this.itemState(item.id)}
+                                          questionText={item.question.text.text}
                                           itemCreator={itemCreator} />
 
                         </div>
@@ -195,6 +197,7 @@ var ItemsList = React.createClass({
                             <AnswerText answerId={item.correctAnswerId}
                                         answerText={item.correctAnswer}
                                         correctAnswer="true"
+                                        expanded={_this.itemState(item.id)}
                                         feedback={item.correctAnswerFeedback}
                                         itemId={item.id}
                                         label="Correct Answer"

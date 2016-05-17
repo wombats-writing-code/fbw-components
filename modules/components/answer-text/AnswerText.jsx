@@ -32,7 +32,11 @@ var AnswerText = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
-        SetIFrameHeight(this.refs.myFrame);
+    },
+    componentWillReceiveProps: function (nextProps) {
+        if (nextProps.expanded) {
+            SetIFrameHeight(this.refs.myFrame);
+        }
     },
     render: function () {
         var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
