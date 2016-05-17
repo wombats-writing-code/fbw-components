@@ -3,6 +3,10 @@
     width: 100%;
 }
 
+.outcome-controls {
+    display: flex;
+}
+
 .outcome-text .badge {
     margin-right: 5px;
 }

@@ -37,12 +37,13 @@ var LORelatedItemsBadge = React.createClass({
         var ItemsList = require('../items-list/ItemsList');
         var items, lo;
 
-        lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;
+        lo = OutcomesStore.get(this.props.outcomeId) == null ? '' : OutcomesStore.get(this.props.outcomeId).displayName.text;
 
         if (this.props.relatedItems.length > 0) {
-            items = <ItemsList items={this.props.relatedItems}
+            items = <ItemsList enableClickthrough={false}
                                libraryId={this.props.libraryId}
-                               enableClickthrough={false} />
+                               relatedItems={[]}
+                               sortedItems={this.props.relatedItems} />
         } else {
             items = <Alert bsStyle="danger">No items with this LO</Alert>
         }

@@ -19,19 +19,27 @@ var LOText = React.createClass({
     componentDidMount: function () {
     },
     render: function () {
+        var loControls = '';
+
+        if (this.props.enableClickthrough) {
+            loControls = <div className="outcome-controls">
+                <LORelatedItemsBadge libraryId={this.props.libraryId}
+                                     outcomeId={this.props.outcomeId}
+                                     relatedItems={this.props.relatedItems} />
+                <LinkLO answerId={this.props.answerId}
+                        component={this.props.component}
+                        itemId={this.props.itemId}
+                        libraryId={this.props.libraryId}
+                        outcomeId={this.props.outcomeId}
+                        outcomes={this.props.outcomes} />
+            </div>
+        }
+
         return <div className="outcome-text">
             <div className="outcome-display-name">
                 {this.props.outcomeDisplayName}
             </div>
-            <LORelatedItemsBadge outcomeId={this.props.outcomeId}
-                                 libraryId={this.props.libraryId}
-                                 relatedItems={this.props.relatedItems} />
-            <LinkLO answerId={this.props.answerId}
-                    component={this.props.component}
-                    itemId={this.props.itemId}
-                    libraryId={this.props.libraryId}
-                    outcomeId={this.state.outcomeId}
-                    outcomes={this.props.outcomes} />
+            {loControls}
         </div>;
     }
 });

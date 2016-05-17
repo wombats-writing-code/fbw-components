@@ -47361,7 +47361,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var InputGroup = ReactBS.InputGroup;
 
-	var ItemsList = __webpack_require__(42);
+	var ModulesList = __webpack_require__(90);
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemSearch = React.createClass({
@@ -47431,10 +47431,10 @@
 	                        value: this.state.searchQuery })
 	                )
 	            ),
-	            React.createElement(ItemsList, { items: this.state.filteredItems,
+	            React.createElement(ModulesList, { allItems: this.props.items,
+	                items: this.state.filteredItems,
 	                libraries: this.props.libraries,
-	                libraryId: this.props.libraryId,
-	                enableClickthrough: true })
+	                libraryId: this.props.libraryId })
 	        );
 	    },
 	    _onChange: function _onChange(event) {
@@ -47513,8 +47513,6 @@
 	var AnswerExtraction = __webpack_require__(45);
 	var AnswerText = __webpack_require__(46);
 	var ItemControls = __webpack_require__(61);
-	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(69);
 	var LOText = __webpack_require__(70);
 	var OutcomesStore = __webpack_require__(77);
 	var QuestionText = __webpack_require__(79);
@@ -47524,30 +47522,17 @@
 
 	    getInitialState: function getInitialState() {
 	        return {
-	            itemExpandedState: {},
-	            outcomes: [],
-	            sortedItems: {} // loId => [itemsList]
+	            itemExpandedState: {}
 	        };
 	    },
 	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        OutcomesStore.addChangeListener(function (outcomes) {
-	            _this.setState({ outcomes: outcomes });
-	            _this.sortItemsByOutcome();
-	        });
-	        LibraryItemsStore.addChangeListener(function (items) {
-	            _this.sortItemsByOutcome();
-	        });
-
 	        this.initializeItemsAsClosed();
 	    },
-	    componentDidMount: function componentDidMount() {
-	        OutcomesStore.getAll();
-	    },
+	    componentDidMount: function componentDidMount() {},
 	    filterOutcomes: function filterOutcomes(item) {
 	        // return outcomes that are not currently being used somewhere
 	        // in a specific item
-	        return _.filter(this.state.outcomes, function (outcome) {
+	        return _.filter(this.props.outcomes, function (outcome) {
 	            return item.usedLOs.indexOf(outcome.id) < 0;
 	        });
 	    },
@@ -47573,16 +47558,18 @@
 
 	        return questionLO;
 	    },
-	    getRelatedItems: function getRelatedItems(loId) {
-	        if (this.state.sortedItems.hasOwnProperty(loId)) {
-	            return this.state.sortedItems[loId];
+	    getRelatedItems: function getRelatedItems(outcomeId) {
+	        var items = this.props.relatedItems[outcomeId];
+
+	        if (typeof items !== 'undefined') {
+	            return items;
 	        } else {
 	            return [];
 	        }
 	    },
 	    initializeItemsAsClosed: function initializeItemsAsClosed() {
 	        var itemState = {};
-	        _.each(this.props.items, function (item) {
+	        _.each(this.props.sortedItems, function (item) {
 	            itemState[item.id] = false;
 	        });
 
@@ -47612,6 +47599,7 @@
 	                ),
 	                React.createElement(LOText, { answerId: answerId,
 	                    component: 'answer',
+	                    enableClickthrough: _this.props.enableClickthrough,
 	                    itemId: item.id,
 	                    libraryId: _this.props.libraryId,
 	                    outcomeDisplayName: _this.getOutcomeDisplayName(outcomeId),
@@ -47643,6 +47631,7 @@
 	                ),
 	                React.createElement(AnswerText, { answerId: wrongAnswerId,
 	                    answerText: answer.text,
+	                    enableClickthrough: _this.props.enableClickthrough,
 	                    expanded: _this.itemState(item.id),
 	                    feedback: feedback,
 	                    itemId: item.id,
@@ -47657,7 +47646,7 @@
 	        // map the choiceIds, etc., in answers back to choices in questions
 	        items = [];
 
-	        _.each(this.props.items, function (item) {
+	        _.each(this.props.sortedItems, function (item) {
 	            var answers = AnswerExtraction(item);
 
 	            item['correctAnswer'] = answers.correctAnswerText.text;
@@ -47706,6 +47695,7 @@
 	                        { header: item.displayName.text,
 	                            collapsible: true,
 	                            'data-id': item.id,
+	                            'data-type': 'item',
 	                            expanded: _this.itemState(item.id),
 	                            onClick: _this.toggleItemState },
 	                        React.createElement(
@@ -47731,6 +47721,7 @@
 	                            React.createElement(AnswerText, { answerId: item.correctAnswerId,
 	                                answerText: item.correctAnswer,
 	                                correctAnswer: 'true',
+	                                enableClickthrough: _this.props.enableClickthrough,
 	                                expanded: _this.itemState(item.id),
 	                                feedback: item.correctAnswerFeedback,
 	                                itemId: item.id,
@@ -47758,6 +47749,7 @@
 	                                'Q:'
 	                            ),
 	                            React.createElement(LOText, { component: 'question',
+	                                enableClickthrough: _this.props.enableClickthrough,
 	                                itemId: item.id,
 	                                libraryId: _this.props.libraryId,
 	                                outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
@@ -47785,16 +47777,14 @@
 	            );
 	        });
 	    },
-	    sortItemsByOutcome: function sortItemsByOutcome() {
-	        // get a pre-sorted list of all items, organized by learning outcome
-	        this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
-	    },
 	    toggleItemState: function toggleItemState(e) {
-	        var targetClassName = e.target.className,
+	        var clickedElement = e.target,
+	            targetClassName = clickedElement.className,
 	            updatedState = this.state.itemExpandedState,
-	            itemId = e.currentTarget.dataset.id;
+	            itemId = e.currentTarget.dataset.id,
+	            isItem = clickedElement.parentElement.parentElement.dataset.type === 'item';
 
-	        if (targetClassName.indexOf('panel-title') >= 0) {
+	        if (targetClassName.indexOf('panel-title') >= 0 && isItem) {
 	            updatedState[itemId] = !updatedState[itemId];
 
 	            this.setState({ itemExpandedState: updatedState });
@@ -47986,28 +47976,30 @@
 	            linkButton = '',
 	            answerHTML = WrapHTML(this.props.answerText);
 
-	        if (!this.props.correctAnswer) {
-	            linkButton = React.createElement(
-	                'div',
-	                { className: 'wrong-answer-actions' },
-	                React.createElement(AnswerFeedback, { answerId: this.props.answerId,
-	                    feedback: this.props.feedback,
-	                    feedbackSource: this.props.label,
-	                    itemId: this.props.itemId,
-	                    libraryId: this.props.libraryId })
-	            );
-	        } else {
-	            linkButton = React.createElement(
-	                'div',
-	                { className: 'right-answer-actions' },
-	                React.createElement(Glyphicon, { className: 'right-answer-check',
-	                    glyph: 'ok' }),
-	                React.createElement(AnswerFeedback, { answerId: this.props.answerId,
-	                    feedback: this.props.feedback,
-	                    feedbackSource: this.props.label,
-	                    itemId: this.props.itemId,
-	                    libraryId: this.props.libraryId })
-	            );
+	        if (this.props.enableClickthrough) {
+	            if (!this.props.correctAnswer) {
+	                linkButton = React.createElement(
+	                    'div',
+	                    { className: 'wrong-answer-actions' },
+	                    React.createElement(AnswerFeedback, { answerId: this.props.answerId,
+	                        feedback: this.props.feedback,
+	                        feedbackSource: this.props.label,
+	                        itemId: this.props.itemId,
+	                        libraryId: this.props.libraryId })
+	                );
+	            } else {
+	                linkButton = React.createElement(
+	                    'div',
+	                    { className: 'right-answer-actions' },
+	                    React.createElement(Glyphicon, { className: 'right-answer-check',
+	                        glyph: 'ok' }),
+	                    React.createElement(AnswerFeedback, { answerId: this.props.answerId,
+	                        feedback: this.props.feedback,
+	                        feedbackSource: this.props.label,
+	                        itemId: this.props.itemId,
+	                        libraryId: this.props.libraryId })
+	                );
+	            }
 	        }
 
 	        return React.createElement(
@@ -51016,6 +51008,24 @@
 	    componentWillMount: function componentWillMount() {},
 	    componentDidMount: function componentDidMount() {},
 	    render: function render() {
+	        var loControls = '';
+
+	        if (this.props.enableClickthrough) {
+	            loControls = React.createElement(
+	                'div',
+	                { className: 'outcome-controls' },
+	                React.createElement(LORelatedItemsBadge, { libraryId: this.props.libraryId,
+	                    outcomeId: this.props.outcomeId,
+	                    relatedItems: this.props.relatedItems }),
+	                React.createElement(LinkLO, { answerId: this.props.answerId,
+	                    component: this.props.component,
+	                    itemId: this.props.itemId,
+	                    libraryId: this.props.libraryId,
+	                    outcomeId: this.props.outcomeId,
+	                    outcomes: this.props.outcomes })
+	            );
+	        }
+
 	        return React.createElement(
 	            'div',
 	            { className: 'outcome-text' },
@@ -51024,15 +51034,7 @@
 	                { className: 'outcome-display-name' },
 	                this.props.outcomeDisplayName
 	            ),
-	            React.createElement(LORelatedItemsBadge, { outcomeId: this.props.outcomeId,
-	                libraryId: this.props.libraryId,
-	                relatedItems: this.props.relatedItems }),
-	            React.createElement(LinkLO, { answerId: this.props.answerId,
-	                component: this.props.component,
-	                itemId: this.props.itemId,
-	                libraryId: this.props.libraryId,
-	                outcomeId: this.state.outcomeId,
-	                outcomes: this.props.outcomes })
+	            loControls
 	        );
 	    }
 	});
@@ -51074,7 +51076,7 @@
 
 
 	// module
-	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
+	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-controls {\n    display: flex;\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
 
 	// exports
 
@@ -51281,12 +51283,13 @@
 	        var ItemsList = __webpack_require__(42);
 	        var items, lo;
 
-	        lo = OutcomesStore.get(this.props.confusedLO) == null ? '' : OutcomesStore.get(this.props.confusedLO).displayName.text;
+	        lo = OutcomesStore.get(this.props.outcomeId) == null ? '' : OutcomesStore.get(this.props.outcomeId).displayName.text;
 
 	        if (this.props.relatedItems.length > 0) {
-	            items = React.createElement(ItemsList, { items: this.props.relatedItems,
+	            items = React.createElement(ItemsList, { enableClickthrough: false,
 	                libraryId: this.props.libraryId,
-	                enableClickthrough: false });
+	                relatedItems: [],
+	                sortedItems: this.props.relatedItems });
 	        } else {
 	            items = React.createElement(
 	                Alert,
@@ -51417,9 +51420,10 @@
 	            return outcome.id == id;
 	        });
 	    },
-	    getAll: function () {
-	        var _this = this;
-	        fetch(this.url(), {
+	    getAll: function (libraryId) {
+	        var _this = this,
+	            url = this.url() + libraryId + '/objectives';
+	        fetch(url, {
 	            cache: "no-store",
 	            credentials: "same-origin"
 	        }).then(function (response) {
@@ -51435,7 +51439,7 @@
 	    url: function () {
 	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
 
-	      return MiddlewareService.host() + '/learning/objectives/';
+	      return MiddlewareService.host() + '/learning/objectivebanks/';
 	    }
 	});
 
@@ -52605,6 +52609,324 @@
 
 	module.exports = LibrarySelector;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 90 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// ModulesList.js
+
+	'use strict';
+
+	__webpack_require__(91);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Badge = ReactBS.Badge;
+	var Col = ReactBS.Col;
+	var Grid = ReactBS.Grid;
+	var Panel = ReactBS.Panel;
+	var Row = ReactBS.Row;
+
+	var ItemsList = __webpack_require__(42);
+	var LibraryItemsStore = __webpack_require__(8);
+	var LORelatedItems = __webpack_require__(69);
+	var ModulesStore = __webpack_require__(93);
+	var OutcomesStore = __webpack_require__(77);
+	var SortItemsByModuleOutcomes = __webpack_require__(94);
+
+	var ModulesList = React.createClass({
+	    displayName: 'ModulesList',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            moduleExpandedState: {},
+	            modules: [],
+	            outcomes: [],
+	            sortedItemsByModule: {}, // moduleId => [itemsList]
+	            sortedItemsByOutcome: {} // loId => [itemsList]
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {
+	        var _this = this;
+	        ModulesStore.addChangeListener(function (modules) {
+	            _this.setState({ modules: modules });
+	            _this.sortItemsByModule(_this.props.items);
+	            _this.initializeModulesAsClosed();
+	        });
+	        OutcomesStore.addChangeListener(function (outcomes) {
+	            _this.setState({ outcomes: outcomes });
+	            _this.sortItemsByOutcome();
+	        });
+	        LibraryItemsStore.addChangeListener(function (items) {
+	            _this.sortItemsByModule(_this.props.items);
+	            _this.sortItemsByOutcome();
+	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        ModulesStore.getAll(this.props.libraryId);
+	        OutcomesStore.getAll(this.props.libraryId);
+	    },
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	        this.sortItemsByModule(nextProps.items);
+	        this.sortItemsByOutcome();
+	    },
+	    filterOutcomes: function filterOutcomes(item) {
+	        // return outcomes that are not currently being used somewhere
+	        // in a specific item
+	        return _.filter(this.state.outcomes, function (outcome) {
+	            return item.usedLOs.indexOf(outcome.id) < 0;
+	        });
+	    },
+	    getModuleDisplayName: function getModuleDisplayName(moduleId) {
+	        var module = ModulesStore.get(moduleId);
+	        if (module == null) {
+	            return "Uncategorized";
+	        } else {
+	            return module.displayName.text;
+	        }
+	    },
+	    initializeModulesAsClosed: function initializeModulesAsClosed() {
+	        var moduleState = {};
+	        _.each(this.state.sortedItemsByModule, function (module) {
+	            moduleState[module.id] = false;
+	        });
+
+	        this.setState({ moduleExpandedState: moduleState });
+	    },
+	    moduleState: function moduleState(moduleId) {
+	        return this.state.moduleExpandedState[moduleId];
+	    },
+	    renderModules: function renderModules() {
+	        var _this = this,
+
+	        // map the choiceIds, etc., in answers back to choices in questions
+	        items = [],
+	            sortedModuleNames = [];
+
+	        _.each(this.state.sortedItemsByModule, function (itemIds, moduleId) {
+	            sortedModuleNames.push({
+	                displayName: _this.getModuleDisplayName(moduleId),
+	                id: moduleId
+	            });
+	        });
+
+	        sortedModuleNames = _.sortBy(sortedModuleNames, ['displayName']);
+
+	        return _.map(sortedModuleNames, function (moduleData) {
+	            var moduleItems = _this.state.sortedItemsByModule[moduleData.id],
+	                numItems = moduleItems.length,
+	                header = React.createElement(
+	                'div',
+	                null,
+	                moduleData.displayName,
+	                React.createElement(
+	                    Badge,
+	                    { pullRight: true },
+	                    numItems
+	                )
+	            );
+
+	            return React.createElement(
+	                Row,
+	                { key: moduleData.id },
+	                React.createElement(
+	                    Panel,
+	                    { header: header,
+	                        collapsible: true,
+	                        'data-id': moduleData.id,
+	                        'data-type': 'module',
+	                        expanded: _this.moduleState(moduleData.id),
+	                        onClick: _this.toggleModuleState },
+	                    React.createElement(ItemsList, { enableClickthrough: true,
+	                        libraries: _this.props.libraries,
+	                        libraryId: _this.props.libraryId,
+	                        outcomes: _this.state.outcomes,
+	                        relatedItems: _this.state.sortedItemsByOutcome,
+	                        sortedItems: moduleItems })
+	                )
+	            );
+	        });
+	    },
+	    sortItemsByModule: function sortItemsByModule(itemsList) {
+	        // get a pre-sorted list of all items, organized by module
+	        this.setState({ sortedItemsByModule: SortItemsByModuleOutcomes(itemsList, this.state.modules) });
+	    },
+	    sortItemsByOutcome: function sortItemsByOutcome() {
+	        // get a pre-sorted list of all items, organized by learning outcome
+	        this.setState({ sortedItemsByOutcome: LORelatedItems(this.props.allItems, this.state.outcomes) });
+	    },
+	    toggleModuleState: function toggleModuleState(e) {
+	        var clickedElement = e.target,
+	            targetClassName = clickedElement.className,
+	            updatedState = this.state.moduleExpandedState,
+	            moduleId = e.currentTarget.dataset.id,
+	            isModule = clickedElement.parentElement.parentElement.dataset.type === 'module';
+
+	        if (targetClassName.indexOf('panel-title') >= 0 && isModule) {
+	            updatedState[moduleId] = !updatedState[moduleId];
+
+	            this.setState({ moduleExpandedState: updatedState });
+	        }
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            Grid,
+	            null,
+	            this.renderModules()
+	        );
+	    }
+	});
+
+	module.exports = ModulesList;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 91 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(92);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ModulesList.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ModulesList.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 92 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".panel-title .badge {\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 93 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// ModulesStore.js
+
+	'use strict';
+
+	var AuthoringConstants = __webpack_require__(14);
+	var MiddlewareService = __webpack_require__(17);
+
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _modules = [];
+
+	var ModulesStore = _.assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _modules);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    get: function (id) {
+	        return _.find(_modules, function (module) {
+	            return module.id == id;
+	        });
+	    },
+	    getAll: function (libraryId) {
+	        var _this = this,
+	            url = this.url() + libraryId + '/modules';
+	        fetch(url, {
+	            cache: "no-store",
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _modules = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting modules: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
+
+	      return MiddlewareService.host() + '/learning/objectivebanks/';
+	    }
+	});
+
+
+	module.exports = ModulesStore;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 94 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// SortItemsByModuleOutcomes.js
+	'use strict';
+
+	var _ = __webpack_require__(5);
+
+
+	var SortItemsByModuleOutcomes = function (items, modules) {
+	    // given a list of items, and a list of modules (learning topics),
+	    // returns a sorted dictionary of the items where the question itself
+	    // is tagged with each given LO.
+	    // loId => [itemsList]
+
+	    var returnData = {
+	        uncategorized: []
+	    };
+
+	    _.each(items, function (item) {
+	        var foundModuleMatch = false;
+	        _.each(modules, function (module) {
+	            var outcomes = module.childNodes,
+	                outcomeIds = _.map(outcomes, 'id'),
+	                moduleId = module.id;
+
+	            if (!returnData.hasOwnProperty(moduleId)) {
+	                returnData[moduleId] = [];
+	            }
+	            if (outcomeIds.indexOf(item.learningObjectiveIds[0]) >= 0) {
+	                returnData[moduleId].push(item);
+	                foundModuleMatch = true;
+	            }
+	        });
+
+	        if (!foundModuleMatch) {
+	            returnData.uncategorized.push(item);
+	        }
+	    });
+
+	    return returnData;
+	};
+
+	module.exports = SortItemsByModuleOutcomes;
 
 /***/ }
 /******/ ])));
