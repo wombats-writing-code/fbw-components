@@ -12,7 +12,7 @@ var Glyphicon = ReactBS.Glyphicon;
 var InputGroup = ReactBS.InputGroup;
 
 
-var ItemsList = require('../items-list/ItemsList');
+var ModulesList = require('../modules-list/ModulesList');
 var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 
 var ItemSearch = React.createClass({
@@ -75,10 +75,10 @@ var ItemSearch = React.createClass({
                                  value={this.state.searchQuery} />
                 </InputGroup>
             </FormGroup>
-            <ItemsList items={this.state.filteredItems}
-                       libraries={this.props.libraries}
-                       libraryId={this.props.libraryId}
-                       enableClickthrough={true}/>
+            <ModulesList allItems={this.props.items}
+                         items={this.state.filteredItems}
+                         libraries={this.props.libraries}
+                         libraryId={this.props.libraryId} />
         </div>
     },
     _onChange: function(event) {

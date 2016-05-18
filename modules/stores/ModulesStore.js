@@ -1,8 +1,7 @@
-// OutcomesStore.js
+// ModulesStore.js
 
 'use strict';
 
-var OutcomesDispatcher = require('../dispatcher/OutcomesDispatcher');
 var AuthoringConstants = require('../constants/AuthoringConstants');
 var MiddlewareService = require('../services/middleware.service');
 
@@ -11,11 +10,11 @@ var EventEmitter = require('events').EventEmitter;
 var ActionTypes = AuthoringConstants.ActionTypes;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
-var _outcomes = [];
+var _modules = [];
 
-var OutcomesStore = _.assign({}, EventEmitter.prototype, {
+var ModulesStore = _.assign({}, EventEmitter.prototype, {
     emitChange: function () {
-        this.emit(CHANGE_EVENT, _outcomes);
+        this.emit(CHANGE_EVENT, _modules);
     },
     addChangeListener: function (callback) {
         this.on(CHANGE_EVENT, callback);
@@ -24,24 +23,24 @@ var OutcomesStore = _.assign({}, EventEmitter.prototype, {
         this.removeListener(CHANGE_EVENT, callback);
     },
     get: function (id) {
-        return _.find(_outcomes, function (outcome) {
-            return outcome.id == id;
+        return _.find(_modules, function (module) {
+            return module.id == id;
         });
     },
     getAll: function (libraryId) {
         var _this = this,
-            url = this.url() + libraryId + '/objectives';
+            url = this.url() + libraryId + '/modules';
         fetch(url, {
             cache: "no-store",
             credentials: "same-origin"
         }).then(function (response) {
             response.json().then(function (data) {
-                _outcomes = data;
+                _modules = data;
                 _this.emitChange();
             });
         })
         .catch(function (error) {
-            console.log('Problem with getting objectives: ' + error.message);
+            console.log('Problem with getting modules: ' + error.message);
         });
     },
     url: function () {
@@ -51,9 +50,5 @@ var OutcomesStore = _.assign({}, EventEmitter.prototype, {
     }
 });
 
-OutcomesStore.dispatchToken = OutcomesDispatcher.register(function (action) {
-    switch(action.type) {
-    }
-});
 
-module.exports = OutcomesStore;
+module.exports = ModulesStore;

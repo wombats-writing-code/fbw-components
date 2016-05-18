@@ -18,8 +18,6 @@ var GenusTypes = AuthoringConstants.GenusTypes;
 var AnswerExtraction = require('../../utilities/AnswerExtraction');
 var AnswerText = require('../answer-text/AnswerText');
 var ItemControls = require('../ItemControls');
-var LibraryItemsStore = require('../../stores/LibraryItemsStore');
-var LORelatedItems = require('../../utilities/LORelatedItems');
 var LOText = require('../lo-text/LOText');
 var OutcomesStore = require('../../stores/OutcomesStore');
 var QuestionText = require('../question-text/QuestionText');
@@ -28,30 +26,18 @@ var QuestionText = require('../question-text/QuestionText');
 var ItemsList = React.createClass({
     getInitialState: function () {
         return {
-            itemExpandedState: {},
-            outcomes: [],
-            sortedItems: {}  // loId => [itemsList]
+            itemExpandedState: {}
         };
     },
     componentWillMount: function() {
-        var _this = this;
-        OutcomesStore.addChangeListener(function(outcomes) {
-            _this.setState({ outcomes: outcomes });
-            _this.sortItemsByOutcome();
-        });
-        LibraryItemsStore.addChangeListener(function(items) {
-            _this.sortItemsByOutcome();
-        });
-
         this.initializeItemsAsClosed();
     },
     componentDidMount: function () {
-        OutcomesStore.getAll();
     },
     filterOutcomes: function (item) {
         // return outcomes that are not currently being used somewhere
         // in a specific item
-        return _.filter(this.state.outcomes, function (outcome) {
+        return _.filter(this.props.outcomes, function (outcome) {
             return item.usedLOs.indexOf(outcome.id) < 0;
         })
     },
@@ -73,16 +59,18 @@ var ItemsList = React.createClass({
 
         return questionLO;
     },
-    getRelatedItems: function (loId) {
-        if (this.state.sortedItems.hasOwnProperty(loId)) {
-            return this.state.sortedItems[loId];
+    getRelatedItems: function (outcomeId) {
+        var items = this.props.relatedItems[outcomeId];
+
+        if (typeof items !== 'undefined') {
+            return items;
         } else {
             return [];
         }
     },
     initializeItemsAsClosed: function () {
         var itemState = {};
-        _.each(this.props.items, function (item) {
+        _.each(this.props.sortedItems, function (item) {
             itemState[item.id] = false;
         });
 
@@ -105,6 +93,7 @@ var ItemsList = React.createClass({
                 <p className="answer-label">{choiceLetter})</p>
                 <LOText answerId={answerId}
                         component="answer"
+                        enableClickthrough={_this.props.enableClickthrough}
                         itemId={item.id}
                         libraryId={_this.props.libraryId}
                         outcomeDisplayName={_this.getOutcomeDisplayName(outcomeId)}
@@ -129,6 +118,8 @@ var ItemsList = React.createClass({
                 <p className="answer-label">{choiceLetter})</p>
                 <AnswerText answerId={wrongAnswerId}
                             answerText={answer.text}
+                            enableClickthrough={_this.props.enableClickthrough}
+                            expanded={_this.itemState(item.id)}
                             feedback={feedback}
                             itemId={item.id}
                             label={wrongAnswerLabel}
@@ -141,7 +132,7 @@ var ItemsList = React.createClass({
         // map the choiceIds, etc., in answers back to choices in questions
             items = [];
 
-        _.each(this.props.items, function (item) {
+        _.each(this.props.sortedItems, function (item) {
             var answers = AnswerExtraction(item);
 
             item['correctAnswer'] = answers.correctAnswerText.text;
@@ -182,11 +173,13 @@ var ItemsList = React.createClass({
                     <Panel header={item.displayName.text}
                            collapsible
                            data-id={item.id}
+                           data-type="item"
                            expanded={_this.itemState(item.id)}
                            onClick={_this.toggleItemState} >
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
-                            <QuestionText questionText={item.question.text.text}
+                            <QuestionText expanded={_this.itemState(item.id)}
+                                          questionText={item.question.text.text}
                                           itemCreator={itemCreator} />
 
                         </div>
@@ -195,6 +188,8 @@ var ItemsList = React.createClass({
                             <AnswerText answerId={item.correctAnswerId}
                                         answerText={item.correctAnswer}
                                         correctAnswer="true"
+                                        enableClickthrough={_this.props.enableClickthrough}
+                                        expanded={_this.itemState(item.id)}
                                         feedback={item.correctAnswerFeedback}
                                         itemId={item.id}
                                         label="Correct Answer"
@@ -211,6 +206,7 @@ var ItemsList = React.createClass({
                         <div className="text-row-wrapper">
                             <p className="question-label">Q:</p>
                             <LOText component="question"
+                                    enableClickthrough={_this.props.enableClickthrough}
                                     itemId={item.id}
                                     libraryId={_this.props.libraryId}
                                     outcomeDisplayName={_this.getOutcomeDisplayName(questionLO)}
@@ -230,16 +226,14 @@ var ItemsList = React.createClass({
             </Row>
         });
     },
-    sortItemsByOutcome: function () {
-        // get a pre-sorted list of all items, organized by learning outcome
-        this.setState({ sortedItems: LORelatedItems(this.props.items, this.state.outcomes) });
-    },
     toggleItemState: function (e) {
-        var targetClassName = e.target.className,
+        var clickedElement = e.target,
+            targetClassName = clickedElement.className,
             updatedState = this.state.itemExpandedState,
-            itemId = e.currentTarget.dataset.id;
+            itemId = e.currentTarget.dataset.id,
+            isItem = clickedElement.parentElement.parentElement.dataset.type === 'item';
 
-        if (targetClassName.indexOf('panel-title') >= 0) {
+        if (targetClassName.indexOf('panel-title') >= 0 && isItem) {
             updatedState[itemId] = !updatedState[itemId];
 
             this.setState({ itemExpandedState: updatedState });

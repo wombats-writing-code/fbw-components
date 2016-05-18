@@ -32,7 +32,11 @@ var AnswerText = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
-        SetIFrameHeight(this.refs.myFrame);
+    },
+    componentWillReceiveProps: function (nextProps) {
+        if (nextProps.expanded) {
+            SetIFrameHeight(this.refs.myFrame);
+        }
     },
     render: function () {
         var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
@@ -44,24 +48,26 @@ var AnswerText = React.createClass({
             linkButton = '',
             answerHTML = WrapHTML(this.props.answerText);
 
-        if (!this.props.correctAnswer) {
-            linkButton = <div className="wrong-answer-actions">
-                <AnswerFeedback answerId={this.props.answerId}
-                                feedback={this.props.feedback}
-                                feedbackSource={this.props.label}
-                                itemId={this.props.itemId}
-                                libraryId={this.props.libraryId} />
-            </div>
-        } else {
-            linkButton = <div className="right-answer-actions">
-                <Glyphicon className="right-answer-check"
-                           glyph="ok" />
-                <AnswerFeedback answerId={this.props.answerId}
-                                feedback={this.props.feedback}
-                                feedbackSource={this.props.label}
-                                itemId={this.props.itemId}
-                                libraryId={this.props.libraryId} />
-            </div>
+        if (this.props.enableClickthrough) {
+            if (!this.props.correctAnswer) {
+                linkButton = <div className="wrong-answer-actions">
+                    <AnswerFeedback answerId={this.props.answerId}
+                                    feedback={this.props.feedback}
+                                    feedbackSource={this.props.label}
+                                    itemId={this.props.itemId}
+                                    libraryId={this.props.libraryId} />
+                </div>
+            } else {
+                linkButton = <div className="right-answer-actions">
+                    <Glyphicon className="right-answer-check"
+                               glyph="ok" />
+                    <AnswerFeedback answerId={this.props.answerId}
+                                    feedback={this.props.feedback}
+                                    feedbackSource={this.props.label}
+                                    itemId={this.props.itemId}
+                                    libraryId={this.props.libraryId} />
+                </div>
+            }
         }
 
         return <div className="taggable-text">
