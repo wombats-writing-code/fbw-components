@@ -106,7 +106,7 @@
 	var LibrariesStore = __webpack_require__(18);
 
 	var ItemWrapper = __webpack_require__(20);
-	var LibrarySelector = __webpack_require__(89);
+	var LibrarySelector = __webpack_require__(94);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
@@ -36476,6 +36476,17 @@
 	    } else {
 	        return '/fbw-author/static';
 	    }
+	  },
+	  ckEditor: () => {
+	    let location = window.location.host,
+	        url;
+
+	    if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
+	        url = '/static';
+	    } else {
+	        url = '/fbw-author/static';
+	    }
+	    return url + '/fbw_author/js/ItemAuthoring/vendor/ckeditor-custom/ckeditor.js';
 	  }
 	}
 
@@ -36562,7 +36573,7 @@
 
 	var AddItem = __webpack_require__(25);
 	var ItemSearch = __webpack_require__(39);
-	var ItemStatus = __webpack_require__(86);
+	var ItemStatus = __webpack_require__(91);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -37338,7 +37349,7 @@
 	        return results;
 	    },
 	    initializeEditorInstance: function initializeEditorInstance(instance) {
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	        $s(MiddlewareService.ckEditor(), function () {
 	            CKEDITOR.replace(instance);
 	        });
 	    },
@@ -37349,7 +37360,7 @@
 	        // Instructions from here
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	        $s(MiddlewareService.ckEditor(), function () {
 	            ConfigureCKEditor(CKEDITOR, repositoryId);
 	            _this.initializeEditorInstance('correctAnswer');
 	            _this.initializeEditorInstance('correctAnswerFeedback');
@@ -37421,7 +37432,7 @@
 	        this.setState({ wrongAnswerFeedbacks: [''] });
 	    },
 	    resetEditorInstance: function resetEditorInstance(instance) {
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	        $s(MiddlewareService.ckEditor(), function () {
 	            CKEDITOR.instances[instance].setData('');
 	            CKEDITOR.instances[instance].destroy();
 	            CKEDITOR.replace(instance);
@@ -47361,7 +47372,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var InputGroup = ReactBS.InputGroup;
 
-	var ModulesList = __webpack_require__(90);
+	var ModulesList = __webpack_require__(42);
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemSearch = React.createClass({
@@ -47493,11 +47504,232 @@
 /* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(_) {// ItemsList.js
+	/* WEBPACK VAR INJECTION */(function(_) {// ModulesList.js
 
 	'use strict';
 
 	__webpack_require__(43);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Badge = ReactBS.Badge;
+	var Col = ReactBS.Col;
+	var Grid = ReactBS.Grid;
+	var Panel = ReactBS.Panel;
+	var Row = ReactBS.Row;
+
+	var ItemsList = __webpack_require__(45);
+	var LibraryItemsStore = __webpack_require__(8);
+	var LORelatedItems = __webpack_require__(88);
+	var ModulesStore = __webpack_require__(89);
+	var OutcomesStore = __webpack_require__(79);
+	var SortItemsByModuleOutcomes = __webpack_require__(90);
+
+	var ModulesList = React.createClass({
+	    displayName: 'ModulesList',
+
+	    getInitialState: function getInitialState() {
+	        return {
+	            moduleExpandedState: {},
+	            modules: [],
+	            outcomes: [],
+	            sortedItemsByModule: {}, // moduleId => [itemsList]
+	            sortedItemsByOutcome: {} // loId => [itemsList]
+	        };
+	    },
+	    componentWillMount: function componentWillMount() {
+	        var _this = this;
+	        _this.initializeModulesAsClosed();
+	        ModulesStore.addChangeListener(function (modules) {
+	            _this.setState({ modules: modules });
+	            _this.sortItemsByModule(_this.props.items);
+	        });
+	        OutcomesStore.addChangeListener(function (outcomes) {
+	            _this.setState({ outcomes: outcomes });
+	            _this.sortItemsByOutcome();
+	        });
+	        LibraryItemsStore.addChangeListener(function (items) {
+	            _this.sortItemsByModule(_this.props.items);
+	            _this.sortItemsByOutcome();
+	        });
+	    },
+	    componentDidMount: function componentDidMount() {
+	        ModulesStore.getAll(this.props.libraryId);
+	        OutcomesStore.getAll(this.props.libraryId);
+	    },
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	        ModulesStore.getAll(nextProps.libraryId);
+	        OutcomesStore.getAll(nextProps.libraryId);
+	    },
+	    filterOutcomes: function filterOutcomes(item) {
+	        // return outcomes that are not currently being used somewhere
+	        // in a specific item
+	        return _.filter(this.state.outcomes, function (outcome) {
+	            return item.usedLOs.indexOf(outcome.id) < 0;
+	        });
+	    },
+	    getModuleDisplayName: function getModuleDisplayName(moduleId) {
+	        var module = ModulesStore.get(moduleId);
+	        if (module == null) {
+	            return "Uncategorized";
+	        } else {
+	            return module.displayName.text;
+	        }
+	    },
+	    initializeModulesAsClosed: function initializeModulesAsClosed() {
+	        var moduleState = {};
+	        _.each(this.state.sortedItemsByModule, function (module) {
+	            moduleState[module.id] = false;
+	        });
+
+	        this.setState({ moduleExpandedState: moduleState });
+	    },
+	    moduleState: function moduleState(moduleId) {
+	        return this.state.moduleExpandedState[moduleId];
+	    },
+	    renderModules: function renderModules() {
+	        var _this = this,
+
+	        // map the choiceIds, etc., in answers back to choices in questions
+	        items = [],
+	            sortedModuleNames = [];
+
+	        _.each(this.state.modules, function (module) {
+	            sortedModuleNames.push({
+	                displayName: _this.getModuleDisplayName(module.id),
+	                id: module.id
+	            });
+	        });
+
+	        sortedModuleNames = _.sortBy(sortedModuleNames, ['displayName']);
+
+	        sortedModuleNames.push({
+	            displayName: "Uncategorized",
+	            id: 'uncategorized'
+	        });
+
+	        return _.map(sortedModuleNames, function (moduleData) {
+	            var moduleItems = _this.state.sortedItemsByModule[moduleData.id],
+	                numItems = 0,
+	                header;
+
+	            if (typeof moduleItems !== 'undefined') {
+	                numItems = moduleItems.length;
+	            }
+	            header = React.createElement(
+	                'div',
+	                null,
+	                moduleData.displayName,
+	                React.createElement(
+	                    Badge,
+	                    { pullRight: true },
+	                    numItems
+	                )
+	            );
+
+	            return React.createElement(
+	                Row,
+	                { key: moduleData.id },
+	                React.createElement(
+	                    Panel,
+	                    { header: header,
+	                        collapsible: true,
+	                        'data-id': moduleData.id,
+	                        'data-type': 'module',
+	                        expanded: _this.moduleState(moduleData.id),
+	                        onClick: _this.toggleModuleState },
+	                    React.createElement(ItemsList, { enableClickthrough: true,
+	                        libraries: _this.props.libraries,
+	                        libraryId: _this.props.libraryId,
+	                        outcomes: _this.state.outcomes,
+	                        relatedItems: _this.state.sortedItemsByOutcome,
+	                        sortedItems: moduleItems })
+	                )
+	            );
+	        });
+	    },
+	    sortItemsByModule: function sortItemsByModule(itemsList) {
+	        // get a pre-sorted list of all items, organized by module
+	        this.setState({ sortedItemsByModule: SortItemsByModuleOutcomes(itemsList, this.state.modules) });
+	    },
+	    sortItemsByOutcome: function sortItemsByOutcome() {
+	        // get a pre-sorted list of all items, organized by learning outcome
+	        this.setState({ sortedItemsByOutcome: LORelatedItems(this.props.allItems, this.state.outcomes) });
+	    },
+	    toggleModuleState: function toggleModuleState(e) {
+	        var clickedElement = e.target,
+	            targetClassName = clickedElement.className,
+	            updatedState = this.state.moduleExpandedState,
+	            moduleId = e.currentTarget.dataset.id,
+	            isModule = clickedElement.parentElement.parentElement.dataset.type === 'module';
+
+	        if (targetClassName.indexOf('panel-title') >= 0 && isModule) {
+	            updatedState[moduleId] = !updatedState[moduleId];
+
+	            this.setState({ moduleExpandedState: updatedState });
+	        }
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            Grid,
+	            null,
+	            this.renderModules()
+	        );
+	    }
+	});
+
+	module.exports = ModulesList;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 43 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(44);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ModulesList.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ModulesList.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 44 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".panel-title .badge {\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 45 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// ItemsList.js
+
+	'use strict';
+
+	__webpack_require__(46);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -47510,12 +47742,12 @@
 	var ChoiceLabels = AuthoringConstants.ChoiceLabels;
 	var GenusTypes = AuthoringConstants.GenusTypes;
 
-	var AnswerExtraction = __webpack_require__(45);
-	var AnswerText = __webpack_require__(46);
-	var ItemControls = __webpack_require__(61);
-	var LOText = __webpack_require__(70);
-	var OutcomesStore = __webpack_require__(77);
-	var QuestionText = __webpack_require__(79);
+	var AnswerExtraction = __webpack_require__(48);
+	var AnswerText = __webpack_require__(49);
+	var ItemControls = __webpack_require__(64);
+	var LOText = __webpack_require__(72);
+	var OutcomesStore = __webpack_require__(79);
+	var QuestionText = __webpack_require__(81);
 
 	var ItemsList = React.createClass({
 	    displayName: 'ItemsList',
@@ -47803,13 +48035,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 43 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(44);
+	var content = __webpack_require__(47);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -47829,7 +48061,7 @@
 	}
 
 /***/ },
-/* 44 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -47843,7 +48075,7 @@
 
 
 /***/ },
-/* 45 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerExtraction.js
@@ -47923,19 +48155,19 @@
 	module.exports = AnswerExtraction;
 
 /***/ },
-/* 46 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
 
 	'use strict';
 
-	__webpack_require__(47);
-	__webpack_require__(49);
+	__webpack_require__(50);
+	__webpack_require__(52);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(51);
+	var Select = __webpack_require__(54);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -47944,10 +48176,10 @@
 	var Modal = ReactBS.Modal;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerFeedback = __webpack_require__(58);
+	var AnswerFeedback = __webpack_require__(61);
 	var Dispatcher = __webpack_require__(9);
-	var SetIFrameHeight = __webpack_require__(60);
-	var WrapHTML = __webpack_require__(59);
+	var SetIFrameHeight = __webpack_require__(63);
+	var WrapHTML = __webpack_require__(62);
 
 	var AnswerText = React.createClass({
 	    displayName: 'AnswerText',
@@ -48024,13 +48256,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 47 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(48);
+	var content = __webpack_require__(51);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -48050,7 +48282,7 @@
 	}
 
 /***/ },
-/* 48 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -48064,13 +48296,13 @@
 
 
 /***/ },
-/* 49 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(50);
+	var content = __webpack_require__(53);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -48090,7 +48322,7 @@
 	}
 
 /***/ },
-/* 50 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -48104,7 +48336,7 @@
 
 
 /***/ },
-/* 51 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48125,27 +48357,27 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _reactInputAutosize = __webpack_require__(52);
+	var _reactInputAutosize = __webpack_require__(55);
 
 	var _reactInputAutosize2 = _interopRequireDefault(_reactInputAutosize);
 
-	var _classnames = __webpack_require__(53);
+	var _classnames = __webpack_require__(56);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsStripDiacritics = __webpack_require__(54);
+	var _utilsStripDiacritics = __webpack_require__(57);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
-	var _Async = __webpack_require__(55);
+	var _Async = __webpack_require__(58);
 
 	var _Async2 = _interopRequireDefault(_Async);
 
-	var _Option = __webpack_require__(56);
+	var _Option = __webpack_require__(59);
 
 	var _Option2 = _interopRequireDefault(_Option);
 
-	var _Value = __webpack_require__(57);
+	var _Value = __webpack_require__(60);
 
 	var _Value2 = _interopRequireDefault(_Value);
 
@@ -49021,7 +49253,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 52 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49152,7 +49384,7 @@
 	module.exports = AutosizeInput;
 
 /***/ },
-/* 53 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -49206,7 +49438,7 @@
 
 
 /***/ },
-/* 54 */
+/* 57 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -49221,7 +49453,7 @@
 	};
 
 /***/ },
-/* 55 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49234,11 +49466,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Select = __webpack_require__(51);
+	var _Select = __webpack_require__(54);
 
 	var _Select2 = _interopRequireDefault(_Select);
 
-	var _utilsStripDiacritics = __webpack_require__(54);
+	var _utilsStripDiacritics = __webpack_require__(57);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
@@ -49394,7 +49626,7 @@
 	module.exports = Async;
 
 /***/ },
-/* 56 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49405,7 +49637,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(53);
+	var _classnames = __webpack_require__(56);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49503,7 +49735,7 @@
 	module.exports = Option;
 
 /***/ },
-/* 57 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49514,7 +49746,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(53);
+	var _classnames = __webpack_require__(56);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49612,7 +49844,7 @@
 	module.exports = Value;
 
 /***/ },
-/* 58 */
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerFeedback.jsx
@@ -49636,7 +49868,7 @@
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-	var WrapHTML = __webpack_require__(59);
+	var WrapHTML = __webpack_require__(62);
 
 	var AnswerFeedback = React.createClass({
 	    displayName: 'AnswerFeedback',
@@ -49655,13 +49887,13 @@
 	        // Instructions from here
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	        $s(MiddlewareService.ckEditor(), function () {
 	            ConfigureCKEditor(CKEDITOR, repositoryId);
 	            _this.initializeEditorInstance('feedback');
 	        });
 	    },
 	    initializeEditorInstance: function initializeEditorInstance(instance) {
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	        $s(MiddlewareService.ckEditor(), function () {
 	            CKEDITOR.replace(instance);
 	        });
 	    },
@@ -49750,7 +49982,7 @@
 	module.exports = AnswerFeedback;
 
 /***/ },
-/* 59 */
+/* 62 */
 /***/ function(module, exports) {
 
 	// WrapHTML.js
@@ -49781,7 +50013,7 @@
 	module.exports = WrapHTML;
 
 /***/ },
-/* 60 */
+/* 63 */
 /***/ function(module, exports) {
 
 	// SetIFrameHeight.js
@@ -49823,7 +50055,7 @@
 	module.exports = SetIFrameHeight;
 
 /***/ },
-/* 61 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemControls.js
@@ -49832,9 +50064,9 @@
 
 	var React = __webpack_require__(1);
 
-	var DeleteItem = __webpack_require__(62);
-	var EditItem = __webpack_require__(63);
-	var TransferItem = __webpack_require__(67);
+	var DeleteItem = __webpack_require__(65);
+	var EditItem = __webpack_require__(66);
+	var TransferItem = __webpack_require__(70);
 
 	var ItemControls = React.createClass({
 	    displayName: 'ItemControls',
@@ -49862,7 +50094,7 @@
 	module.exports = ItemControls;
 
 /***/ },
-/* 62 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// DeleteItem.jsx
@@ -49971,13 +50203,13 @@
 	module.exports = DeleteItem;
 
 /***/ },
-/* 63 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// EditItem.jsx
 	'use strict';
 
-	__webpack_require__(64);
+	__webpack_require__(67);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -49985,7 +50217,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var EditMultipleChoice = __webpack_require__(66);
+	var EditMultipleChoice = __webpack_require__(69);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 
 	var EditItem = React.createClass({
@@ -50032,13 +50264,13 @@
 	module.exports = EditItem;
 
 /***/ },
-/* 64 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(65);
+	var content = __webpack_require__(68);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -50058,7 +50290,7 @@
 	}
 
 /***/ },
-/* 65 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -50072,7 +50304,7 @@
 
 
 /***/ },
-/* 66 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// EditMultipleChoice.jsx
@@ -50092,7 +50324,7 @@
 	var $s = __webpack_require__(29);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(45);
+	var AnswerExtraction = __webpack_require__(48);
 	var CKEditorModalHack = __webpack_require__(30);
 	var ConfigureCKEditor = __webpack_require__(33);
 	var ConvertLibraryId2RepositoryId = __webpack_require__(34);
@@ -50244,7 +50476,7 @@
 	        return results;
 	    },
 	    initializeEditorInstance: function initializeEditorInstance(instance) {
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	        $s(MiddlewareService.ckEditor(), function () {
 	            CKEDITOR.replace(instance);
 	        });
 	    },
@@ -50256,7 +50488,7 @@
 	        // Instructions from here
 	        // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
 	        CKEditorModalHack();
-	        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+	        $s(MiddlewareService.ckEditor(), function () {
 	            ConfigureCKEditor(CKEDITOR, repositoryId);
 	            _this.initializeEditorInstance('correctAnswer');
 	            _this.initializeEditorInstance('correctAnswerFeedback');
@@ -50702,7 +50934,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 67 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// TransferItem.jsx
@@ -50713,7 +50945,7 @@
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 
-	var AssignableBanks = __webpack_require__(68);
+	var AssignableBanks = __webpack_require__(71);
 
 	var TransferItem = React.createClass({
 	    displayName: 'TransferItem',
@@ -50754,7 +50986,7 @@
 	module.exports = TransferItem;
 
 /***/ },
-/* 68 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AssignableBanks.jsx
@@ -50950,54 +51182,19 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 69 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// LORelatedItems.js
-	'use strict';
-
-	var _ = __webpack_require__(5);
-
-
-	var LORelatedItems = function (items, outcomes) {
-	    // given a list of items, and a list of learning outcomes,
-	    // returns a sorted dictionary of the items where the question itself
-	    // is tagged with each given LO.
-	    // loId => [itemsList]
-
-	    var returnData = {};
-
-	    _.each(items, function (item) {
-	        _.each(outcomes, function (outcome) {
-	            var outcomeId = outcome.id;
-	            if (!returnData.hasOwnProperty(outcomeId)) {
-	                returnData[outcomeId] = [];
-	            }
-	            if (item.learningObjectiveIds[0] == outcomeId) {
-	                returnData[outcomeId].push(item);
-	            }
-	        });
-	    });
-
-	    return returnData;
-	};
-
-	module.exports = LORelatedItems;
-
-/***/ },
-/* 70 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LOText.js
 
 	'use strict';
 
-	__webpack_require__(71);
+	__webpack_require__(73);
 
 	var React = __webpack_require__(1);
 
-	var LinkLO = __webpack_require__(73);
-	var LORelatedItemsBadge = __webpack_require__(74);
+	var LinkLO = __webpack_require__(75);
+	var LORelatedItemsBadge = __webpack_require__(76);
 
 	var LOText = React.createClass({
 	    displayName: 'LOText',
@@ -51042,13 +51239,13 @@
 	module.exports = LOText;
 
 /***/ },
-/* 71 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(72);
+	var content = __webpack_require__(74);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51068,7 +51265,7 @@
 	}
 
 /***/ },
-/* 72 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51082,18 +51279,18 @@
 
 
 /***/ },
-/* 73 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
 
 	'use strict';
 
-	__webpack_require__(49);
+	__webpack_require__(52);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(51);
+	var Select = __webpack_require__(54);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -51244,13 +51441,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 74 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItemsBadge.jsx
 	'use strict';
 
-	__webpack_require__(75);
+	__webpack_require__(77);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -51263,7 +51460,7 @@
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
-	var OutcomesStore = __webpack_require__(77);
+	var OutcomesStore = __webpack_require__(79);
 
 	var LORelatedItemsBadge = React.createClass({
 	    displayName: 'LORelatedItemsBadge',
@@ -51280,7 +51477,7 @@
 	        this.setState({ showModal: true });
 	    },
 	    render: function render() {
-	        var ItemsList = __webpack_require__(42);
+	        var ItemsList = __webpack_require__(45);
 	        var items, lo;
 
 	        lo = OutcomesStore.get(this.props.outcomeId) == null ? '' : OutcomesStore.get(this.props.outcomeId).displayName.text;
@@ -51347,13 +51544,13 @@
 	module.exports = LORelatedItemsBadge;
 
 /***/ },
-/* 75 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(76);
+	var content = __webpack_require__(78);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51373,7 +51570,7 @@
 	}
 
 /***/ },
-/* 76 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51387,14 +51584,14 @@
 
 
 /***/ },
-/* 77 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// OutcomesStore.js
 
 	'use strict';
 
-	var OutcomesDispatcher = __webpack_require__(78);
+	var OutcomesDispatcher = __webpack_require__(80);
 	var AuthoringConstants = __webpack_require__(14);
 	var MiddlewareService = __webpack_require__(17);
 
@@ -51453,22 +51650,22 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 78 */
+/* 80 */
 9,
-/* 79 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
 
 	'use strict';
 
-	__webpack_require__(80);
-	__webpack_require__(49);
+	__webpack_require__(82);
+	__webpack_require__(52);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(51);
-	var ReactTooltip = __webpack_require__(82);
+	var Select = __webpack_require__(54);
+	var ReactTooltip = __webpack_require__(84);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -51478,9 +51675,9 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
-	var OsidId = __webpack_require__(85);
-	var SetIFrameHeight = __webpack_require__(60);
-	var WrapHTML = __webpack_require__(59);
+	var OsidId = __webpack_require__(87);
+	var SetIFrameHeight = __webpack_require__(63);
+	var WrapHTML = __webpack_require__(62);
 
 	var QuestionText = React.createClass({
 	    displayName: 'QuestionText',
@@ -51566,13 +51763,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 80 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(81);
+	var content = __webpack_require__(83);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51592,7 +51789,7 @@
 	}
 
 /***/ },
-/* 81 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51606,16 +51803,16 @@
 
 
 /***/ },
-/* 82 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	module.exports = __webpack_require__(83)
+	module.exports = __webpack_require__(85)
 
 
 /***/ },
-/* 83 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51630,11 +51827,11 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _classnames = __webpack_require__(53);
+	var _classnames = __webpack_require__(56);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _style = __webpack_require__(84);
+	var _style = __webpack_require__(86);
 
 	var _style2 = _interopRequireDefault(_style);
 
@@ -52383,7 +52580,7 @@
 
 
 /***/ },
-/* 84 */
+/* 86 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -52395,7 +52592,7 @@
 
 
 /***/ },
-/* 85 */
+/* 87 */
 /***/ function(module, exports) {
 
 	// OsidId.js
@@ -52412,20 +52609,162 @@
 	module.exports = OsidId;
 
 /***/ },
-/* 86 */
+/* 88 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// LORelatedItems.js
+	'use strict';
+
+	var _ = __webpack_require__(5);
+
+
+	var LORelatedItems = function (items, outcomes) {
+	    // given a list of items, and a list of learning outcomes,
+	    // returns a sorted dictionary of the items where the question itself
+	    // is tagged with each given LO.
+	    // loId => [itemsList]
+
+	    var returnData = {};
+
+	    _.each(items, function (item) {
+	        _.each(outcomes, function (outcome) {
+	            var outcomeId = outcome.id;
+	            if (!returnData.hasOwnProperty(outcomeId)) {
+	                returnData[outcomeId] = [];
+	            }
+	            if (item.learningObjectiveIds[0] == outcomeId) {
+	                returnData[outcomeId].push(item);
+	            }
+	        });
+	    });
+
+	    return returnData;
+	};
+
+	module.exports = LORelatedItems;
+
+/***/ },
+/* 89 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// ModulesStore.js
+
+	'use strict';
+
+	var AuthoringConstants = __webpack_require__(14);
+	var MiddlewareService = __webpack_require__(17);
+
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _modules = [];
+
+	var ModulesStore = _.assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _modules);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    get: function (id) {
+	        return _.find(_modules, function (module) {
+	            return module.id == id;
+	        });
+	    },
+	    getAll: function (libraryId) {
+	        var _this = this,
+	            url = this.url() + libraryId + '/modules';
+	        fetch(url, {
+	            cache: "no-store",
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _modules = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting modules: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
+
+	      return MiddlewareService.host() + '/learning/objectivebanks/';
+	    }
+	});
+
+
+	module.exports = ModulesStore;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 90 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// SortItemsByModuleOutcomes.js
+	'use strict';
+
+	var _ = __webpack_require__(5);
+
+
+	var SortItemsByModuleOutcomes = function (items, modules) {
+	    // given a list of items, and a list of modules (learning topics),
+	    // returns a sorted dictionary of the items where the question itself
+	    // is tagged with each given LO.
+	    // loId => [itemsList]
+
+	    var returnData = {
+	        uncategorized: []
+	    };
+
+	    _.each(items, function (item) {
+	        var foundModuleMatch = false;
+	        _.each(modules, function (module) {
+	            var outcomes = module.childNodes,
+	                outcomeIds = _.map(outcomes, 'id'),
+	                moduleId = module.id;
+
+	            if (!returnData.hasOwnProperty(moduleId)) {
+	                returnData[moduleId] = [];
+	            }
+	            if (outcomeIds.indexOf(item.learningObjectiveIds[0]) >= 0) {
+	                returnData[moduleId].push(item);
+	                foundModuleMatch = true;
+	            }
+	        });
+
+	        if (!foundModuleMatch) {
+	            returnData.uncategorized.push(item);
+	        }
+	    });
+
+	    return returnData;
+	};
+
+	module.exports = SortItemsByModuleOutcomes;
+
+/***/ },
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
 
 	'use strict';
 
-	__webpack_require__(87);
+	__webpack_require__(92);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Glyphicon = ReactBS.Glyphicon;
 	var Label = ReactBS.Label;
-	var ReactTooltip = __webpack_require__(82);
+	var ReactTooltip = __webpack_require__(84);
 
 	var AuthoringConstants = __webpack_require__(14);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
@@ -52498,13 +52837,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 87 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(88);
+	var content = __webpack_require__(93);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -52524,7 +52863,7 @@
 	}
 
 /***/ },
-/* 88 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -52538,7 +52877,7 @@
 
 
 /***/ },
-/* 89 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
@@ -52609,334 +52948,6 @@
 
 	module.exports = LibrarySelector;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 90 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// ModulesList.js
-
-	'use strict';
-
-	__webpack_require__(91);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Badge = ReactBS.Badge;
-	var Col = ReactBS.Col;
-	var Grid = ReactBS.Grid;
-	var Panel = ReactBS.Panel;
-	var Row = ReactBS.Row;
-
-	var ItemsList = __webpack_require__(42);
-	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(69);
-	var ModulesStore = __webpack_require__(93);
-	var OutcomesStore = __webpack_require__(77);
-	var SortItemsByModuleOutcomes = __webpack_require__(94);
-
-	var ModulesList = React.createClass({
-	    displayName: 'ModulesList',
-
-	    getInitialState: function getInitialState() {
-	        return {
-	            moduleExpandedState: {},
-	            modules: [],
-	            outcomes: [],
-	            sortedItemsByModule: {}, // moduleId => [itemsList]
-	            sortedItemsByOutcome: {} // loId => [itemsList]
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {
-	        var _this = this;
-	        ModulesStore.addChangeListener(function (modules) {
-	            _this.setState({ modules: modules });
-	            _this.sortItemsByModule(_this.props.items);
-	            _this.initializeModulesAsClosed();
-	        });
-	        OutcomesStore.addChangeListener(function (outcomes) {
-	            _this.setState({ outcomes: outcomes });
-	            _this.sortItemsByOutcome();
-	        });
-	        LibraryItemsStore.addChangeListener(function (items) {
-	            _this.sortItemsByModule(_this.props.items);
-	            _this.sortItemsByOutcome();
-	        });
-	    },
-	    componentDidMount: function componentDidMount() {
-	        ModulesStore.getAll(this.props.libraryId);
-	        OutcomesStore.getAll(this.props.libraryId);
-	    },
-	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	        this.sortItemsByModule(nextProps.items);
-	        this.sortItemsByOutcome();
-	    },
-	    filterOutcomes: function filterOutcomes(item) {
-	        // return outcomes that are not currently being used somewhere
-	        // in a specific item
-	        return _.filter(this.state.outcomes, function (outcome) {
-	            return item.usedLOs.indexOf(outcome.id) < 0;
-	        });
-	    },
-	    getModuleDisplayName: function getModuleDisplayName(moduleId) {
-	        var module = ModulesStore.get(moduleId);
-	        if (module == null) {
-	            return "Uncategorized";
-	        } else {
-	            return module.displayName.text;
-	        }
-	    },
-	    initializeModulesAsClosed: function initializeModulesAsClosed() {
-	        var moduleState = {};
-	        _.each(this.state.sortedItemsByModule, function (module) {
-	            moduleState[module.id] = false;
-	        });
-
-	        this.setState({ moduleExpandedState: moduleState });
-	    },
-	    moduleState: function moduleState(moduleId) {
-	        return this.state.moduleExpandedState[moduleId];
-	    },
-	    renderModules: function renderModules() {
-	        var _this = this,
-
-	        // map the choiceIds, etc., in answers back to choices in questions
-	        items = [],
-	            sortedModuleNames = [];
-
-	        _.each(this.state.modules, function (module) {
-	            sortedModuleNames.push({
-	                displayName: _this.getModuleDisplayName(module.id),
-	                id: module.id
-	            });
-	        });
-
-	        sortedModuleNames = _.sortBy(sortedModuleNames, ['displayName']);
-
-	        sortedModuleNames.push({
-	            displayName: "Uncategorized",
-	            id: 'uncategorized'
-	        });
-
-	        return _.map(sortedModuleNames, function (moduleData) {
-	            var moduleItems = _this.state.sortedItemsByModule[moduleData.id],
-	                numItems = 0,
-	                header;
-
-	            if (typeof moduleItems !== 'undefined') {
-	                numItems = moduleItems.length;
-	            }
-	            header = React.createElement(
-	                'div',
-	                null,
-	                moduleData.displayName,
-	                React.createElement(
-	                    Badge,
-	                    { pullRight: true },
-	                    numItems
-	                )
-	            );
-
-	            return React.createElement(
-	                Row,
-	                { key: moduleData.id },
-	                React.createElement(
-	                    Panel,
-	                    { header: header,
-	                        collapsible: true,
-	                        'data-id': moduleData.id,
-	                        'data-type': 'module',
-	                        expanded: _this.moduleState(moduleData.id),
-	                        onClick: _this.toggleModuleState },
-	                    React.createElement(ItemsList, { enableClickthrough: true,
-	                        libraries: _this.props.libraries,
-	                        libraryId: _this.props.libraryId,
-	                        outcomes: _this.state.outcomes,
-	                        relatedItems: _this.state.sortedItemsByOutcome,
-	                        sortedItems: moduleItems })
-	                )
-	            );
-	        });
-	    },
-	    sortItemsByModule: function sortItemsByModule(itemsList) {
-	        // get a pre-sorted list of all items, organized by module
-	        this.setState({ sortedItemsByModule: SortItemsByModuleOutcomes(itemsList, this.state.modules) });
-	    },
-	    sortItemsByOutcome: function sortItemsByOutcome() {
-	        // get a pre-sorted list of all items, organized by learning outcome
-	        this.setState({ sortedItemsByOutcome: LORelatedItems(this.props.allItems, this.state.outcomes) });
-	    },
-	    toggleModuleState: function toggleModuleState(e) {
-	        var clickedElement = e.target,
-	            targetClassName = clickedElement.className,
-	            updatedState = this.state.moduleExpandedState,
-	            moduleId = e.currentTarget.dataset.id,
-	            isModule = clickedElement.parentElement.parentElement.dataset.type === 'module';
-
-	        if (targetClassName.indexOf('panel-title') >= 0 && isModule) {
-	            updatedState[moduleId] = !updatedState[moduleId];
-
-	            this.setState({ moduleExpandedState: updatedState });
-	        }
-	    },
-	    render: function render() {
-	        return React.createElement(
-	            Grid,
-	            null,
-	            this.renderModules()
-	        );
-	    }
-	});
-
-	module.exports = ModulesList;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 91 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(92);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ModulesList.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ModulesList.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 92 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(23)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".panel-title .badge {\n}", ""]);
-
-	// exports
-
-
-/***/ },
-/* 93 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// ModulesStore.js
-
-	'use strict';
-
-	var AuthoringConstants = __webpack_require__(14);
-	var MiddlewareService = __webpack_require__(17);
-
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-
-	var ActionTypes = AuthoringConstants.ActionTypes;
-	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
-
-	var _modules = [];
-
-	var ModulesStore = _.assign({}, EventEmitter.prototype, {
-	    emitChange: function () {
-	        this.emit(CHANGE_EVENT, _modules);
-	    },
-	    addChangeListener: function (callback) {
-	        this.on(CHANGE_EVENT, callback);
-	    },
-	    removeChangeListener: function (callback) {
-	        this.removeListener(CHANGE_EVENT, callback);
-	    },
-	    get: function (id) {
-	        return _.find(_modules, function (module) {
-	            return module.id == id;
-	        });
-	    },
-	    getAll: function (libraryId) {
-	        var _this = this,
-	            url = this.url() + libraryId + '/modules';
-	        fetch(url, {
-	            cache: "no-store",
-	            credentials: "same-origin"
-	        }).then(function (response) {
-	            response.json().then(function (data) {
-	                _modules = data;
-	                _this.emitChange();
-	            });
-	        })
-	        .catch(function (error) {
-	            console.log('Problem with getting modules: ' + error.message);
-	        });
-	    },
-	    url: function () {
-	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
-
-	      return MiddlewareService.host() + '/learning/objectivebanks/';
-	    }
-	});
-
-
-	module.exports = ModulesStore;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 94 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// SortItemsByModuleOutcomes.js
-	'use strict';
-
-	var _ = __webpack_require__(5);
-
-
-	var SortItemsByModuleOutcomes = function (items, modules) {
-	    // given a list of items, and a list of modules (learning topics),
-	    // returns a sorted dictionary of the items where the question itself
-	    // is tagged with each given LO.
-	    // loId => [itemsList]
-
-	    var returnData = {
-	        uncategorized: []
-	    };
-
-	    _.each(items, function (item) {
-	        var foundModuleMatch = false;
-	        _.each(modules, function (module) {
-	            var outcomes = module.childNodes,
-	                outcomeIds = _.map(outcomes, 'id'),
-	                moduleId = module.id;
-
-	            if (!returnData.hasOwnProperty(moduleId)) {
-	                returnData[moduleId] = [];
-	            }
-	            if (outcomeIds.indexOf(item.learningObjectiveIds[0]) >= 0) {
-	                returnData[moduleId].push(item);
-	                foundModuleMatch = true;
-	            }
-	        });
-
-	        if (!foundModuleMatch) {
-	            returnData.uncategorized.push(item);
-	        }
-	    });
-
-	    return returnData;
-	};
-
-	module.exports = SortItemsByModuleOutcomes;
 
 /***/ }
 /******/ ])));

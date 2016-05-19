@@ -32,10 +32,10 @@ var ModulesList = React.createClass({
     },
     componentWillMount: function() {
         var _this = this;
+        _this.initializeModulesAsClosed();
         ModulesStore.addChangeListener(function(modules) {
             _this.setState({ modules: modules });
             _this.sortItemsByModule(_this.props.items);
-            _this.initializeModulesAsClosed();
         });
         OutcomesStore.addChangeListener(function(outcomes) {
             _this.setState({ outcomes: outcomes });
@@ -51,8 +51,8 @@ var ModulesList = React.createClass({
         OutcomesStore.getAll(this.props.libraryId);
     },
     componentWillReceiveProps: function (nextProps) {
-        this.sortItemsByModule(nextProps.items);
-        this.sortItemsByOutcome();
+        ModulesStore.getAll(nextProps.libraryId);
+        OutcomesStore.getAll(nextProps.libraryId);
     },
     filterOutcomes: function (item) {
         // return outcomes that are not currently being used somewhere

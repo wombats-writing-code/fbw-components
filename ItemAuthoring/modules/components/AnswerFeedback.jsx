@@ -37,13 +37,13 @@ var AnswerFeedback = React.createClass({
         // Instructions from here
         // http://stackoverflow.com/questions/29703324/how-to-use-ckeditor-as-an-npm-module-built-with-webpack-or-similar
         CKEditorModalHack();
-        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+        $s(MiddlewareService.ckEditor(), function () {
             ConfigureCKEditor(CKEDITOR, repositoryId);
             _this.initializeEditorInstance('feedback');
         });
     },
     initializeEditorInstance: function (instance) {
-        $s(MiddlewareService.staticFiles() + '/fbw_author/js/vendor/ckeditor-custom/ckeditor.js', function () {
+        $s(MiddlewareService.ckEditor(), function () {
             CKEDITOR.replace(instance);
         });
     },

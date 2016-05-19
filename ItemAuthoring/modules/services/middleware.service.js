@@ -26,6 +26,17 @@ let MiddlewareService = {
     } else {
         return '/fbw-author/static';
     }
+  },
+  ckEditor: () => {
+    let location = window.location.host,
+        url;
+
+    if (location.indexOf('localhost') >= 0 || location.indexOf('127.0.0.1') >= 0) {
+        url = '/static';
+    } else {
+        url = '/fbw-author/static';
+    }
+    return url + '/fbw_author/js/ItemAuthoring/vendor/ckeditor-custom/ckeditor.js';
   }
 }
 
