@@ -17,7 +17,10 @@ var _data = {};
 
 var UserStore = _.assign({}, EventEmitter.prototype, {
     getData: function () {
-        return _data;
+//        return _data;
+      return {
+        bankId: 'assessment.Bank%3A57279fc9e7dde086c7fe2102%40bazzim.MIT.EDU'
+      }
     },
     setBankId: function (payload) {
         console.log('bankId saved to user store');

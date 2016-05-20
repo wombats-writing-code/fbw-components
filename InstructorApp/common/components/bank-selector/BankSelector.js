@@ -54,7 +54,8 @@ class BankSelector extends Component {
         };
     }
     componentDidMount() {
-        this.getBanks();
+      console.log('mounted bank selectdor');
+      this.getBanks();
     }
     getAssessments(bankData) {
         // store the bank selected
@@ -106,9 +107,10 @@ class BankSelector extends Component {
                         numberTotalFetches --;
 
                         if (numberTotalFetches === 0) {
-                            var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+                            var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+                              sortedBanks = _.sortBy(_banks, 'displayName');
                             _this.setState({
-                                banks: ds.cloneWithRows(_banks),
+                                banks: ds.cloneWithRows(sortedBanks),
                                 loading: false
                             });
                         }

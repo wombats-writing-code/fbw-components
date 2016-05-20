@@ -18,15 +18,15 @@ var Orientation = require('react-native-orientation');
 
 var AccountsList = require('./accountsList');
 var BankSelector = require('./bank-selector/BankSelector');
-var MissionsManager = require('./missions-manager/MissionsManager');
+var MissionsManager = require('./missions/MissionsManager');
 
 var styles = StyleSheet.create({
   navigator: {
   },
   navBar: {
-    backgroundColor: '#6491A6',
-    height: 50,
-    paddingTop: 5
+//    backgroundColor: '#6491A6',
+//    height: 50,
+//    paddingTop: 5
   },
   navBarText: {
     fontSize: 16,
@@ -69,31 +69,16 @@ var NavigationBarRouteMapper = {
   },
 
   RightButton: function(route, navigator, index, navState) {
-    if (index === 0) {
-        return null;
-    }
-
-    return (
-      <TouchableOpacity
-        onPress={() => navigator.push({
-          id: 'accounts',
-          title: 'Accounts',
-          index: 1
-          })}
-        style={styles.navBarRightButton}>
-        <Text style={[styles.navBarText, styles.navBarButtonText]}>
-          Next
-        </Text>
-      </TouchableOpacity>
-    );
+    return null;
   },
 
   Title: function(route, navigator, index, navState) {
-    return (
-      <Text style={[styles.navBarText, styles.navBarTitleText]}>
-        {route.title}
-      </Text>
-    );
+    return null;
+//    return (
+//      <Text style={[styles.navBarText, styles.navBarTitleText]}>
+//        {route.title}
+//      </Text>
+//    );
   },
 
 };
@@ -104,35 +89,19 @@ var FbWNavigator = React.createClass({
         title: 'Fly-by-Wire',
         description: 'Fly-by-Wire educational app'
     },
-  componentWillMount: function() {
-//    var navigator = this.props.navigator;
-
-    var callback = (event) => {
-      console.log(
-        `NavigationBarSample : event ${event.type}`,
-        {
-          route: JSON.stringify(event.data.route),
-          target: event.target,
-          type: event.type,
-        }
-      );
-    };
-
-    // Observe focus change events from this component.
-//    this._listeners = [
-//      navigator.navigationContext.addListener('willfocus', callback),
-//      navigator.navigationContext.addListener('didfocus', callback),
-//    ];
-  },
+    componentWillMount: function() {
+    },
     componentDidMount: function () {
 //        Orientation.lockToLandscape();
     },
+    componentWillUnmount: function() {
+    },
     render: function () {
         return <Navigator style={styles.navigator}
-              initialRoute={{id: 'banks', title: 'Banks', index: 0}}
-              renderScene={(route, nav) =>
-                {return this.renderScene(route, nav)}}
-              navigationBar={
+                          initialRoute={{id: 'missions', title: 'Missions', index: 0}}
+                          renderScene={(route, nav) =>
+                            {return this.renderScene(route, nav)}}
+                          navigationBar={
                   <Navigator.NavigationBar
                     routeMapper={NavigationBarRouteMapper}
                     style={styles.navBar}
