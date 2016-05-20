@@ -21,8 +21,8 @@ var Icon = require('react-native-vector-icons/FontAwesome');
 var AssessmentStore = require('../../stores/Assessment');
 var UserStore = require('../../stores/User');
 
-var MissionsCalendar = require('./MissionsCalendar');
 var MissionsSidebar = require('./MissionsSidebar');
+var MissionsMainContent = require('./MissionsMainContent');
 
 var styles = StyleSheet.create({
   container: {
@@ -37,9 +37,10 @@ class MissionsManager extends Component {
     super(props);
     this.state = {
       loading: true,
-      mainContainer: 'calendar',
-      missions: []
-    }
+      content: 'calendar',
+      missions: [],
+      selectedMission: {}
+    };
 
     AssessmentStore.addChangeListener(this._updateMissionsFromStore.bind(this));
   }
@@ -58,22 +59,24 @@ class MissionsManager extends Component {
     this.setState({ missions: missions });
     this.setState({ loading: false });
   }
+  setSelectedMission(mission) {
+    this.setState({ selectedMission: mission });
+  }
   render() {
     if (this.state.loading) {
       return this.renderLoadingView();
     }
 
-    var mainContent = <View style={styles.mainContainer} />;
-
-    if (this.state.mainContainer == 'calendar') {
-      mainContent = (<MissionsCalendar missions={this.state.missions} /> );
-    }
-
-
     return (
       <View style={styles.container}>
-        <MissionsSidebar missions={this.state.missions} />
-        {mainContent}
+        <MissionsSidebar changeContent={this._changeContent.bind(this)}
+                         missions={this.state.missions}
+                         selectMission={this.setSelectedMission.bind(this)} />
+
+        <MissionsMainContent changeContent={this._changeContent.bind(this)}
+                             content={this.state.content}
+                             missions={this.state.missions}
+                             selectedMission={this.state.selectedMission} />
       </View>
     );
   }
@@ -86,6 +89,9 @@ class MissionsManager extends Component {
         hidden='true'
         size='large'/>
     </View> );
+  }
+  _changeContent(newContent) {
+    this.setState({ content: newContent });
   }
   _updateMissionsFromStore(missions) {
     this.setMissions(missions);

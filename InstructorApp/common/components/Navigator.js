@@ -24,9 +24,7 @@ var styles = StyleSheet.create({
   navigator: {
   },
   navBar: {
-//    backgroundColor: '#6491A6',
-//    height: 50,
-//    paddingTop: 5
+    height: 1
   },
   navBarText: {
     fontSize: 16,

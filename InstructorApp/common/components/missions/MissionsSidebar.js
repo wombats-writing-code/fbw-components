@@ -19,26 +19,15 @@ var Icon = require('react-native-vector-icons/FontAwesome');
 
 
 var styles = StyleSheet.create({
+  buttonText: {
+    fontSize: 50,
+    color: '#007AFF',
+    alignSelf: 'center'
+  },
   container: {
     flex: 1,
     backgroundColor: '#D8D8D8',
     alignItems: 'stretch'
-  },
-  title: {
-    fontSize: 20,
-    color: '#656565'
-  },
-  buttonText: {
-    fontSize: 50,
-    color: '#ffffff',
-    alignSelf: 'center'
-  },
-  notification: {
-    backgroundColor: '#ff9c9c',
-    padding: 3
-  },
-  notificationText: {
-    fontSize: 16
   },
   missionsList: {
   },
@@ -48,12 +37,26 @@ var styles = StyleSheet.create({
     margin: 2,
     padding: 1
   },
+  notification: {
+    backgroundColor: '#ff9c9c',
+    padding: 3
+  },
+  notificationText: {
+    fontSize: 10
+  },
+  rounded: {
+    borderRadius: 3
+  },
   sidebarFooter: {
     height: 10
   },
   sidebarHeader: {
-    height: 75
-  }
+    height: 60
+  },
+  title: {
+    fontSize: 20,
+    color: '#656565'
+  },
 });
 
 
@@ -67,17 +70,11 @@ class MissionsSidebar extends Component {
   }
   componentDidMount() {
   }
-  _addNewMission() {
-    console.log("adding a new mission");
-  }
-  getMissionDetails(mission) {
-    console.log("Let's show mission: " + mission.id);
-  }
   renderRow(rowData, sectionId, rowId) {
     return (
-      <TouchableHighlight onPress={() => this.getMissionDetails(rowData)}>
+      <TouchableHighlight onPress={() => this._setMission(rowData)}>
         <View>
-          <View style={styles.rowWrapper}>
+          <View style={[styles.rowWrapper, styles.rounded]}>
             <Text
                 style={styles.title}
                 numberOfLines={1}
@@ -95,7 +92,7 @@ class MissionsSidebar extends Component {
                         dataSource={this.prop.missions}
                         renderRow={this.renderRow}>
                     </ListView> ) :
-                  ( <View style={styles.notification} >
+                  ( <View style={[styles.notification, styles.rounded]} >
                     <Text style={styles.notificationText}>
                       No existing missions.
                     </Text>
@@ -106,7 +103,7 @@ class MissionsSidebar extends Component {
                             onPress={() => this._addNewMission()}>
           <Text style={styles.buttonText}>+</Text>
         </TouchableHighlight>
-        <View style={styles.missionsListWrapper}>
+        <View style={[styles.missionsListWrapper, styles.rounded]}>
           <ScrollView style={styles.missionsList}>
             {currentMissions}
           </ScrollView>
@@ -114,6 +111,14 @@ class MissionsSidebar extends Component {
         <View style={styles.sidebarFooter} />
       </View>
     );
+  }
+  _addNewMission() {
+    console.log("adding a new mission");
+    this.props.changeContent('addMission');
+  }
+  _setMission(mission) {
+    console.log("Let's show mission: " + mission.id);
+    this.props.setMission(mission);
   }
 }
 

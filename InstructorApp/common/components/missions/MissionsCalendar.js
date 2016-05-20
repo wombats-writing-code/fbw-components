@@ -6,6 +6,7 @@ import React, {
 } from 'react';
 
 import {
+  Animated,
   Text,
   ListView,
   ScrollView,
@@ -26,20 +27,29 @@ class MissionsCalendar extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      opacity: new Animated.Value(0)
     }
   }
   componentWillUnmount() {
+    Animated.timing(this.state.opacity, {
+      toValue: 0
+    }).start();
   }
   componentDidMount() {
+    Animated.timing(this.state.opacity, {
+      toValue: 1
+    }).start();
   }
   render() {
     return (
       <View style={styles.container}>
-        <ScrollView>
-          <Text>
-            A calendar!
-          </Text>
-        </ScrollView>
+        <Animated.View style={{opacity: this.state.opacity}}>
+          <ScrollView>
+            <Text>
+              A calendar!
+            </Text>
+          </ScrollView>
+        </Animated.View>
       </View>
     );
   }
