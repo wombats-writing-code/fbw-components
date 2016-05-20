@@ -8,6 +8,7 @@ import React, {
 import {
   ActivityIndicatorIOS,
   Animated,
+  DatePickerIOS,
   ListView,
   ScrollView,
   StyleSheet,
@@ -45,7 +46,8 @@ var styles = StyleSheet.create({
     marginBottom: 5
   },
   inputRow: {
-    flex: 1
+    flex: 1,
+    marginBottom: 5
   },
   roundedButton: {
     borderColor: 'white',
@@ -68,10 +70,11 @@ class AddMission extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      missionDeadline: '',
+      missionDeadline: new Date(),
       missionDisplayName: '',
-      missionStartDate: '',
-      opacity: new Animated.Value(0)
+      missionStartDate: new Date(),
+      opacity: new Animated.Value(0),
+      timeZoneOffsetInHours: (-1) * (new Date()).getTimezoneOffset() / 60,
     };
   }
   componentWillUnmount() {
@@ -108,7 +111,22 @@ class AddMission extends Component {
                          style={styles.textInput}
                          value={this.state.missionDisplayName} />
             </View>
-
+            <View style={styles.inputRow}>
+              <Text style={styles.inputLabel}>Start Date: </Text>
+              <DatePickerIOS date={this.state.missionStartDate}
+                             minuteInterval={30}
+                             mode="datetime"
+                             onDateChange={(date) => this.setState({missionStartDate: date})}
+                             timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}/>
+            </View>
+            <View style={styles.inputRow}>
+              <Text style={styles.inputLabel}>Deadline: </Text>
+              <DatePickerIOS date={this.state.missionDeadline}
+                             minuteInterval={30}
+                             mode="datetime"
+                             onDateChange={(date) => this.setState({missionDeadline: date})}
+                             timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}/>
+            </View>
           </ScrollView>
         </Animated.View>
       </View>
