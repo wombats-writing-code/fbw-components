@@ -2,3 +2,5 @@ node_modules/
 .DS_Store
 npm-debug.log
 qbank_credentials.js
+InstructorApp/ios/FbW.xcodeproj/xcuserdata/
+InstructorApp/ios/FbW.xcodeproj/project.xcworkspace/xcuserdata/

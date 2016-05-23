@@ -69,11 +69,11 @@ class MissionsManager extends Component {
 
     return (
       <View style={styles.container}>
-        <MissionsSidebar changeContent={this._changeContent.bind(this)}
+        <MissionsSidebar changeContent={this._changeContent}
                          missions={this.state.missions}
                          selectMission={this.setSelectedMission.bind(this)} />
 
-        <MissionsMainContent changeContent={this._changeContent.bind(this)}
+        <MissionsMainContent changeContent={this._changeContent}
                              content={this.state.content}
                              missions={this.state.missions}
                              selectedMission={this.state.selectedMission} />
@@ -90,7 +90,7 @@ class MissionsManager extends Component {
         size='large'/>
     </View> );
   }
-  _changeContent(newContent) {
+  _changeContent = (newContent) => {  // fat arrow preserves 'this', so no need to go crazy bind'ing 
     this.setState({ content: newContent });
   }
   _updateMissionsFromStore(missions) {
