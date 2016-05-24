@@ -425,7 +425,7 @@ var EditMultipleChoice = React.createClass({
                 type: ActionTypes.UPDATE_ITEM,
                 content: payload
             });
-            this.closeAndReset();
+            this.close();
             setTimeout(_this.reset, 500);
         }
     },
