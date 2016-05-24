@@ -19,19 +19,23 @@ import {
   View,
   } from 'react-native';
 
+var ItemSearchModal = require('./ItemSearchModal');
+
 var styles = StyleSheet.create({
   actions: {
     flex: 1,
     flexDirection: 'row'
   },
   addItemText: {
+    padding: 5,
     textAlign: 'center'
   },
   addItemWrapper: {
     backgroundColor: '#BBEDBB',
     borderColor: '#A9D6A9',
     borderRadius: 5,
-    borderWidth: 1
+    borderWidth: 1,
+    marginTop: 5
   },
   buttonText: {
     color: 'white',
@@ -61,8 +65,22 @@ var styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 5
   },
+  itemLabel: {
+    fontSize: 10
+  },
+  modalBackdrop: {
+    backgroundColor: 'gray',
+    opacity: 0.5
+  },
+  noItemsText: {
+    padding: 5,
+    textAlign: 'center'
+  },
   noItemsWarning: {
-    backgroundColor: '#ff9c9c'
+    backgroundColor: '#ff9c9c',
+    borderColor: '#ff9c9c',
+    borderRadius: 5,
+    borderWidth: 1
   },
   roundedButton: {
     borderColor: 'white',
@@ -99,6 +117,7 @@ class AddMission extends Component {
     this.state = {
       height: 0,
       items: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+      itemSearchModalOffset: new Animated.Value(Dimensions.get('window').height),
       missionDeadline: new Date(),
       missionDisplayName: '',
       missionStartDate: new Date(),
@@ -134,19 +153,21 @@ class AddMission extends Component {
   renderItemRow = (rowData, sectionId, rowId) => {
 
   }
-  renderItemsList() {
-    console.log('here in renderItemsList');
-    if (this.state.items.length === 0) {
-      return ( <View style={styles.noItemsWarning}>
-        <Text>No questions</Text>
-      </View> );
-    } else {
-      return (<ListView dataSource={this.state.items}
-                        renderRow={this.renderItemRow}>
-      </ListView> );
-    }
+  showItemSearchModal() {
+    console.log('lets animate the modal');
+    Animated.timing(this.state.itemSearchModalOffset, {
+      duration: 100,
+      toValue: 0
+    }).start();
   }
   render() {
+    var currentItems = this.state.items.length > 0 ?
+                       ( <ListView dataSource={this.state.items}
+                                   renderRow={this.renderItemRow}>
+                         </ListView> ) :
+                       ( <View style={styles.noItemsWarning}>
+                           <Text style={[styles.itemLabel, styles.noItemsText]}>No questions</Text>
+                         </View> );
     return (
       <View style={styles.container}>
         <Animated.View style={{opacity: this.state.opacity}}>
@@ -196,10 +217,10 @@ class AddMission extends Component {
             <View style={styles.inputRow}>
               <View style={styles.rowLabel}>
                 <Text style={styles.inputLabel}>Questions</Text>
-                {this.renderItemsList()}
-                <TouchableHighlight onPress={() => {console.log('clicked')}}
+                {currentItems}
+                <TouchableHighlight onPress={() => this.showItemSearchModal()}
                                     style={styles.addItemWrapper}>
-                  <Text style={styles.addItemText}>+ Add Item</Text>
+                  <Text style={[styles.addItemText, styles.itemLabel]}>+ Add Item</Text>
                 </TouchableHighlight>
               </View>
               <View style={styles.separator}/>
@@ -210,6 +231,11 @@ class AddMission extends Component {
               </View>
             </View>
           </ScrollView>
+        </Animated.View>
+        <Animated.View style={{ transform: [{translateY: this.state.itemSearchModalOffset}] }}>
+          <View style={styles.modalBackdrop}>
+            <Text>Foo!</Text>
+          </View>
         </Animated.View>
       </View>
     );

@@ -42,7 +42,8 @@ var styles = StyleSheet.create({
     padding: 3
   },
   notificationText: {
-    fontSize: 10
+    fontSize: 10,
+    padding: 5
   },
   rounded: {
     borderRadius: 3

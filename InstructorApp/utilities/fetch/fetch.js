@@ -49,6 +49,10 @@ var qbankFetch = function (params, _callback) {
         method: options.method.toUpperCase()
     };
 
+    if (params.hasOwnProperty('data')) {
+      fetchInit['body'] = params.data;
+    }
+
     fetch(url, fetchInit)
         .then(function (response) {
             if (response.ok) {
