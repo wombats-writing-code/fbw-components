@@ -41,12 +41,11 @@ class MissionsManager extends Component {
       missions: [],
       selectedMission: {}
     };
-
-    AssessmentStore.addChangeListener(this._updateMissionsFromStore.bind(this));
+    AssessmentStore.addChangeListener(this._updateMissionsFromStore);
   }
   componentWillUnmount() {
     console.log('unmounted');
-    AssessmentStore.removeChangeListener(this._updateMissionsFromStore.bind(this));
+    AssessmentStore.removeChangeListener(this._updateMissionsFromStore);
   }
   componentDidMount() {
     console.log('did mount');
@@ -56,13 +55,16 @@ class MissionsManager extends Component {
   }
   setMissions(missions) {
     console.log('setting missions');
+
     this.setState({ missions: missions });
     this.setState({ loading: false });
   }
-  setSelectedMission(mission) {
+  setSelectedMission = (mission) => {
     this.setState({ selectedMission: mission });
   }
   render() {
+    var bankId = UserStore.getData().bankId;
+
     if (this.state.loading) {
       return this.renderLoadingView();
     }
@@ -71,9 +73,10 @@ class MissionsManager extends Component {
       <View style={styles.container}>
         <MissionsSidebar changeContent={this._changeContent}
                          missions={this.state.missions}
-                         selectMission={this.setSelectedMission.bind(this)} />
+                         selectMission={this.setSelectedMission} />
 
-        <MissionsMainContent changeContent={this._changeContent}
+        <MissionsMainContent bankId={bankId}
+                             changeContent={this._changeContent}
                              content={this.state.content}
                              missions={this.state.missions}
                              selectedMission={this.state.selectedMission} />
@@ -93,7 +96,7 @@ class MissionsManager extends Component {
   _changeContent = (newContent) => {  // fat arrow preserves 'this', so no need to go crazy bind'ing 
     this.setState({ content: newContent });
   }
-  _updateMissionsFromStore(missions) {
+  _updateMissionsFromStore = (missions) => {
     this.setMissions(missions);
   }
 }

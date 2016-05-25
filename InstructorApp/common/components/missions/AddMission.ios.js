@@ -19,6 +19,9 @@ import {
   View,
   } from 'react-native';
 
+var ActionTypes = require('../../constants/Assessment').ActionTypes;
+var AssessmentStore = require('../../stores/Assessment');
+var Dispatcher = require('../../dispatchers/Assessment');
 var ItemSearchModal = require('./ItemSearchModal');
 
 var styles = StyleSheet.create({
@@ -54,6 +57,10 @@ var styles = StyleSheet.create({
     position: 'absolute',
     right: 5,
     top: -50
+  },
+  createButtonWrapper: {
+    position: 'absolute',
+    right: 0
   },
   inputLabel: {
     fontSize: 14,
@@ -145,7 +152,24 @@ class AddMission extends Component {
 //      this.refs.deadlineDatePicker.refs.datepicker.setNativeProps({width: Window.width - 100});
 //    }
   }
+  createAssessment() {
+    var data = {
+      bankId: this.props.bankId,
+      deadline: this.state.missionDeadline,
+      description: 'A Fly-by-Wire mission',
+      displayName: this.state.missionDisplayName,
+      startTime: this.state.missionStartDate
+    };
+
+    Dispatcher.dispatch({
+        type: ActionTypes.CREATE_ASSESSMENT,
+        content: data
+    });
+
+    this.props.closeAdd();
+  }
   onLayout = (event) => {
+    // TODO: how to make this height change when device is rotated?
     // This doesn't get called -- why not??? Docs say it should, on mount and on layout change...
     console.log('onLayout called');
     this.setState({ height: Dimensions.get('window').height });
@@ -172,14 +196,17 @@ class AddMission extends Component {
       <View style={styles.container}>
         <Animated.View style={{opacity: this.state.opacity}}>
           <View style={styles.actions}>
-            <TouchableHighlight onPress={() => this.props.cancelAdd()}>
+            <TouchableHighlight onPress={() => this.props.closeAdd()}>
               <View style={[styles.cancelButton, styles.roundedButton]}>
                 <Text style={styles.buttonText}>Cancel</Text>
               </View>
             </TouchableHighlight>
-            <View style={[styles.createButton, styles.roundedButton]}>
-              <Text style={styles.buttonText}>Create</Text>
-            </View>
+            <TouchableHighlight onPress={() => this.createAssessment()}
+                                style={styles.createButtonWrapper}>
+              <View style={[styles.createButton, styles.roundedButton]}>
+                <Text style={styles.buttonText}>Create</Text>
+              </View>
+            </TouchableHighlight>
           </View>
           <ScrollView onScroll={(event) => {console.log('scroll!')}}
                       style={ {height: this.state.height - 50 } }>

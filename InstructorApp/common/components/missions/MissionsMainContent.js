@@ -59,7 +59,8 @@ class MissionsMainContent extends Component {
       subtitle = 'Spring 2016';
       title = 'Mission Control';
     } else if (this.props.content == 'addMission') {
-      content = <AddMission cancelAdd={this._cancelAddNewMission.bind(this)} />;
+      content = <AddMission bankId={this.props.bankId}
+                            closeAdd={this._closeAddNewMission} />;
       subtitle = '';
       title = 'Add New Mission';
     }
@@ -76,7 +77,7 @@ class MissionsMainContent extends Component {
       </View>
     );
   }
-  _cancelAddNewMission() {
+  _closeAddNewMission = () => {
     this.props.changeContent('calendar');
   }
 }

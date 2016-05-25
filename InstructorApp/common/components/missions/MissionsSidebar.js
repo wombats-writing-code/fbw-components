@@ -29,6 +29,27 @@ var styles = StyleSheet.create({
     backgroundColor: '#D8D8D8',
     alignItems: 'stretch'
   },
+  missionArrowIcon: {
+    color: '#656565'
+  },
+  missionArrowIconWrapper: {
+    justifyContent: 'center'
+  },
+  missionIconWrapper: {
+    justifyContent: 'center',
+    marginRight: 5
+  },
+  missionInformation: {
+    flex: 1
+  },
+  missionLabel: {
+    fontSize: 10,
+    color: '#000000'
+  },
+  missionRow: {
+    flex: 1,
+    flexDirection: 'row'
+  },
   missionsList: {
   },
   missionsListWrapper: {
@@ -36,6 +57,16 @@ var styles = StyleSheet.create({
     flex: 1,
     margin: 2,
     padding: 1
+  },
+  missionSubtitle: {
+    color: '#656565',
+    fontSize: 8
+  },
+  missionWrapper: {
+    borderColor: 'black',
+    borderRadius: 5,
+    borderWidth: 1,
+    padding: 5
   },
   notification: {
     backgroundColor: '#ff9c9c',
@@ -53,11 +84,7 @@ var styles = StyleSheet.create({
   },
   sidebarHeader: {
     height: 60
-  },
-  title: {
-    fontSize: 20,
-    color: '#656565'
-  },
+  }
 });
 
 
@@ -73,24 +100,42 @@ class MissionsSidebar extends Component {
   }
   renderRow(rowData, sectionId, rowId) {
     return (
-      <TouchableHighlight onPress={() => this._setMission(rowData)}>
-        <View>
-          <View style={[styles.rowWrapper, styles.rounded]}>
-            <Text
-                style={styles.title}
-                numberOfLines={1}
-            >
-              {rowData.displayName.text}
-            </Text>
+      <TouchableHighlight onPress={() => this._setMission(rowData)}
+                          style={styles.missionWrapper}>
+        <View style={styles.missionRow}>
+          <View style={styles.missionIconWrapper}>
+            <Icon name="calendar"/>
+          </View>
+          <View style={styles.missionInformation}>
+            <View style={[styles.rowWrapper, styles.rounded]}>
+              <Text
+                  style={styles.missionLabel}
+                  numberOfLines={1}
+              >
+                {rowData.displayName.text}
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.missionSubtitle}>
+                Subtitle Info
+              </Text>
+            </View>
+          </View>
+          <View style={styles.missionArrowIconWrapper}>
+            <Icon name="angle-right"
+                  style={styles.missionArrowIcon} />
           </View>
         </View>
       </TouchableHighlight>
       );
   }
   render() {
+    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+      sortedMissions = _.sortBy(this.props.missions, 'displayName');  // TODO: this should be by startDate on the Offered...
+
     var currentMissions = this.props.missions.length > 0 ?
                   ( <ListView
-                        dataSource={this.prop.missions}
+                        dataSource={ds.cloneWithRows(sortedMissions)}
                         renderRow={this.renderRow}>
                     </ListView> ) :
                   ( <View style={[styles.notification, styles.rounded]} >

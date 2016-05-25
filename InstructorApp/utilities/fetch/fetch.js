@@ -26,16 +26,15 @@ var qbankFetch = function (params, _callback) {
     headers.append('request-line', headerPath);
     headers.append('accept', 'application/json');
     headers.append('date', now.toUTCString());
-
     options = {
         path: headerPath,
-        method: params.method ? params.hasOwnProperty('method') : 'GET',
+        method: params.hasOwnProperty('method') ? params.method : 'GET',
         headers: {
-            'request-line': headers.get('request-line'),
-            'accept': headers.get('accept'),
-            'date': now.toUTCString(),
-            'host': headers.get('host'),
-            'x-api-proxy': headers.get('x-api-proxy')
+          'request-line': headers.get('request-line'),
+          'accept': headers.get('accept'),
+          'date': now.toUTCString(),
+          'host': headers.get('host'),
+          'x-api-proxy': headers.get('x-api-proxy')
         },
         body: '',
         credentials
@@ -50,9 +49,13 @@ var qbankFetch = function (params, _callback) {
     };
 
     if (params.hasOwnProperty('data')) {
-      fetchInit['body'] = params.data;
+      if (typeof params.date == "string") {
+        fetchInit['body'] = params.data;
+      } else {
+        fetchInit['body'] = JSON.stringify(params.data);
+        headers.append('Content-Type', 'application/json');
+      }
     }
-
     fetch(url, fetchInit)
         .then(function (response) {
             if (response.ok) {
@@ -62,7 +65,7 @@ var qbankFetch = function (params, _callback) {
             } else {
                 response.text().then(function (responseText) {
                     console.log('Error fetching: ' + url);
-//                    console.log('Error returned: ' + responseText);
+                    console.log('Error returned: ' + responseText);
                 });
             }
         })
