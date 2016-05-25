@@ -98,7 +98,11 @@ class MissionsSidebar extends Component {
   }
   componentDidMount() {
   }
-  renderRow(rowData, sectionId, rowId) {
+
+  // if we want 'this' to refer to this class, we need to fat arrow renderRow(),
+  // because we're calling it from ListView down below
+  // alternatively, we can bind it below by this.renderRow.bind(this) in ListView.
+  renderRow = (rowData, sectionId, rowId) => {
     return (
       <TouchableHighlight onPress={() => this._setMission(rowData)}
                           style={styles.missionWrapper}>
@@ -130,6 +134,7 @@ class MissionsSidebar extends Component {
       );
   }
   render() {
+    // probably want to move this to a get initial function so this doesn't run on every render
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
       sortedMissions = _.sortBy(this.props.missions, 'displayName');  // TODO: this should be by startDate on the Offered...
 
@@ -143,6 +148,7 @@ class MissionsSidebar extends Component {
                       No existing missions.
                     </Text>
                   </View> );
+
     return (
       <View style={styles.container}>
         <TouchableHighlight style={styles.sidebarHeader}
@@ -162,9 +168,9 @@ class MissionsSidebar extends Component {
     console.log("adding a new mission");
     this.props.changeContent('addMission');
   }
-  _setMission(mission) {
+  _setMission = (mission) => {
     console.log("Let's show mission: " + mission.id);
-    this.props.setMission(mission);
+    this.props.selectMission(mission);
   }
 }
 
