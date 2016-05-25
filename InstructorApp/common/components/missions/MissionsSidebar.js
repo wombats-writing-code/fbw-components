@@ -71,7 +71,11 @@ class MissionsSidebar extends Component {
   }
   componentDidMount() {
   }
-  renderRow(rowData, sectionId, rowId) {
+
+  // if we want 'this' to refer to this class, we need to fat arrow renderRow(),
+  // because we're calling it from ListView down below
+  // alternatively, we can bind it below by this.renderRow.bind(this) in ListView.
+  renderRow = (rowData, sectionId, rowId) => {
     return (
       <TouchableHighlight onPress={() => this._setMission(rowData)}>
         <View>
@@ -121,9 +125,9 @@ class MissionsSidebar extends Component {
     console.log("adding a new mission");
     this.props.changeContent('addMission');
   }
-  _setMission(mission) {
+  _setMission = (mission) => {
     console.log("Let's show mission: " + mission.id);
-    this.props.setMission(mission);
+    this.props.selectMission(mission);
   }
 }
 
