@@ -78,8 +78,9 @@ class MissionsManager extends Component {
                              missions={this.state.missions}
                              selectedMission={this.state.selectedMission} />
       </View>
-    );
+    )
   }
+
   renderLoadingView() {
     return ( <View>
       <Text>
@@ -90,7 +91,7 @@ class MissionsManager extends Component {
         size='large'/>
     </View> );
   }
-  _changeContent = (newContent) => {  // fat arrow preserves 'this', so no need to go crazy bind'ing 
+  _changeContent = (newContent) => {  // fat arrow preserves 'this', so no need to go crazy bind'ing
     this.setState({ content: newContent });
   }
   _updateMissionsFromStore(missions) {

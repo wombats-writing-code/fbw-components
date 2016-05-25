@@ -79,7 +79,7 @@ class MissionsSidebar extends Component {
             <Text
                 style={styles.title}
                 numberOfLines={1}
-            >
+              >
               {rowData.displayName.text}
             </Text>
           </View>
@@ -88,9 +88,12 @@ class MissionsSidebar extends Component {
       );
   }
   render() {
+    // probably want to move this to a get initial function so this doesn't run on every render
+    var ds = new ListView.DataSource({rowHasChanged: (prev, curr) => prev !== curr});
+
     var currentMissions = this.props.missions.length > 0 ?
                   ( <ListView
-                        dataSource={this.prop.missions}
+                        dataSource={ds.cloneWithRows(this.props.missions)}
                         renderRow={this.renderRow}>
                     </ListView> ) :
                   ( <View style={[styles.notification, styles.rounded]} >
@@ -98,6 +101,7 @@ class MissionsSidebar extends Component {
                       No existing missions.
                     </Text>
                   </View> );
+
     return (
       <View style={styles.container}>
         <TouchableHighlight style={styles.sidebarHeader}
