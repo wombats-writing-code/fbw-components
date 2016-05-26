@@ -66,6 +66,7 @@ var styles = StyleSheet.create({
     borderColor: 'black',
     borderRadius: 5,
     borderWidth: 1,
+    margin: 1,
     padding: 5
   },
   notification: {
@@ -121,7 +122,7 @@ class MissionsSidebar extends Component {
             </View>
             <View>
               <Text style={styles.missionSubtitle}>
-                Subtitle Info
+                Due on {rowData.deadline.month}-{rowData.deadline.day}-{rowData.deadline.year}
               </Text>
             </View>
           </View>
@@ -165,11 +166,9 @@ class MissionsSidebar extends Component {
     );
   }
   _addNewMission() {
-    console.log("adding a new mission");
     this.props.changeContent('addMission');
   }
   _setMission = (mission) => {
-    console.log("Let's show mission: " + mission.id);
     this.props.selectMission(mission);
   }
 }

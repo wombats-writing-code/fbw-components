@@ -48,14 +48,11 @@ class MissionsManager extends Component {
     AssessmentStore.removeChangeListener(this._updateMissionsFromStore);
   }
   componentDidMount() {
-    console.log('did mount');
     var bankId = UserStore.getData().bankId;
 
     AssessmentStore.getAssessments(bankId);
   }
   setMissions(missions) {
-    console.log('setting missions');
-
     this.setState({ missions: missions });
     this.setState({ loading: false });
   }
@@ -98,7 +95,10 @@ class MissionsManager extends Component {
     this.setState({ content: newContent });
   }
   _updateMissionsFromStore = (missions) => {
-    this.setMissions(missions);
+    // sort missions by startTime first
+    this.setMissions(_.sortBy(missions,
+      ['startTime.year', 'startTime.month', 'startTime.day',
+       'deadline.year', 'deadline.month', 'deadline.day']));
   }
 }
 

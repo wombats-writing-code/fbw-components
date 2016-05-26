@@ -21,6 +21,7 @@ import {
 
 var ActionTypes = require('../../constants/Assessment').ActionTypes;
 var AssessmentStore = require('../../stores/Assessment');
+var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
 var Dispatcher = require('../../dispatchers/Assessment');
 var ItemSearchModal = require('./ItemSearchModal');
 
@@ -155,10 +156,10 @@ class AddMission extends Component {
   createAssessment() {
     var data = {
       bankId: this.props.bankId,
-      deadline: this.state.missionDeadline,
+      deadline: DateConvert(this.state.missionDeadline),
       description: 'A Fly-by-Wire mission',
       displayName: this.state.missionDisplayName,
-      startTime: this.state.missionStartDate
+      startTime: DateConvert(this.state.missionStartDate)
     };
 
     Dispatcher.dispatch({

@@ -39,16 +39,13 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
         method: 'POST',
         path: 'assessment/banks/' + data.bankId + '/assessments/' + assessmentData.id + '/assessmentsoffered'
       };
-      console.log(offeredParams);
 
       qbankFetch(offeredParams, function (offeredData) {
         var mashUp = assessmentData;
         mashUp.startTime = offeredData.startTime;
         mashUp.deadline = offeredData.deadline;
 
-        console.log(mashUp);
         _assessments.push(mashUp);
-        console.log(_assessments);
         _this.emitChange();
       });
     });
@@ -75,12 +72,10 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
           var assessmentParams = {
             path: 'assessment/banks/' + bankId + '/assessments/' + assessment.id + '/assessmentsoffered?page=all'
           };
-
           qbankFetch(assessmentParams, function (offeredData) {
             var mashUp = assessment;
             offered = offeredData.data.results[0];  // Assume only one offered per assessment,
             //   given how we are authoring them in this app
-
             numObjects++;
 
             mashUp.startTime = offered.startTime;
@@ -94,6 +89,7 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
               _this.emitChange();
             }
           });
+          numObjects--;
         });
       } else {
         _assessments = [];
