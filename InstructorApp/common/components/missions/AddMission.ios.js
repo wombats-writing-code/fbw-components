@@ -13,16 +13,20 @@ import {
   ListView,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableHighlight,
   View,
   } from 'react-native';
 
-var ActionTypes = require('../../constants/Assessment').ActionTypes;
+var AssessmentConstants = require('../../constants/Assessment');
+
+var ActionTypes = AssessmentConstants.ActionTypes;
 var AssessmentStore = require('../../stores/Assessment');
 var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
 var Dispatcher = require('../../dispatchers/Assessment');
+var GenusTypes = AssessmentConstants.GenusTypes;
 var ItemSearchModal = require('./ItemSearchModal');
 
 var styles = StyleSheet.create({
@@ -115,6 +119,10 @@ var styles = StyleSheet.create({
     borderWidth: 1,
     height: 40,
     padding: 5
+  },
+  typePicker: {
+  },
+  typeWrapper: {
   }
 });
 
@@ -124,6 +132,7 @@ class AddMission extends Component {
     super(props);
     this.state = {
       height: 0,
+      inClass: false,
       items: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
       itemSearchModalOffset: new Animated.Value(Dimensions.get('window').height),
       missionDeadline: new Date(),
@@ -161,6 +170,12 @@ class AddMission extends Component {
       displayName: this.state.missionDisplayName,
       startTime: DateConvert(this.state.missionStartDate)
     };
+
+    if (this.state.inClass) {
+      data.genusTypeId = GenusTypes.IN_CLASS;
+    } else {
+      data.genusTypeId = GenusTypes.HOMEWORK;
+    }
 
     Dispatcher.dispatch({
         type: ActionTypes.CREATE_ASSESSMENT,
@@ -211,6 +226,15 @@ class AddMission extends Component {
           </View>
           <ScrollView onScroll={(event) => {console.log('scroll!')}}
                       style={ {height: this.state.height - 50 } }>
+            <View style={styles.inputRow}>
+              <View style={styles.rowLabel}>
+                <Text style={styles.inputLabel}>In-class</Text>
+              </View>
+              <View style={[styles.rowInput, styles.typeWrapper]}>
+                <Switch onValueChange={(value) => this.setState({ inClass: value })}
+                        value={this.state.inClass} />
+              </View>
+            </View>
             <View style={styles.inputRow}>
               <View style={styles.rowLabel}>
                 <Text style={styles.inputLabel}>Display Name</Text>

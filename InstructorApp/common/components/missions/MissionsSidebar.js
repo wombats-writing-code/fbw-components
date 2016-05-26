@@ -17,6 +17,9 @@ import {
 var _ = require('lodash');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
+var AssessmentConstants = require('../../constants/Assessment');
+var GenusTypes = AssessmentConstants.GenusTypes;
+
 
 var styles = StyleSheet.create({
   buttonText: {
@@ -29,12 +32,6 @@ var styles = StyleSheet.create({
     backgroundColor: '#D8D8D8',
     alignItems: 'stretch'
   },
-  missionArrowIcon: {
-    color: '#656565'
-  },
-  missionArrowIconWrapper: {
-    justifyContent: 'center'
-  },
   missionIconWrapper: {
     justifyContent: 'center',
     marginRight: 5
@@ -45,6 +42,12 @@ var styles = StyleSheet.create({
   missionLabel: {
     fontSize: 10,
     color: '#000000'
+  },
+  missionRightIcon: {
+    color: '#656565'
+  },
+  missionRightIconWrapper: {
+    justifyContent: 'center'
   },
   missionRow: {
     flex: 1,
@@ -77,6 +80,9 @@ var styles = StyleSheet.create({
     fontSize: 10,
     padding: 5
   },
+  progressIcon: {
+    marginRight: 3
+  },
   rounded: {
     borderRadius: 3
   },
@@ -104,12 +110,48 @@ class MissionsSidebar extends Component {
   // because we're calling it from ListView down below
   // alternatively, we can bind it below by this.renderRow.bind(this) in ListView.
   renderRow = (rowData, sectionId, rowId) => {
+    // change icon that appears depending on now time vs. item deadline + startTime
+    var st = rowData.startTime,
+      dl = rowData.deadline,
+      // need to subtract one because when you construct a Date object here,
+      // it assumes 0 index....but the native input and server-side use 1 index
+      startTime = new Date(st.year, st.month - 1, st.day, st.hour),
+      deadline = new Date(dl.year, dl.month - 1, dl.day, dl.hour),
+      now = new Date(),
+      icon = '',
+      progressIcon = '',
+      offset, nowSec;
+
+    // this is not exact, because it essentially treats UTC
+    // as belonging to the client timezone...but not sure
+    // what is a better way to evaluate, because we can't
+    // set timezone in JS Date() objects.
+    nowSec = now.getTime();
+    offset = now.getTimezoneOffset() * 60000;
+    now = new Date(nowSec + offset);
+
+    if (deadline < now) {
+      progressIcon = <Icon name="check"
+                           style={[styles.missionRightIcon, styles.progressIcon]} />;
+    } else if (startTime <= now && now <= deadline) {
+      progressIcon = <Icon name="clock-o"
+                           style={[styles.missionRightIcon, styles.progressIcon]} />;
+    } else {
+      progressIcon = <View />;
+    }
+
+    if (rowData.genusTypeId == GenusTypes.IN_CLASS) {
+      icon = <Icon name="university"/>;
+    } else {
+      icon = <Icon name="calendar"/>;
+    }
+
     return (
       <TouchableHighlight onPress={() => this._setMission(rowData)}
                           style={styles.missionWrapper}>
         <View style={styles.missionRow}>
           <View style={styles.missionIconWrapper}>
-            <Icon name="calendar"/>
+            {icon}
           </View>
           <View style={styles.missionInformation}>
             <View style={[styles.rowWrapper, styles.rounded]}>
@@ -122,13 +164,16 @@ class MissionsSidebar extends Component {
             </View>
             <View>
               <Text style={styles.missionSubtitle}>
-                Due on {rowData.deadline.month}-{rowData.deadline.day}-{rowData.deadline.year}
+                Due {rowData.deadline.month}-{rowData.deadline.day}-{rowData.deadline.year}
               </Text>
             </View>
           </View>
-          <View style={styles.missionArrowIconWrapper}>
+          <View style={styles.missionRightIconWrapper}>
+            {progressIcon}
+          </View>
+          <View style={styles.missionRightIconWrapper}>
             <Icon name="angle-right"
-                  style={styles.missionArrowIcon} />
+                  style={styles.missionRightIcon} />
           </View>
         </View>
       </TouchableHighlight>

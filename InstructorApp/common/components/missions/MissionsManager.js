@@ -98,7 +98,8 @@ class MissionsManager extends Component {
     // sort missions by startTime first
     this.setMissions(_.sortBy(missions,
       ['startTime.year', 'startTime.month', 'startTime.day',
-       'deadline.year', 'deadline.month', 'deadline.day']));
+       'deadline.year', 'deadline.month', 'deadline.day',
+       'displayName.text']));
   }
 }
 

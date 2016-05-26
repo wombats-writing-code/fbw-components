@@ -16,8 +16,10 @@ module.exports = {
         UPDATE_ASSESSMENT_TAKEN: null
     }),
     GenusTypes: {
-        ROOT: "assessment-bank-genus%3Afbw-root%40ODL.MIT.EDU",
-        SUBJECT: "assessment-bank-genus%3Afbw-subject%40ODL.MIT.EDU",
-        TERM: "assessment-bank-genus%3Afbw-term%40ODL.MIT.EDU"
+      HOMEWORK: 'assessment-genus%3Afbw-homework-mission%40ODL.MIT.EDU',
+      IN_CLASS: 'assessment-genus%3Afbw-in-class-mission%40ODL.MIT.EDU',
+      ROOT: "assessment-bank-genus%3Afbw-root%40ODL.MIT.EDU",
+      SUBJECT: "assessment-bank-genus%3Afbw-subject%40ODL.MIT.EDU",
+      TERM: "assessment-bank-genus%3Afbw-term%40ODL.MIT.EDU"
     }
 };
