@@ -56,8 +56,12 @@ class MissionsManager extends Component {
     this.setState({ missions: missions });
     this.setState({ loading: false });
   }
-  setSelectedMission = (mission) => {
+  setSelectedMission = (mission, mode) => {
+    if (typeof mode === 'undefined') {
+      mode = 'missionStatus'
+    }
     this.setState({ selectedMission: mission });
+    this.setState({ content: mode });
   }
   render() {
     var bankId = UserStore.getData().bankId;

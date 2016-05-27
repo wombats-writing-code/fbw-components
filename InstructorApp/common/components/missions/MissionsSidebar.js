@@ -6,20 +6,21 @@ import React, {
 } from 'react';
 
 import {
-  Text,
   ListView,
   ScrollView,
-  View,
+  StyleSheet,
+  SwipeableListView,  // TODO: How to get this from RN 0.27?
+  Text,
   TouchableHighlight,
-  StyleSheet
-} from 'react-native';
+  View
+  } from 'react-native';
 
 var _ = require('lodash');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
 var AssessmentConstants = require('../../constants/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
-
+var MissionStatus = require('../../../utilities/dateUtil/CheckMissionStatus');
 
 var styles = StyleSheet.create({
   buttonText: {
@@ -72,6 +73,9 @@ var styles = StyleSheet.create({
     margin: 1,
     padding: 5
   },
+  missionWrapperSelected: {
+    backgroundColor: '#709CCE'
+  },
   notification: {
     backgroundColor: '#ff9c9c',
     padding: 3
@@ -99,6 +103,7 @@ class MissionsSidebar extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      selectedId: ''
     }
   }
   componentWillUnmount() {
@@ -111,29 +116,28 @@ class MissionsSidebar extends Component {
   // alternatively, we can bind it below by this.renderRow.bind(this) in ListView.
   renderRow = (rowData, sectionId, rowId) => {
     // change icon that appears depending on now time vs. item deadline + startTime
-    var st = rowData.startTime,
-      dl = rowData.deadline,
-      // need to subtract one because when you construct a Date object here,
-      // it assumes 0 index....but the native input and server-side use 1 index
-      startTime = new Date(st.year, st.month - 1, st.day, st.hour),
-      deadline = new Date(dl.year, dl.month - 1, dl.day, dl.hour),
-      now = new Date(),
-      icon = '',
+    var icon = '',
       progressIcon = '',
-      offset, nowSec;
+      missionStatus = MissionStatus(rowData),
+      rowStyles = [styles.missionWrapper],
+      swipeButtons = [{
+        text: 'Edit',
+        backgroundColor: 'green',
+        onPress: () => {this._editMission(rowData)}
+      }, {
+        text: 'Delete',
+        backgroundColor: 'red',
+        onPress: () => {this._deleteMission(rowData)}
+      }];
 
-    // this is not exact, because it essentially treats UTC
-    // as belonging to the client timezone...but not sure
-    // what is a better way to evaluate, because we can't
-    // set timezone in JS Date() objects.
-    nowSec = now.getTime();
-    offset = now.getTimezoneOffset() * 60000;
-    now = new Date(nowSec + offset);
+    if (rowData.id == this.state.selectedId) {
+      rowStyles.push(styles.missionWrapperSelected);
+    }
 
-    if (deadline < now) {
+    if (missionStatus == 'over') {
       progressIcon = <Icon name="check"
                            style={[styles.missionRightIcon, styles.progressIcon]} />;
-    } else if (startTime <= now && now <= deadline) {
+    } else if (missionStatus == 'pending') {
       progressIcon = <Icon name="clock-o"
                            style={[styles.missionRightIcon, styles.progressIcon]} />;
     } else {
@@ -146,38 +150,37 @@ class MissionsSidebar extends Component {
       icon = <Icon name="calendar"/>;
     }
 
-    return (
-      <TouchableHighlight onPress={() => this._setMission(rowData)}
-                          style={styles.missionWrapper}>
-        <View style={styles.missionRow}>
-          <View style={styles.missionIconWrapper}>
-            {icon}
-          </View>
-          <View style={styles.missionInformation}>
-            <View style={[styles.rowWrapper, styles.rounded]}>
-              <Text
-                  style={styles.missionLabel}
-                  numberOfLines={1}
-              >
-                {rowData.displayName.text}
-              </Text>
+    return ( // TODO: Change this onPress call depending on what is swiped / touched
+        <TouchableHighlight onPress={() => this._editMission(rowData)}
+                            style={rowStyles}>
+          <View style={styles.missionRow}>
+            <View style={styles.missionIconWrapper}>
+              {icon}
             </View>
-            <View>
-              <Text style={styles.missionSubtitle}>
-                Due {rowData.deadline.month}-{rowData.deadline.day}-{rowData.deadline.year}
-              </Text>
+            <View style={styles.missionInformation}>
+              <View style={[styles.rowWrapper, styles.rounded]}>
+                <Text
+                    style={styles.missionLabel}
+                    numberOfLines={1}
+                >
+                  {rowData.displayName.text}
+                </Text>
+              </View>
+              <View>
+                <Text style={styles.missionSubtitle}>
+                  Due {rowData.deadline.month}-{rowData.deadline.day}-{rowData.deadline.year}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.missionRightIconWrapper}>
+              {progressIcon}
+            </View>
+            <View style={styles.missionRightIconWrapper}>
+              <Icon name="angle-right"
+                    style={styles.missionRightIcon} />
             </View>
           </View>
-          <View style={styles.missionRightIconWrapper}>
-            {progressIcon}
-          </View>
-          <View style={styles.missionRightIconWrapper}>
-            <Icon name="angle-right"
-                  style={styles.missionRightIcon} />
-          </View>
-        </View>
-      </TouchableHighlight>
-      );
+        </TouchableHighlight> );
   }
   render() {
     // probably want to move this to a get initial function so this doesn't run on every render
@@ -213,8 +216,17 @@ class MissionsSidebar extends Component {
   _addNewMission() {
     this.props.changeContent('addMission');
   }
+  _deleteMission = (mission) => {
+    this.props.selectMission(mission, 'missionDelete');
+    this.setState({ selectedId: mission.id });
+  }
+  _editMission = (mission) => {
+    this.props.selectMission(mission, 'missionEdit');
+    this.setState({ selectedId: mission.id });
+  }
   _setMission = (mission) => {
-    this.props.selectMission(mission);
+    this.props.selectMission(mission, 'missionStatus');
+    this.setState({ selectedId: mission.id });
   }
 }
 

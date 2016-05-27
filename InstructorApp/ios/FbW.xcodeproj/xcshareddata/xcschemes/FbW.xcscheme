@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0730"
+   LastUpgradeVersion = "0620"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -80,7 +80,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Run Script"
-               scriptText = "source ~/.bash_profile&#10;workon fbw-app&#10;cd /Users/cjshaw/Documents/Projects/FirstInTheWorld/fbw-author/fbw_author/static/fbw_author/js/InstructorApp/ios&#10;npm start">
+               scriptText = "source ~/.bash_profile&#10;shopt -s expand_aliases&#10;cd /Users/cjshaw/Documents/Projects/FirstInTheWorld/fbw-author/fbw_author/static/fbw_author/js/InstructorApp&#10;workon fbw-author&#10;">
             </ActionContent>
          </ExecutionAction>
       </PreActions>

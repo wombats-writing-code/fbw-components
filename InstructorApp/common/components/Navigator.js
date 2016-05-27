@@ -16,7 +16,6 @@ import {
 var _ = require('lodash');
 var Orientation = require('react-native-orientation');
 
-var AccountsList = require('./accountsList');
 var BankSelector = require('./bank-selector/BankSelector');
 var MissionsManager = require('./missions/MissionsManager');
 
@@ -109,8 +108,6 @@ var FbWNavigator = React.createClass({
     },
     renderScene: function (route, nav) {
         switch (route.id) {
-            case "home":
-                return <AccountsList navigator={nav} />
             case "missions":
                 return <MissionsManager navigator={nav} />
             case "banks":

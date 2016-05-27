@@ -33,7 +33,6 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
       };
 
     qbankFetch(params, function (assessmentData) {
-      // TODO: create the offered now
       var offeredParams = {
         data: data,
         method: 'POST',
@@ -44,6 +43,7 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
         var mashUp = assessmentData;
         mashUp.startTime = offeredData.startTime;
         mashUp.deadline = offeredData.deadline;
+        mashUp.assessmentOfferedId = offeredData.id;
 
         _assessments.push(mashUp);
         _this.emitChange();
@@ -56,7 +56,6 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
     });
   },
   getAssessments: function (bankId) {
-    // TODO: really should be get Offereds, then mash them up
     var _this = this,
       numObjects = 0,
       params = {
@@ -80,6 +79,7 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
 
             mashUp.startTime = offered.startTime;
             mashUp.deadline = offered.deadline;
+            mashUp.assessmentOfferedId = offered.id;
 
             finalAssessments.push(mashUp);
 
