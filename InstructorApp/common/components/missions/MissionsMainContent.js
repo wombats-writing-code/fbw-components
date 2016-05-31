@@ -84,8 +84,10 @@ class MissionsMainContent extends Component {
         <Animated.View style={{opacity: this.state.opacity}}>
           <MissionsContentNavbar content={this.props.content}
                                  mission={this.props.selectedMission}
+                                 sidebarOpen={this.props.sidebarOpen}
                                  subtitle={subtitle}
-                                 title={title} />
+                                 title={title}
+                                 toggleSidebar={this.props.toggleSidebar} />
           {content}
         </Animated.View>
       </View>

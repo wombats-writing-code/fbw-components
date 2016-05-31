@@ -38,8 +38,9 @@ class MissionsManager extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loading: true,
       content: 'calendar',
+      drawerOpen: true,
+      loading: true,
       missions: [],
       selectedMission: {}
     };
@@ -71,19 +72,30 @@ class MissionsManager extends Component {
     if (this.state.loading) {
       return this.renderLoadingView();
     }
-
+    // set panThreshold to 1.5 because acceptPan doesn't seem to work?
     return (
-      <View style={styles.container}>
-        <MissionsSidebar changeContent={this._changeContent}
-                         missions={this.state.missions}
-                         selectMission={this.setSelectedMission} />
-
-        <MissionsMainContent bankId={bankId}
-                             changeContent={this._changeContent}
-                             content={this.state.content}
-                             missions={this.state.missions}
-                             selectedMission={this.state.selectedMission} />
-      </View>
+      <Drawer acceptPan={false}
+              content={<MissionsSidebar changeContent={this._changeContent}
+                                        missions={this.state.missions}
+                                        selectMission={this.setSelectedMission}
+                                        sidebarOpen={this.state.drawerOpen}
+                                        toggleSidebar={this._toggleSidebar} />}
+              open={this.state.drawerOpen}
+              openDrawerOffset={0.75}
+              panThreshold={1.5}
+              side='left'
+              style={styles.container}
+              tweenHandler={Drawer.tweenPresets.parallax}>
+        <View>
+          <MissionsMainContent bankId={bankId}
+                               changeContent={this._changeContent}
+                               content={this.state.content}
+                               missions={this.state.missions}
+                               selectedMission={this.state.selectedMission}
+                               sidebarOpen={this.state.drawerOpen}
+                               toggleSidebar={this._toggleSidebar} />
+        </View>
+      </Drawer>
     )
   }
 
@@ -97,8 +109,11 @@ class MissionsManager extends Component {
         size='large'/>
     </View> );
   }
-  _changeContent = (newContent) => {  // fat arrow preserves 'this', so no need to go crazy bind'ing
+  _changeContent = (newContent) => {
     this.setState({ content: newContent });
+  }
+  _toggleSidebar = () => {
+    this.setState({ drawerOpen: !this.state.drawerOpen });
   }
   _updateMissionsFromStore = (missions) => {
     // sort missions by startTime first

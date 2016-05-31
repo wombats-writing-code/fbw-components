@@ -7,6 +7,7 @@ import React, {
 
 import {
   Animated,
+  Dimensions,
   Text,
   ListView,
   ScrollView,
@@ -26,6 +27,19 @@ var styles = StyleSheet.create({
     height: 45,
     padding: 5
   },
+  navIcon: {
+    color: '#007AFF',
+    fontSize: 12
+  },
+  navIconWrapper: {
+    borderColor: '#007AFF',
+    borderRadius: 5,
+    borderWidth: 1,
+    height: 20,
+    marginTop: 5,
+    padding: 3,
+    width: 20
+  },
   subTitle: {
     color: 'white',
     fontSize: 10,
@@ -37,6 +51,10 @@ var styles = StyleSheet.create({
     textAlign: 'center'
   },
   titleWrapper: {
+    flex: 1
+  },
+  wrapper: {
+    flexDirection: 'row'
   }
 });
 
@@ -45,7 +63,8 @@ class MissionsContentNavbar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      opacity: new Animated.Value(0)
+      opacity: new Animated.Value(0),
+      width: 0
     }
   }
   componentWillUnmount() {
@@ -57,16 +76,38 @@ class MissionsContentNavbar extends Component {
     Animated.timing(this.state.opacity, {
       toValue: 1
     }).start();
+
+    this.setState({ width: Dimensions.get('window').width });
   }
   render() {
+    var wrapperStyle = [styles.titleWrapper],
+      toggleSidebar = <View/>;
+
+    if (this.props.sidebarOpen) {
+      wrapperStyle.push({ width: this.state.width * 0.725 });
+    } else {
+      toggleSidebar = ( <TouchableHighlight onPress={() => this.props.toggleSidebar()}
+                                style={styles.navIconWrapper}>
+        <View>
+          <Icon name="navicon"
+                style={styles.navIcon} />
+        </View>
+      </TouchableHighlight> );
+    }
+
     return (
       <View style={styles.container}>
         <Animated.View style={{opacity: this.state.opacity}}>
-          <View style={styles.titleWrapper}>
-            <Text style={styles.title}>{this.props.title}</Text>
-          </View>
-          <View style={styles.titleWrapper}>
-            <Text style={styles.subTitle}>{this.props.subtitle}</Text>
+          <View style={styles.wrapper}>
+            {toggleSidebar}
+            <View style={styles.titleWrapper}>
+              <View style={wrapperStyle}>
+                <Text style={styles.title}>{this.props.title}</Text>
+              </View>
+              <View style={wrapperStyle}>
+                <Text style={styles.subTitle}>{this.props.subtitle}</Text>
+              </View>
+            </View>
           </View>
         </Animated.View>
       </View>

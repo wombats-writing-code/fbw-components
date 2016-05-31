@@ -23,6 +23,11 @@ var GenusTypes = AssessmentConstants.GenusTypes;
 var MissionStatus = require('../../../utilities/dateUtil/CheckMissionStatus');
 
 var styles = StyleSheet.create({
+  addMissionWrapper: {
+    flex: 1,
+    height: 60,
+    marginRight: -10
+  },
   buttonText: {
     fontSize: 50,
     color: '#007AFF',
@@ -94,7 +99,15 @@ var styles = StyleSheet.create({
     height: 10
   },
   sidebarHeader: {
-    height: 60
+    flexDirection: 'row'
+  },
+  toggleCaret: {
+    color: '#007AFF'
+  },
+  toggleWrapper: {
+    justifyContent: 'center',
+    paddingLeft: 5,
+    width: 10
   }
 });
 
@@ -191,12 +204,12 @@ class MissionsSidebar extends Component {
                     style={styles.missionRightIcon} />
             </View>
           </View>
-        </TouchableHighlight> );
+        </TouchableHighlight>);
   }
   render() {
-    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-
-    var currentMissions = this.props.missions.length > 0 ?
+    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+      toggleIcon = <View />,
+      currentMissions = this.props.missions.length > 0 ?
                   ( <ListView
                         dataSource={ds.cloneWithRows(this.state.sortedMissions)}
                         renderRow={this.renderRow}>
@@ -207,12 +220,24 @@ class MissionsSidebar extends Component {
                     </Text>
                   </View> );
 
+    if (this.props.sidebarOpen) {
+      toggleIcon = <Icon name="caret-left"
+                         style={styles.toggleCaret} />;
+    }
     return (
       <View style={styles.container}>
-        <TouchableHighlight style={styles.sidebarHeader}
-                            onPress={() => this._addNewMission()}>
-          <Text style={styles.buttonText}>+</Text>
-        </TouchableHighlight>
+        <View style={styles.sidebarHeader}>
+          <TouchableHighlight onPress={() => this._addNewMission()}
+                              style={styles.addMissionWrapper}>
+            <Text style={styles.buttonText}>+</Text>
+          </TouchableHighlight>
+          <TouchableHighlight onPress={() => this.props.toggleSidebar()}
+                              style={styles.toggleWrapper}>
+            <View>
+              {toggleIcon}
+            </View>
+          </TouchableHighlight>
+        </View>
         <View style={[styles.missionsListWrapper, styles.rounded]}>
           <ScrollView style={styles.missionsList}>
             {currentMissions}
