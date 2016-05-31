@@ -7,7 +7,6 @@ var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 var _ = require('lodash');
 
-var credentials = require('../constants/qbank_credentials');
 var qbankFetch = require('../../utilities/fetch/fetch');
 
 var ActionTypes = AccountConstants.ActionTypes;

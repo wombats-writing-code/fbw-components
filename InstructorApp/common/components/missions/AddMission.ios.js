@@ -27,7 +27,6 @@ var AssessmentStore = require('../../stores/Assessment');
 var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
 var Dispatcher = require('../../dispatchers/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
-var ItemSearchModal = require('./ItemSearchModal');
 
 var styles = StyleSheet.create({
   actions: {
@@ -134,7 +133,6 @@ class AddMission extends Component {
       height: 0,
       inClass: false,
       items: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
-      itemSearchModalOffset: new Animated.Value(Dimensions.get('window').height),
       missionDeadline: new Date(),
       missionDisplayName: '',
       missionStartDate: new Date(),
@@ -192,12 +190,6 @@ class AddMission extends Component {
   }
   renderItemRow = (rowData, sectionId, rowId) => {
 
-  }
-  showItemSearchModal() {
-    Animated.timing(this.state.itemSearchModalOffset, {
-      duration: 100,
-      toValue: 0
-    }).start();
   }
   render() {
     var currentItems = this.state.items.length > 0 ?
@@ -272,11 +264,6 @@ class AddMission extends Component {
                              timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}/>
             </View>
           </ScrollView>
-        </Animated.View>
-        <Animated.View style={{ transform: [{translateY: this.state.itemSearchModalOffset}] }}>
-          <View style={styles.modalBackdrop}>
-            <Text>Foo!</Text>
-          </View>
         </Animated.View>
       </View>
     );

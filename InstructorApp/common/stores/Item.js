@@ -1,19 +1,18 @@
-// AssessmentItem store
+// Item store
 
-var AssessmentItemDispatcher = require('../dispatchers/AssessmentItem');
-var AssessmentItemConstants = require('../constants/AssessmentItem');
+var ItemDispatcher = require('../dispatchers/Item');
+var ItemConstants = require('../constants/Item');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
 
-var credentials = require('../constants/qbank_credentials');
 var qbankFetch = require('../../utilities/fetch/fetch');
 
-var ActionTypes = AssessmentItemConstants.ActionTypes;
+var ActionTypes = ItemConstants.ActionTypes;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
 var _items = [];
 
-var AssessmentItemStore = _.assign({}, EventEmitter.prototype, {
+var ItemStore = _.assign({}, EventEmitter.prototype, {
   emitChange: function () {
     this.emit(CHANGE_EVENT, _items);
   },
@@ -29,10 +28,10 @@ var AssessmentItemStore = _.assign({}, EventEmitter.prototype, {
       return item.id == id;
     });
   },
-  getItems: function (bankId, assessmentId) {
+  getItems: function (bankId) {
     var _this = this,
       params = {
-        path: 'assessment/banks/' + bankId + '/assessments/' + assessmentId + '/items?page=all'
+        path: 'assessment/banks/' + bankId + '/items?page=all'
       };
     qbankFetch(params, function (data) {
       _items = data.data.results;
@@ -41,18 +40,18 @@ var AssessmentItemStore = _.assign({}, EventEmitter.prototype, {
   }
 });
 
-AssessmentItemStore.dispatchToken = AssessmentItemDispatcher.register(function (action) {
+ItemStore.dispatchToken = ItemDispatcher.register(function (action) {
     switch(action.type) {
         case ActionTypes.CREATE_ASSESSMENT:
-            AssessmentItemStore.createAssessment(action.content);
+            ItemStore.createAssessment(action.content);
             break;
         case ActionTypes.UPDATE_ASSESSMENT:
-            AssessmentItemStore.updateAssessment(action.content);
+            ItemStore.updateAssessment(action.content);
             break;
         case ActionTypes.DELETE_ASSESSMENT:
-            AssessmentItemStore.deleteAssessment(action.content);
+            ItemStore.deleteAssessment(action.content);
             break;
     }
 });
 
-module.exports = AssessmentItemStore;
+module.exports = ItemStore;

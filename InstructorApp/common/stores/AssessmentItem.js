@@ -5,7 +5,6 @@ var AssessmentItemConstants = require('../constants/AssessmentItem');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
 
-var credentials = require('../constants/qbank_credentials');
 var qbankFetch = require('../../utilities/fetch/fetch');
 
 var ActionTypes = AssessmentItemConstants.ActionTypes;

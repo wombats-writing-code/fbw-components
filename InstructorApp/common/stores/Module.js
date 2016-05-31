@@ -1,21 +1,21 @@
-// Item store
+// Module store (Handcar)
 
-var ItemDispatcher = require('../dispatchers/Item');
-var ItemConstants = require('../constants/Item');
+var ModuleConstants = require('../constants/Module');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
 
-var credentials = require('../constants/qbank_credentials');
-var qbankFetch = require('../../utilities/fetch/fetch');
+var HandcarFetch = require('../../utilities/handcar/fetch');
 
-var ActionTypes = ItemConstants.ActionTypes;
+var ActionTypes = ModuleConstants.ActionTypes;
+var BankMap = ModuleConstants.BankMap;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+var GenusTypes = ModuleConstants.GenusTypes;
 
-var _items = [];
+var _modules = [];
 
-var ItemStore = _.assign({}, EventEmitter.prototype, {
+var ModuleStore = _.assign({}, EventEmitter.prototype, {
   emitChange: function () {
-    this.emit(CHANGE_EVENT, _items);
+    this.emit(CHANGE_EVENT, _modules);
   },
   addChangeListener: function (callback) {
     this.on(CHANGE_EVENT, callback);
@@ -24,35 +24,22 @@ var ItemStore = _.assign({}, EventEmitter.prototype, {
     console.log(callback);
     this.removeListener(CHANGE_EVENT, callback);
   },
-  getItem: function (id) {
-    return _.find(_items, function (item) {
-      return item.id == id;
+  getModule: function (id) {
+    return _.find(_modules, function (module) {
+      return module.id == id;
     });
   },
-  getItems: function (bankId) {
+  getModules: function (bankId) {
     var _this = this,
       params = {
-        path: 'assessment/banks/' + bankId + '/items?page=all'
+        path: '/learning/objectivebanks/' + BankMap[bankId] + '/objectives/roots?descendentlevels=2'
       };
-    qbankFetch(params, function (data) {
-      _items = data.data.results;
+    HandcarFetch(params, function (data) {
+      _modules = data;
       _this.emitChange();
     });
   }
 });
 
-ItemStore.dispatchToken = ItemDispatcher.register(function (action) {
-    switch(action.type) {
-        case ActionTypes.CREATE_ASSESSMENT:
-            ItemStore.createAssessment(action.content);
-            break;
-        case ActionTypes.UPDATE_ASSESSMENT:
-            ItemStore.updateAssessment(action.content);
-            break;
-        case ActionTypes.DELETE_ASSESSMENT:
-            ItemStore.deleteAssessment(action.content);
-            break;
-    }
-});
 
-module.exports = ItemStore;
+module.exports = ModuleStore;

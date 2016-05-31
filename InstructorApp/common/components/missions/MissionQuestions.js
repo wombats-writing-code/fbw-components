@@ -20,8 +20,6 @@ import {
   View,
   } from 'react-native';
 
-import Drawer from 'react-native-drawer';
-
 var AssessmentConstants = require('../../constants/Assessment');
 
 var ActionTypes = AssessmentConstants.ActionTypes;
@@ -30,7 +28,6 @@ var AssessmentItemStore = require('../../stores/AssessmentItem');
 var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
 var Dispatcher = require('../../dispatchers/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
-var ItemSearchModal = require('./ItemSearchModal');
 
 var styles = StyleSheet.create({
   header: {
@@ -57,7 +54,6 @@ class MissionQuestions extends Component {
     super(props);
     this.state = {
       allItems: [],
-      drawerOpen: false,
       height: 0,
       items: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
       opacity: new Animated.Value(0)
@@ -130,31 +126,21 @@ class MissionQuestions extends Component {
                            <Text style={[styles.notificationText]}>No questions</Text>
                          </View> );
     return (
-      <Drawer content={<View><Text>Hi</Text></View>}
-              open={this.state.drawerOpen}
-              openDrawerOffset={0.5}
-              side='right'
-              tweenHandler={Drawer.tweenPresets.parallax}>
-        <View style={styles.container}>
-          <Animated.View style={{opacity: this.state.opacity}}>
-            <TouchableHighlight onPress={() => this._toggleQuestionDrawer()}
-                                style={styles.header}>
-              <Text style={styles.headerText}>
-                Tap here to toggle the "Add Question" drawer.
-              </Text>
-            </TouchableHighlight>
-            <ScrollView onScroll={(event) => {console.log('scroll!')}}
-                        style={ {height: this.state.height - 50 } }>
-              {currentItems}
-            </ScrollView>
-          </Animated.View>
-        </View>
-      </Drawer>
+      <View style={styles.container}>
+        <Animated.View style={{opacity: this.state.opacity}}>
+          <TouchableHighlight onPress={() => this.props.toggleQuestionDrawer()}
+                              style={styles.header}>
+            <Text style={styles.headerText}>
+              Tap here to toggle the "Add Question" drawer.
+            </Text>
+          </TouchableHighlight>
+          <ScrollView onScroll={(event) => {console.log('scroll!')}}
+                      style={ {height: this.state.height - 50 } }>
+            {currentItems}
+          </ScrollView>
+        </Animated.View>
+      </View>
     );
-  }
-  _toggleQuestionDrawer() {
-    console.log('toggling drawer');
-    this.setState({ drawerOpen: !this.state.drawerOpen });
   }
   _updateItemsFromStore = (items) => {
     this.setItems(_.sortBy(items,

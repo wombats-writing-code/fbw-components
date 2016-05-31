@@ -124,7 +124,8 @@ class MissionDetails extends Component {
     if (this.state.selectedPane == 'items') {
       questionStyles.push(styles.activeHeaderText);
       missionContent = <MissionQuestions bankId={this.props.bankId}
-                                         mission={this.props.mission} />;
+                                         mission={this.props.mission}
+                                         toggleQuestionDrawer={this.props.toggleQuestionDrawer} />;
     } else {
       metadataStyles.push(styles.activeHeaderText);
     }

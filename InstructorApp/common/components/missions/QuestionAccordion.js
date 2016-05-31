@@ -1,4 +1,4 @@
-// AllQuestionsDrawer.js
+// QuestionAccordion.js
 
 'use strict';
 import React, {
@@ -18,6 +18,8 @@ import {
   View,
   } from 'react-native';
 
+import Accordion from 'react-native-collapsible/Accordion';
+
 var AssessmentConstants = require('../../constants/Assessment');
 
 var ActionTypes = AssessmentConstants.ActionTypes;
@@ -26,43 +28,15 @@ var AssessmentItemStore = require('../../stores/AssessmentItem');
 var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
 var Dispatcher = require('../../dispatchers/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
-var QuestionAccordion = require('./QuestionAccordion');
 
 var styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#2B2B2B',
-    flex: 1,
-    opacity: 0.9
-  },
-  header: {
-    padding: 3
-  },
-  headerText: {
-    color: '#C2C2C2',
-    textAlign: 'center'
-  },
-  notification: {
-    backgroundColor: '#ff9c9c',
-    padding: 3
-  },
-  notificationText: {
-    fontSize: 10,
-    padding: 5
-  },
-  separator: {
-    borderColor: '#C2C2C2',
-    borderRadius: 5,
-    borderWidth: 1,
-    marginBottom: 10,
-    marginLeft: 5,
-    marginRight: 5
-  }
 });
 
 
-class AllQuestionsDrawer extends Component {
+class QuestionAccordion extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
     };
   }
@@ -84,30 +58,42 @@ class AllQuestionsDrawer extends Component {
     console.log('onLayout called');
     this.setState({ height: Dimensions.get('window').height });
   }
-  setItems(items) {
-    this.setState({ items: items });
+  renderAccordionHeader = (section) => {
+    return (
+      <View>
+        <Text>
+          {section.displayName} - {section.items.length}
+        </Text>
+      </View>
+      );
+  }
+  renderAccordionContent = (section) => {
+    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+
+    return (
+      <ListView
+          dataSource={ds.cloneWithRows(section.items)}
+          renderRow={this.renderItemRow}>
+      </ListView>
+    );
+  }
+  renderItemRow = (rowData, sectionId, rowId) => {
+    return (
+      <View>
+        <Text>
+          {rowData.displayName.text}
+        </Text>
+      </View>
+      );
   }
   render() {
-    // TODO: make this a set of collapsible accordions with <ListView> inside of each...
-    var currentItems = _.keys(this.props.items).length > 0 ?
-                       ( <QuestionAccordion items={this.props.items} /> ) :
-                       ( <View style={styles.notification}>
-                           <Text style={[styles.notificationText]}>No questions</Text>
-                         </View> );
+
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.headerText}>
-            Curated Questions
-          </Text>
-        </View>
-        <View style={styles.separator} />
-        <ScrollView>
-          {currentItems}
-        </ScrollView>
-      </View>
+      <Accordion renderContent={this.renderAccordionContent}
+                 renderHeader={this.renderAccordionHeader}
+                 sections={this.props.items} />
     );
   }
 }
 
-module.exports = AllQuestionsDrawer;
+module.exports = QuestionAccordion;

@@ -1,78 +1,41 @@
-// customized fetch version with signing for QBank
+// customized fetch version for Handcar authenticated calls
 'use strict';
 
-var QBankSignature = require('../signingUtil/QBankSignature');
-var credentials = require('../../common/constants/qbank_credentials');
+var credentials = require('../../common/constants/handcar_credentials');
 
-var qbank = new QBankSignature();
+let URL = 'https://' + credentials.Host + '/handcar/services';
 
-let URL = 'https://' + credentials.Host + '/api/v2/';
-
-
-var qbankFetch = function (params, _callback) {
+var HandcarFetch = function (params, _callback) {
     // wrapper around global fetch to include signing
-    var now = new Date(),
-        headers = new Headers(),
-        url = URL + params.path,
-        headerPath = url.split('mit.edu')[1],
-        options, fetchInit;
-    if (url.indexOf('%3A') >= 0) {
-        url = decodeURIComponent(url);
-        headerPath = decodeURIComponent(headerPath);
-    }
-    headers.append('x-api-key', credentials.AccessKeyId);
-    headers.append('x-api-proxy', 'cjshaw@mit.edu');
-    headers.append('host', credentials.Host);
-    headers.append('request-line', headerPath);
-    headers.append('accept', 'application/json');
-    headers.append('date', now.toUTCString());
-    options = {
-        path: headerPath,
-        method: params.hasOwnProperty('method') ? params.method : 'GET',
-        headers: {
-          'request-line': headers.get('request-line'),
-          'accept': headers.get('accept'),
-          'date': now.toUTCString(),
-          'host': headers.get('host'),
-          'x-api-proxy': headers.get('x-api-proxy')
-        },
-        body: '',
-        credentials
-    };
-    qbank.setParams(options);
+    var url = URL + params.path;
+    
+  if (url.indexOf('%3A') >= 0) {
+    url = decodeURIComponent(url);
+  }
 
-    headers.append('authorization', qbank.getAuthorizationString());
+  if (url.indexOf('?') >= 0) {
+    url = url + '&proxyname=' + credentials.ProxyKey;
+  } else {
+    url = url + '?proxyname=' + credentials.ProxyKey;
+  }
 
-    fetchInit = {
-        headers: headers,
-        method: options.method.toUpperCase()
-    };
-
-    if (params.hasOwnProperty('data')) {
-      if (typeof params.date == "string") {
-        fetchInit['body'] = params.data;
-      } else {
-        fetchInit['body'] = JSON.stringify(params.data);
-        headers.append('Content-Type', 'application/json');
-      }
-    }
-    fetch(url, fetchInit)
-        .then(function (response) {
-            if (response.ok) {
-                response.json().then(function (responseData) {
-                    _callback(responseData);
-                });
-            } else {
-                response.text().then(function (responseText) {
-                    console.log('Not a 200 response: ' + url);
-                    console.log('Error returned: ' + responseText);
-                });
-            }
-        })
-        .catch(function (error) {
-            console.log('Error fetching: ' + url);
-            console.log('Error with fetch! ' + error.message);
+  fetch(url)
+    .then(function (response) {
+      if (response.ok) {
+        response.json().then(function (responseData) {
+          _callback(responseData);
         });
+      } else {
+        response.text().then(function (responseText) {
+          console.log('Not a 200 response: ' + url);
+          console.log('Error returned from Handcar: ' + responseText);
+        });
+      }
+    })
+    .catch(function (error) {
+      console.log('Error fetching: ' + url);
+      console.log('Error with handcar fetch! ' + error.message);
+    });
 };
 
-module.exports = qbankFetch;
+module.exports = HandcarFetch;
