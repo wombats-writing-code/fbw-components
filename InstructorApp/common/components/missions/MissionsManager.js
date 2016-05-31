@@ -15,6 +15,8 @@ import {
   StyleSheet
 } from 'react-native';
 
+import Drawer from 'react-native-drawer';
+
 var _ = require('lodash');
 var Icon = require('react-native-vector-icons/FontAwesome');
 

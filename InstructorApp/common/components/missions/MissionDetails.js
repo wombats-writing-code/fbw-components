@@ -23,10 +23,10 @@ var AssessmentConstants = require('../../constants/Assessment');
 
 var ActionTypes = AssessmentConstants.ActionTypes;
 var AssessmentStore = require('../../stores/Assessment');
-var AssessmentItemStore = require('../../stores/AssessmentItem');
 var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
 var Dispatcher = require('../../dispatchers/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
+var MissionQuestions = require('./MissionQuestions');
 var MissionStatus = require('../../../utilities/dateUtil/CheckMissionStatus');
 
 var styles = StyleSheet.create({
@@ -61,14 +61,11 @@ class MissionDetails extends Component {
     var missionStatus = MissionStatus(this.props.mission);
 
     this.state = {
-      items: [],
       loadingItems: true,
       missionStatus: missionStatus,
       opacity: new Animated.Value(0),
       selectedPane: 'items'
     };
-
-    AssessmentItemStore.addChangeListener(this._updateItemsFromStore);
   }
   componentWillUnmount() {
     Animated.timing(this.state.opacity, {
@@ -79,8 +76,6 @@ class MissionDetails extends Component {
     Animated.timing(this.state.opacity, {
       toValue: 1
     }).start();
-
-    AssessmentItemStore.getItems(this.props.bankId, this.props.mission.id);
   }
   componentDidUpdate() {
     // issue with styling DatePickerIOS:
@@ -121,49 +116,47 @@ class MissionDetails extends Component {
   renderItemRow = (rowData, sectionId, rowId) => {
 
   }
-  setItems(items) {
-    this.setState({ items: items });
-  }
   render() {
-    var questionStyles, metadataStyles;
+    var questionStyles = [styles.headerText],
+      metadataStyles = [styles.headerText, styles.textRight],
+      missionContent = <View />;
 
     if (this.state.selectedPane == 'items') {
-      questionStyles = [styles.headerText, styles.activeHeaderText];
-      metadataStyles = [styles.headerText, styles.textRight]
+      questionStyles.push(styles.activeHeaderText);
+      missionContent = <MissionQuestions bankId={this.props.bankId}
+                                         mission={this.props.mission} />;
     } else {
-      questionStyles = [styles.headerText]
-      metadataStyles = [styles.headerText, styles.activeHeaderText, styles.textRight]
+      metadataStyles.push(styles.activeHeaderText);
     }
 
     return (
       <View style={styles.container}>
         <Animated.View style={{opacity: this.state.opacity}}>
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => this.setState({ selectedPane: 'items' })}
+            <TouchableOpacity onPress={() => this._changeContent('items') }
                                 style={styles.headerOption}>
               <Text style={questionStyles}>
                 Questions
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => this.setState({ selectedPane: 'metadata' })}
+            <TouchableOpacity onPress={() => this._changeContent('metadata') }
                                 style={styles.headerOption}>
               <Text style={metadataStyles}>
                 Name & Dates
               </Text>
             </TouchableOpacity>
           </View>
+        </Animated.View>
+        <Animated.View style={{opacity: this.state.contentOpacity}}>
           <View>
-
+            {missionContent}
           </View>
         </Animated.View>
       </View>
     );
   }
-  _updateItemsFromStore = (items) => {
-    this.setItems(_.sortBy(items,
-      ['startTime.year', 'startTime.month', 'startTime.day',
-       'deadline.year', 'deadline.month', 'deadline.day',
-       'displayName.text']));
+  _changeContent = (newContent) => {
+    this.setState({ selectedPane: newContent });
   }
 }
 

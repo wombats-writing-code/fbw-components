@@ -102,13 +102,19 @@ var styles = StyleSheet.create({
 class MissionsSidebar extends Component {
   constructor(props) {
     super(props);
+    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+
     this.state = {
-      selectedId: ''
+      selectedId: '',
+      sortedMissions: _.sortBy(this.props.missions, 'displayName.text') // this should be passed in already sorted by date
     }
   }
   componentWillUnmount() {
   }
   componentDidMount() {
+  }
+  componentWillReceiveProps(nextProps) {
+    this.setState({ sortedMissions: _.sortBy(nextProps.missions, 'displayName.text') });
   }
 
   // if we want 'this' to refer to this class, we need to fat arrow renderRow(),
@@ -168,6 +174,11 @@ class MissionsSidebar extends Component {
               </View>
               <View>
                 <Text style={styles.missionSubtitle}>
+                  Start {rowData.startTime.month}-{rowData.startTime.day}-{rowData.startTime.year}
+                </Text>
+              </View>
+              <View>
+                <Text style={styles.missionSubtitle}>
                   Due {rowData.deadline.month}-{rowData.deadline.day}-{rowData.deadline.year}
                 </Text>
               </View>
@@ -183,13 +194,11 @@ class MissionsSidebar extends Component {
         </TouchableHighlight> );
   }
   render() {
-    // probably want to move this to a get initial function so this doesn't run on every render
-    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
-      sortedMissions = _.sortBy(this.props.missions, 'displayName');  // TODO: this should be by startDate on the Offered...
+    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
     var currentMissions = this.props.missions.length > 0 ?
                   ( <ListView
-                        dataSource={ds.cloneWithRows(sortedMissions)}
+                        dataSource={ds.cloneWithRows(this.state.sortedMissions)}
                         renderRow={this.renderRow}>
                     </ListView> ) :
                   ( <View style={[styles.notification, styles.rounded]} >
@@ -215,6 +224,7 @@ class MissionsSidebar extends Component {
   }
   _addNewMission() {
     this.props.changeContent('addMission');
+    this.setState({ selectedId: '' });
   }
   _deleteMission = (mission) => {
     this.props.selectMission(mission, 'missionDelete');

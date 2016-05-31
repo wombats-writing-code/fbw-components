@@ -167,7 +167,7 @@ class AddMission extends Component {
       bankId: this.props.bankId,
       deadline: DateConvert(this.state.missionDeadline),
       description: 'A Fly-by-Wire mission',
-      displayName: this.state.missionDisplayName,
+      displayName: String(this.state.missionDisplayName),
       startTime: DateConvert(this.state.missionStartDate)
     };
 

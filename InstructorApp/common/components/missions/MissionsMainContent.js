@@ -29,7 +29,7 @@ var MissionsContentNavbar = require('./MissionsContentNavbar');
 
 var styles = StyleSheet.create({
   container: {
-    flex: 3
+    flex: 2.5
   }
 });
 
