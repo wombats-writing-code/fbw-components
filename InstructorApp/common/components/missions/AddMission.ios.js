@@ -194,7 +194,6 @@ class AddMission extends Component {
 
   }
   showItemSearchModal() {
-    console.log('lets animate the modal');
     Animated.timing(this.state.itemSearchModalOffset, {
       duration: 100,
       toValue: 0
@@ -265,22 +264,6 @@ class AddMission extends Component {
                              onDateChange={(date) => this.setState({missionDeadline: date})}
                              ref="deadlineDatepicker"
                              timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}/>
-            </View>
-            <View style={styles.inputRow}>
-              <View style={styles.rowLabel}>
-                <Text style={styles.inputLabel}>Questions</Text>
-                {currentItems}
-                <TouchableHighlight onPress={() => this.showItemSearchModal()}
-                                    style={styles.addItemWrapper}>
-                  <Text style={[styles.addItemText, styles.itemLabel]}>+ Add Item</Text>
-                </TouchableHighlight>
-              </View>
-              <View style={styles.separator}/>
-              <View style={styles.rowInput}>
-                <Text style={styles.inputLabel}>
-                  Item preview
-                </Text>
-              </View>
             </View>
           </ScrollView>
         </Animated.View>
