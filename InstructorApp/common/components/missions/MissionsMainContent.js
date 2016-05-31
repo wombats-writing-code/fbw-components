@@ -8,6 +8,7 @@ import React, {
 import {
   ActivityIndicatorIOS,
   Animated,
+  Dimensions,
   ListView,
   ScrollView,
   StyleSheet,
@@ -38,7 +39,8 @@ class MissionsMainContent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      opacity: new Animated.Value(0)
+      opacity: new Animated.Value(0),
+      width: 0
     }
 
   }
@@ -51,9 +53,17 @@ class MissionsMainContent extends Component {
     Animated.timing(this.state.opacity, {
       toValue: 1
     }).start();
+
+    this.setState({ width: Dimensions.get('window').width });
   }
   render() {
-    var content = <View />, title, subtitle;
+    var content = <View />,
+      wrapperStyle = [styles.container],
+      title, subtitle;
+
+    if (this.props.sidebarOpen) {
+      wrapperStyle.push({ width: this.state.width * 0.75 });
+    }
 
     if (this.props.content == 'calendar') {
       content = <MissionsCalendar missions={this.props.missions} />;
@@ -62,7 +72,8 @@ class MissionsMainContent extends Component {
       title = 'Mission Control';
     } else if (this.props.content == 'addMission') {
       content = <AddMission bankId={this.props.bankId}
-                            closeAdd={this._revertToDefaultContent} />;
+                            closeAdd={this._revertToDefaultContent}
+                            sidebarOpen={this.props.sidebarOpen} />;
       subtitle = '';
       title = 'Add New Mission';
     } else if (this.props.content == 'missionStatus' ||
@@ -80,7 +91,7 @@ class MissionsMainContent extends Component {
     }
 
     return (
-      <View style={styles.container}>
+      <View style={wrapperStyle}>
         <Animated.View style={{opacity: this.state.opacity}}>
           <MissionsContentNavbar content={this.props.content}
                                  mission={this.props.selectedMission}

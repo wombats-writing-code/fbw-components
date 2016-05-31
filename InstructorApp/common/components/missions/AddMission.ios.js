@@ -206,13 +206,19 @@ class AddMission extends Component {
                          </ListView> ) :
                        ( <View style={styles.noItemsWarning}>
                            <Text style={[styles.itemLabel, styles.noItemsText]}>No questions</Text>
-                         </View> );
+                         </View> ),
+      cancelButtonStyle = [styles.cancelButton, styles.roundedButton];
+
+    if (!this.props.sidebarOpen) {
+      cancelButtonStyle.push({ left: 20 });
+    }
+
     return (
       <View style={styles.container}>
         <Animated.View style={{opacity: this.state.opacity}}>
           <View style={styles.actions}>
             <TouchableHighlight onPress={() => this.props.closeAdd()}>
-              <View style={[styles.cancelButton, styles.roundedButton]}>
+              <View style={cancelButtonStyle}>
                 <Text style={styles.buttonText}>Cancel</Text>
               </View>
             </TouchableHighlight>

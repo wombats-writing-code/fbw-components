@@ -7,7 +7,6 @@ import React, {
 
 import {
   Animated,
-  Dimensions,
   Text,
   ListView,
   ScrollView,
@@ -36,7 +35,6 @@ var styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     height: 20,
-    marginTop: 5,
     padding: 3,
     width: 20
   },
@@ -63,8 +61,7 @@ class MissionsContentNavbar extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      opacity: new Animated.Value(0),
-      width: 0
+      opacity: new Animated.Value(0)
     }
   }
   componentWillUnmount() {
@@ -76,16 +73,11 @@ class MissionsContentNavbar extends Component {
     Animated.timing(this.state.opacity, {
       toValue: 1
     }).start();
-
-    this.setState({ width: Dimensions.get('window').width });
   }
   render() {
-    var wrapperStyle = [styles.titleWrapper],
-      toggleSidebar = <View/>;
+    var toggleSidebar = <View/>;
 
-    if (this.props.sidebarOpen) {
-      wrapperStyle.push({ width: this.state.width * 0.725 });
-    } else {
+    if (!this.props.sidebarOpen) {
       toggleSidebar = ( <TouchableHighlight onPress={() => this.props.toggleSidebar()}
                                 style={styles.navIconWrapper}>
         <View>
@@ -101,10 +93,10 @@ class MissionsContentNavbar extends Component {
           <View style={styles.wrapper}>
             {toggleSidebar}
             <View style={styles.titleWrapper}>
-              <View style={wrapperStyle}>
+              <View style={[styles.titleWrapper]}>
                 <Text style={styles.title}>{this.props.title}</Text>
               </View>
-              <View style={wrapperStyle}>
+              <View style={[styles.titleWrapper]}>
                 <Text style={styles.subTitle}>{this.props.subtitle}</Text>
               </View>
             </View>
