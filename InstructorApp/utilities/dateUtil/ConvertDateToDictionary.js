@@ -3,13 +3,12 @@
 'use strict';
 
 var ConvertDateToDictionary = function (date) {
-  var utcHourOffset = date.getTimezoneOffset() / 60;
   return {
-    year: date.getFullYear(),
-    month: date.getMonth() + 1,
-    day: date.getDate(),
-    hour: date.getHours() + utcHourOffset,
-    minute: date.getMinutes()
+    year: date.getUTCFullYear(),
+    month: date.getUTCMonth() + 1,
+    day: date.getUTCDate(),
+    hour: date.getUTCHours(),
+    minute: date.getUTCMinutes()
   };
 };
 
