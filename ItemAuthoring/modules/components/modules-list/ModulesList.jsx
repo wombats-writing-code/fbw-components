@@ -124,6 +124,7 @@ var ModulesList = React.createClass({
                                libraries={_this.props.libraries}
                                libraryId={_this.props.libraryId}
                                outcomes={_this.state.outcomes}
+                               refreshModulesAndOutcomes={_this._refreshModulesAndOutcomes}
                                relatedItems={_this.state.sortedItemsByOutcome}
                                sortedItems={moduleItems} />
                 </Panel>
@@ -157,6 +158,10 @@ var ModulesList = React.createClass({
         return <Grid>
             {this.renderModules()}
         </Grid>
+    },
+    _refreshModulesAndOutcomes: function () {
+        ModulesStore.getAll(this.props.libraryId);
+        OutcomesStore.getAll(this.props.libraryId);
     }
 });
 

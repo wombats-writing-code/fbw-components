@@ -47642,6 +47642,7 @@
 	                        libraries: _this.props.libraries,
 	                        libraryId: _this.props.libraryId,
 	                        outcomes: _this.state.outcomes,
+	                        refreshModulesAndOutcomes: _this._refreshModulesAndOutcomes,
 	                        relatedItems: _this.state.sortedItemsByOutcome,
 	                        sortedItems: moduleItems })
 	                )
@@ -47675,6 +47676,10 @@
 	            null,
 	            this.renderModules()
 	        );
+	    },
+	    _refreshModulesAndOutcomes: function _refreshModulesAndOutcomes() {
+	        ModulesStore.getAll(this.props.libraryId);
+	        OutcomesStore.getAll(this.props.libraryId);
 	    }
 	});
 
@@ -47837,6 +47842,7 @@
 	                    outcomeDisplayName: _this.getOutcomeDisplayName(outcomeId),
 	                    outcomeId: _this.getQuestionLO(item),
 	                    outcomes: _this.filterOutcomes(item),
+	                    refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
 	                    relatedItems: relatedItems })
 	            );
 	        });
@@ -47987,6 +47993,7 @@
 	                                outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
 	                                outcomeId: questionLO,
 	                                outcomes: _this.filterOutcomes(item),
+	                                refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
 	                                relatedItems: item.questionRelatedItems })
 	                        ),
 	                        React.createElement(
@@ -51251,7 +51258,8 @@
 	                    itemId: this.props.itemId,
 	                    libraryId: this.props.libraryId,
 	                    outcomeId: this.props.outcomeId,
-	                    outcomes: this.props.outcomes })
+	                    outcomes: this.props.outcomes,
+	                    refreshModulesAndOutcomes: this.props.refreshModulesAndOutcomes })
 	            );
 	        }
 
@@ -51357,6 +51365,7 @@
 	        }
 	    },
 	    open: function open(e) {
+	        this.props.refreshModulesAndOutcomes();
 	        this.setState({ showModal: true }, function () {});
 	    },
 	    renderOutcomes: function renderOutcomes() {

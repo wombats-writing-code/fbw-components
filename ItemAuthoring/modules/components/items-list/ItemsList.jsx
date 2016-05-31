@@ -99,6 +99,7 @@ var ItemsList = React.createClass({
                         outcomeDisplayName={_this.getOutcomeDisplayName(outcomeId)}
                         outcomeId={_this.getQuestionLO(item)}
                         outcomes={_this.filterOutcomes(item)}
+                        refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
                         relatedItems={relatedItems} />
             </div>
         });
@@ -212,6 +213,7 @@ var ItemsList = React.createClass({
                                     outcomeDisplayName={_this.getOutcomeDisplayName(questionLO)}
                                     outcomeId={questionLO}
                                     outcomes={_this.filterOutcomes(item)}
+                                    refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
                                     relatedItems={item.questionRelatedItems} />
                         </div>
                         <div className="text-row-wrapper">

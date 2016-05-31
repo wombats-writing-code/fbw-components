@@ -40,6 +40,7 @@ var LinkLO = React.createClass({
         }
     },
     open: function (e) {
+        this.props.refreshModulesAndOutcomes();
         this.setState({showModal: true}, function () {
 
         });
