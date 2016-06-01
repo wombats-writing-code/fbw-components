@@ -21,7 +21,6 @@ var ModuleStore = _.assign({}, EventEmitter.prototype, {
     this.on(CHANGE_EVENT, callback);
   },
   removeChangeListener: function (callback) {
-    console.log(callback);
     this.removeListener(CHANGE_EVENT, callback);
   },
   getModule: function (id) {

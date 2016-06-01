@@ -7,7 +7,7 @@ var _ = require('lodash');
 
 var SortItemsByModules = function (modules, items) {
   var moduleItems = {};
-
+  console.log(items);
   _.each(modules, function (module) {
     moduleItems[module.id] = {
       displayName: module.displayName.text,
@@ -23,7 +23,6 @@ var SortItemsByModules = function (modules, items) {
       }
     });
   });
-
   return moduleItems
 };
 

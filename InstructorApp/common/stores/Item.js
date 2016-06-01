@@ -8,6 +8,7 @@ var _ = require('lodash');
 var qbankFetch = require('../../utilities/fetch/fetch');
 
 var ActionTypes = ItemConstants.ActionTypes;
+var BankMap = ItemConstants.BankMap;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
 
 var _items = [];
@@ -20,7 +21,6 @@ var ItemStore = _.assign({}, EventEmitter.prototype, {
     this.on(CHANGE_EVENT, callback);
   },
   removeChangeListener: function (callback) {
-    console.log(callback);
     this.removeListener(CHANGE_EVENT, callback);
   },
   getItem: function (id) {
@@ -31,7 +31,7 @@ var ItemStore = _.assign({}, EventEmitter.prototype, {
   getItems: function (bankId) {
     var _this = this,
       params = {
-        path: 'assessment/banks/' + bankId + '/items?page=all'
+        path: 'assessment/banks/' + BankMap[bankId] + '/items?page=all'
       };
     qbankFetch(params, function (data) {
       _items = data.data.results;

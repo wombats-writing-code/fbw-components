@@ -70,12 +70,16 @@ class QuestionAccordion extends Component {
   renderAccordionContent = (section) => {
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
 
-    return (
-      <ListView
-          dataSource={ds.cloneWithRows(section.items)}
-          renderRow={this.renderItemRow}>
-      </ListView>
-    );
+    if (section.items.length > 0) {
+      return (
+        <ListView
+        dataSource={ds.cloneWithRows(section.items)}
+        renderRow={this.renderItemRow}>
+        </ListView>
+        );
+    } else {
+      return <View />;
+    }
   }
   renderItemRow = (rowData, sectionId, rowId) => {
     return (
@@ -87,12 +91,17 @@ class QuestionAccordion extends Component {
       );
   }
   render() {
-
+    var itemsArray = this._formatSections();
     return (
       <Accordion renderContent={this.renderAccordionContent}
                  renderHeader={this.renderAccordionHeader}
-                 sections={this.props.items} />
+                 sections={itemsArray} />
     );
+  }
+  _formatSections() {
+    return _.map(this.props.items, function (moduleData, moduleId) {
+      return moduleData;
+    });
   }
 }
 

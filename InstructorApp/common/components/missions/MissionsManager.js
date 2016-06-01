@@ -154,7 +154,7 @@ class MissionsManager extends Component {
     this.setState({ drawerOpen: !this.state.drawerOpen });
   }
   _updateItemsFromStore = (items) => {
-    console.log('got items');
+    console.log(items);
     var alphabeticalItems = _.sortBy(items,
       ['displayName.text']),
       moduleItems = {};
@@ -180,7 +180,6 @@ class MissionsManager extends Component {
        'displayName.text']));
   }
   _updateModulesFromStore = (modules) => {
-    console.log('got modules: ' + modules);
     this.setState({ modules: modules }, function () {
       if (this.state.allItems.length === 0) {
         this.setState({ sortedItems: SortItemsByModules(this.state.modules, []) });
