@@ -31,7 +31,7 @@ var SetIFrameHeight = function (frame) {
         } catch (e) {
             //console.log('iFrame disappeared before it could be re-sized.');
         }
-    }, 250);
+    }, 1000);
 };
 
 module.exports = SetIFrameHeight;
