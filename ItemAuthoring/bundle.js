@@ -47891,7 +47891,7 @@
 	            item['correctAnswerId'] = answers.correctAnswerId;
 	            item['correctAnswerFeedback'] = answers.correctAnswerFeedback;
 	            item['questionRelatedItems'] = _this.getRelatedItems(item.learningObjectiveIds[0]);
-	            item['usedLOs'] = answers.wrongAnswerLOs.concat(item.learningObjectiveIds);
+	            item['usedLOs'] = item.learningObjectiveIds;
 	            item['wrongAnswers'] = answers.wrongAnswerTexts;
 	            item['wrongAnswerFeedbacks'] = answers.wrongAnswerFeedbacks;
 	            item['wrongAnswerIds'] = answers.wrongAnswerIds;
