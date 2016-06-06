@@ -53020,12 +53020,12 @@
 	        })
 	        .then(function (response) {
 	        if (response.status == 403 || response.status == 302) {
-	          alert('Your Touchstone session has expired. Please reload the page.');
+	          alert('Your Touchstone session has expired. Please reload the page and sign back in.');
 	        }
 	      }).catch(function (error) {
 	        console.log('Server error: ' + error.message);
 	      });
-	    }, 5 * 60 * 1000);
+	    }, 0.5 * 60 * 1000);
 	  }
 	};
 
