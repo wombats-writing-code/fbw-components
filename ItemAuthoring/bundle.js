@@ -37554,7 +37554,8 @@
 
 	        return React.createElement(
 	            Modal,
-	            { bsSize: 'lg',
+	            { backdrop: 'static',
+	                bsSize: 'lg',
 	                show: this.props.showModal,
 	                onHide: this.close,
 	                onEntered: this.initializeEditors },
@@ -50891,7 +50892,8 @@
 
 	        return React.createElement(
 	            Modal,
-	            { bsSize: 'lg',
+	            { backdrop: 'static',
+	                bsSize: 'lg',
 	                show: this.props.showModal,
 	                onHide: this.closeAndReset,
 	                onEntered: this.initializeEditors },

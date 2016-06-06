@@ -530,7 +530,8 @@ var EditMultipleChoice = React.createClass({
             </FormGroup>
         }
 
-        return <Modal bsSize="lg"
+        return <Modal backdrop="static"
+                      bsSize="lg"
                       show={this.props.showModal}
                       onHide={this.closeAndReset}
                       onEntered={this.initializeEditors}>
