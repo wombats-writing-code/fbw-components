@@ -53015,17 +53015,18 @@
 	      }
 
 	      fetch(testUrl, {
-	            cache: "no-store",
-	            credentials: "same-origin"
+	          cache: "no-store",
+	          credentials: "same-origin",
+	          mode: "no-cors"
 	        })
-	        .then(function (response) {
-	        if (response.status == 403 || response.status == 302) {
+	      .then(function (response) {
+	        if (!response.ok) {
 	          alert('Your Touchstone session has expired. Please reload the page and sign back in.');
 	        }
 	      }).catch(function (error) {
 	        console.log('Server error: ' + error.message);
 	      });
-	    }, 0.5 * 60 * 1000);
+	    }, 10 * 60 * 1000);
 	  }
 	};
 
