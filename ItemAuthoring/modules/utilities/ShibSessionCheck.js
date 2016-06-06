@@ -20,7 +20,7 @@ var ShibSessionCheck = function (item) {
             credentials: "same-origin"
         })
         .then(function (response) {
-        if (response.status == 403) {
+        if (response.status == 403 || response.status == 302) {
           alert('Your Touchstone session has expired. Please reload the page.');
         }
       }).catch(function (error) {
