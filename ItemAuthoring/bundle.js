@@ -108,6 +108,8 @@
 	var ItemWrapper = __webpack_require__(20);
 	var LibrarySelector = __webpack_require__(94);
 
+	var ShibSessionCheck = __webpack_require__(95);
+
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
 
@@ -133,6 +135,7 @@
 	    },
 	    componentDidMount: function componentDidMount() {
 	        LibrariesStore.getAll();
+	        ShibSessionCheck();
 	    },
 	    hideItems: function hideItems() {
 	        this.setState({ showItems: false });
@@ -50056,7 +50059,7 @@
 	        } catch (e) {
 	            //console.log('iFrame disappeared before it could be re-sized.');
 	        }
-	    }, 250);
+	    }, 1000);
 	};
 
 	module.exports = SetIFrameHeight;
@@ -52989,6 +52992,40 @@
 
 	module.exports = LibrarySelector;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 95 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// ShibSessionCheck.js
+	'use strict';
+
+	var _ = __webpack_require__(5);
+
+	var ShibSessionCheck = function (item) {
+	  var hostLocation = window.location.host,
+	    path = window.location.pathname;
+
+	  if (path.indexOf('touchstone') >= 0) {
+	    setInterval(function () {
+	      if (hostLocation.indexOf('localhost') >= 0 || hostLocation.indexOf('127.0.0.1') >= 0) {
+	        var testUrl = '/touchstone/api/v1/assessment/libraries';
+	      } else {
+	        var testUrl = '/fbw-author/touchstone/api/v1/assessment/libraries';
+	      }
+
+	      fetch(testUrl).then(function (response) {
+	        if (response.status == 403) {
+	          alert('Your Touchstone session has expired. Please reload the page.');
+	        }
+	      }).catch(function (error) {
+	        console.log('Server error: ' + error.message);
+	      });
+	    }, 1000);
+	  }
+	};
+
+	module.exports = ShibSessionCheck;
 
 /***/ }
 /******/ ])));

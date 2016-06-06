@@ -14,6 +14,8 @@ var LibrariesStore = require('../stores/LibrariesStore');
 var ItemWrapper = require('./item-wrapper/ItemWrapper');
 var LibrarySelector = require('./LibrarySelector');
 
+var ShibSessionCheck = require('../utilities/ShibSessionCheck');
+
 var ItemAuthoring = React.createClass({
     getInitialState: function () {
         return {
@@ -37,6 +39,7 @@ var ItemAuthoring = React.createClass({
     },
     componentDidMount: function () {
         LibrariesStore.getAll();
+        ShibSessionCheck();
     },
     hideItems: function () {
         this.setState({ showItems: false });
