@@ -53014,14 +53014,18 @@
 	        var testUrl = '/fbw-author/touchstone/api/v1/assessment/libraries';
 	      }
 
-	      fetch(testUrl).then(function (response) {
+	      fetch(testUrl, {
+	            cache: "no-store",
+	            credentials: "same-origin"
+	        })
+	        .then(function (response) {
 	        if (response.status == 403) {
 	          alert('Your Touchstone session has expired. Please reload the page.');
 	        }
 	      }).catch(function (error) {
 	        console.log('Server error: ' + error.message);
 	      });
-	    }, 1000);
+	    }, 5000);
 	  }
 	};
 
