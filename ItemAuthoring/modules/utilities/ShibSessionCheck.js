@@ -26,7 +26,7 @@ var ShibSessionCheck = function (item) {
       }).catch(function (error) {
         console.log('Server error: ' + error.message);
       });
-    }, 5000);
+    }, 5 * 60 * 1000);
   }
 };
 
