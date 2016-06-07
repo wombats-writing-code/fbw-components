@@ -51,8 +51,10 @@ var ModulesList = React.createClass({
         OutcomesStore.getAll(this.props.libraryId);
     },
     componentWillReceiveProps: function (nextProps) {
+      if (nextProps.libraryId !== this.props.libraryId) {
         ModulesStore.getAll(nextProps.libraryId);
         OutcomesStore.getAll(nextProps.libraryId);
+      }
     },
     filterOutcomes: function (item) {
         // return outcomes that are not currently being used somewhere

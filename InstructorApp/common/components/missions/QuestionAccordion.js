@@ -62,9 +62,12 @@ class QuestionAccordion extends Component {
   }
   renderAccordionHeader = (section) => {
     return (
-      <View>
-        <Text>
-          {section.displayName} - {section.items.length}
+      <View style={styles.moduleNameWrapper}>
+        <Text style={styles.moduleDisplayName}>
+          {section.displayName}
+        </Text>
+        <Text style={styles.itemCounter}>
+          {section.items.length}
         </Text>
       </View>
       );
@@ -85,7 +88,7 @@ class QuestionAccordion extends Component {
   }
   renderItemRow = (rowData, sectionId, rowId) => {
     return (
-      <View>
+      <View style={styles.itemRow}>
         <Text>
           {rowData.displayName.text}
         </Text>
