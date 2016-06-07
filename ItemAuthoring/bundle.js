@@ -52821,17 +52821,13 @@
 	        unequalPropsItem;
 
 	    unequalPropsItem = _.some(equalityKeys, function (key) {
-	      if (nextProps.item[key] == null && _this.props.item[key] == null) {
-	        return false;
-	      } else {
-	        var unequalProp = _.isEqual(nextProps.item[key], _this.props.item[key]);
-	        if (unequalProp) {
-	          console.log(key + ' is the unequal prop for item ' + _this.props.item.id);
-	          console.log(nextProps.item[key]);
-	          console.log(_this.props.item[key]);
-	        }
-	        return unequalProp;
+	      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
+	      if (unequalProp) {
+	        console.log(key + ' is the unequal prop for item ' + _this.props.item.id);
+	        console.log(nextProps.item[key]);
+	        console.log(_this.props.item[key]);
 	      }
+	      return unequalProp;
 	    });
 
 	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded;
