@@ -47,7 +47,7 @@ var ItemRow = React.createClass({
     unequalPropsItem = _.some(equalityKeys, function (key) {
       var unequalProp = nextProps.item[key] != _this.props.item[key];
       if (unequalProp) {
-        console.log(key + ' is the unequal prop for item ' + item.id);
+        console.log(key + ' is the unequal prop for item ' + _this.props.item.id);
         console.log(nextProps.item[key]);
         console.log(_this.props.item[key]);
       }
