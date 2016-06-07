@@ -20,6 +20,8 @@ import {
 
 import Accordion from 'react-native-collapsible/Accordion';
 
+var _ = require('lodash');
+
 var AssessmentConstants = require('../../constants/Assessment');
 
 var ActionTypes = AssessmentConstants.ActionTypes;

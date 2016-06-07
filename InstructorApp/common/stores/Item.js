@@ -29,11 +29,15 @@ var ItemStore = _.assign({}, EventEmitter.prototype, {
     });
   },
   getItems: function (bankId) {
+    // console.log('getting items');
+
     var _this = this,
       params = {
         path: 'assessment/banks/' + BankMap[bankId] + '/items?page=all'
       };
     qbankFetch(params, function (data) {
+      // console.log('fetched items');
+
       _items = data.data.results;
       _this.emitChange();
     });

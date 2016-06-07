@@ -34,6 +34,7 @@ var SortItemsByModules = require('../../../utilities/handcar/sortItemsByModules'
 var styles = StyleSheet.create({
   container: {
     flex: 1,
+    // width: 600,
     flexDirection: 'row'
   },
   questionDrawer: {
@@ -77,6 +78,8 @@ class MissionsManager extends Component {
     this.setState({ allItems: items });
   }
   setMissions(missions) {
+    console.log('setMissions');
+
     this.setState({ missions: missions });
     this.setState({ loading: false });
   }
@@ -103,12 +106,12 @@ class MissionsManager extends Component {
                                         sidebarOpen={this.state.drawerOpen}
                                         toggleSidebar={this._toggleSidebar} />}
               open={this.state.drawerOpen}
-              openDrawerOffset={0.75}
+              openDrawerOffset={0.65}
               panThreshold={1.5}
               side='left'
               style={styles.container}
               tweenHandler={Drawer.tweenPresets.parallax}>
-        <Drawer acceptPan={false}
+      <Drawer acceptPan={false}
                 captureGestures={false}
                 content={<QuestionsDrawer items={this.state.sortedItems} />}
                 open={this.state.questionDrawerOpen}
@@ -154,10 +157,12 @@ class MissionsManager extends Component {
     this.setState({ drawerOpen: !this.state.drawerOpen });
   }
   _updateItemsFromStore = (items) => {
-    console.log(items);
+
     var alphabeticalItems = _.sortBy(items,
       ['displayName.text']),
       moduleItems = {};
+
+      console.log('_updateItemsFromStore');
 
     this.setItems(alphabeticalItems);
 
@@ -173,6 +178,8 @@ class MissionsManager extends Component {
     }
   }
   _updateMissionsFromStore = (missions) => {
+    console.log('_updateMissionsFromStore');
+
     // sort missions by startTime first
     this.setMissions(_.sortBy(missions,
       ['startTime.year', 'startTime.month', 'startTime.day',
@@ -180,6 +187,7 @@ class MissionsManager extends Component {
        'displayName.text']));
   }
   _updateModulesFromStore = (modules) => {
+
     this.setState({ modules: modules }, function () {
       if (this.state.allItems.length === 0) {
         this.setState({ sortedItems: SortItemsByModules(this.state.modules, []) });

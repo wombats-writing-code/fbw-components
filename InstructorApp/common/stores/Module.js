@@ -29,11 +29,14 @@ var ModuleStore = _.assign({}, EventEmitter.prototype, {
     });
   },
   getModules: function (bankId) {
+    // console.log('getting modules');
+
     var _this = this,
       params = {
         path: '/learning/objectivebanks/' + BankMap[bankId] + '/objectives/roots?descendentlevels=2'
       };
     HandcarFetch(params, function (data) {
+      // console.log('got modules');
       _modules = data;
       _this.emitChange();
     });
