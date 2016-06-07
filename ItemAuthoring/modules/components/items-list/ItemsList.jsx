@@ -39,14 +39,15 @@ var ItemsList = React.createClass({
     renderItems: function () {
       var _this = this;
       return _.map(this.props.sortedItems, function (item) {
-        return <ItemRow enableClickthrough={_this.props.enableClickthrough}
-                        item={item}
-                        key={item.id}
-                        libraries={_this.props.libraries}
-                        libraryId={_this.props.libraryId}
-                        outcomes={_this.props.outcomes}
-                        refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
-                        relatedItems={_this.props.relatedItems} />
+        return <div>Hi</div>;
+//        return <ItemRow enableClickthrough={_this.props.enableClickthrough}
+//                        item={item}
+//                        key={item.id}
+//                        libraries={_this.props.libraries}
+//                        libraryId={_this.props.libraryId}
+//                        outcomes={_this.props.outcomes}
+//                        refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
+//                        relatedItems={_this.props.relatedItems} />
       });
     },
     render: function () {
