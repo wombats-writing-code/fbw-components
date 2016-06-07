@@ -52818,6 +52818,17 @@
 	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
 	    var shouldUpdate = nextProps.item !== this.props.item || this.state.itemExpanded !== nextState.itemExpanded;
 	    console.log('should update item ' + this.props.item.id + ': ' + shouldUpdate);
+	    if (shouldUpdate) {
+	      if (nextProps.item !== this.props.item) {
+	        console.log('props changed');
+	        console.log(nextProps.item);
+	        console.log(this.props.item);
+	      }
+
+	      if (this.state.itemExpanded !== nextState.itemExpanded) {
+	        console.log('expanded state changed');
+	      }
+	    }
 	    return shouldUpdate;
 	  },
 	  filterOutcomes: function filterOutcomes(item) {
