@@ -36,11 +36,11 @@ var ItemRow = React.createClass({
   componentDidUpdate: function () {
   },
   shouldComponentUpdate: function (nextProps, nextState) {
-    var shouldUpdate = nextProps.item !== this.props.item ||
+    var shouldUpdate = !_.isEqual(nextProps.item, this.props.item) ||
       this.state.itemExpanded !== nextState.itemExpanded;
     console.log('should update item ' + this.props.item.id + ': ' + shouldUpdate);
     if (shouldUpdate) {
-      if (nextProps.item !== this.props.item) {
+      if (!_.isEqual(nextProps.item, this.props.item)) {
         console.log('props changed');
         console.log(nextProps.item);
         console.log(this.props.item);
