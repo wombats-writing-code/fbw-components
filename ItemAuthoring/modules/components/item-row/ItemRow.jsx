@@ -45,7 +45,13 @@ var ItemRow = React.createClass({
       unequalPropsItem;
 
     unequalPropsItem = _.some(equalityKeys, function (key) {
-      return nextProps.item[key] != _this.props.item[key];
+      var unequalProp = nextProps.item[key] != _this.props.item[key];
+      if (unequalProp) {
+        console.log(key + ' is the unequal prop for item ' + item.id);
+        console.log(nextProps.item[key]);
+        console.log(_this.props.item[key]);
+      }
+      return unequalProp;
     });
 
     var shouldUpdate = unequalPropsItem ||
@@ -54,8 +60,6 @@ var ItemRow = React.createClass({
     if (shouldUpdate) {
       if (unequalPropsItem) {
         console.log('props changed');
-        console.log(nextProps.item);
-        console.log(this.props.item);
       }
 
       if (this.state.itemExpanded !== nextState.itemExpanded) {
