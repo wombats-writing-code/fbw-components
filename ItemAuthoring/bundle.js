@@ -52817,17 +52817,17 @@
 	  componentDidUpdate: function componentDidUpdate() {},
 	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
 	    var equalityKeys = ["minStringLength", "displayName", "description", "license", "texts", "bankId", "question", "answers", "id", "recordTypeIds", "providerId", "brandingIds", "assignedBankIds", "genusTypeId", "type", "maxStringLength", "learningObjectiveIds"],
-	        equalPropsItem = false,
-	        _this = this;
+	        _this = this,
+	        unequalPropsItem;
 
-	    equalPropsItem = _.some(equalityKeys, function (key) {
-	      return nextProps.item[key] == _this.props.item[key];
+	    unequalPropsItem = _.some(equalityKeys, function (key) {
+	      return nextProps.item[key] != _this.props.item[key];
 	    });
 
-	    var shouldUpdate = !equalPropsItem || this.state.itemExpanded !== nextState.itemExpanded;
+	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded;
 	    console.log('should update item ' + this.props.item.id + ': ' + shouldUpdate);
 	    if (shouldUpdate) {
-	      if (!equalPropsItem) {
+	      if (unequalPropsItem) {
 	        console.log('props changed');
 	        console.log(nextProps.item);
 	        console.log(this.props.item);
