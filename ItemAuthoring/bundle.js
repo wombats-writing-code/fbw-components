@@ -47772,6 +47772,9 @@
 	        this.initializeItemsAsClosed();
 	    },
 	    componentDidMount: function componentDidMount() {},
+	    componentDidUpdate: function componentDidUpdate() {
+	        console.log('updating ItemsList');
+	    },
 	    filterOutcomes: function filterOutcomes(item) {
 	        // return outcomes that are not currently being used somewhere
 	        // in a specific item

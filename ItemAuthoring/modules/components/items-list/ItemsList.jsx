@@ -34,6 +34,9 @@ var ItemsList = React.createClass({
     },
     componentDidMount: function () {
     },
+    componentDidUpdate: function () {
+      console.log('updating ItemsList');
+    },
     filterOutcomes: function (item) {
         // return outcomes that are not currently being used somewhere
         // in a specific item
