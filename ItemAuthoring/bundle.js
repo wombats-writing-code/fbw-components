@@ -47775,19 +47775,14 @@
 	    renderItems: function renderItems() {
 	        var _this = this;
 	        return _.map(this.props.sortedItems, function (item) {
-	            return React.createElement(
-	                'div',
-	                null,
-	                'Hi'
-	            );
-	            //        return <ItemRow enableClickthrough={_this.props.enableClickthrough}
-	            //                        item={item}
-	            //                        key={item.id}
-	            //                        libraries={_this.props.libraries}
-	            //                        libraryId={_this.props.libraryId}
-	            //                        outcomes={_this.props.outcomes}
-	            //                        refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
-	            //                        relatedItems={_this.props.relatedItems} />
+	            return React.createElement(ItemRow, { enableClickthrough: _this.props.enableClickthrough,
+	                item: item,
+	                key: item.id,
+	                libraries: _this.props.libraries,
+	                libraryId: _this.props.libraryId,
+	                outcomes: _this.props.outcomes,
+	                refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
+	                relatedItems: _this.props.relatedItems });
 	        });
 	    },
 	    render: function render() {
@@ -52810,269 +52805,274 @@
 	var QuestionText = __webpack_require__(81);
 
 	var ItemRow = React.createClass({
-	    displayName: 'ItemRow',
+	  displayName: 'ItemRow',
 
-	    getInitialState: function getInitialState() {
-	        return {
-	            itemExpanded: false
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    componentDidUpdate: function componentDidUpdate() {},
-	    filterOutcomes: function filterOutcomes(item) {
-	        // return outcomes that are not currently being used somewhere
-	        // in a specific item
-	        return _.filter(this.props.outcomes, function (outcome) {
-	            return item.usedLOs.indexOf(outcome.id) < 0;
-	        });
-	    },
-	    getOutcomeDisplayName: function getOutcomeDisplayName(outcomeId) {
-	        var outcome = OutcomesStore.get(outcomeId);
-	        if (outcome == null) {
-	            return React.createElement(
-	                'p',
-	                { className: 'missing-lo' },
-	                'None linked yet'
-	            );
-	        } else {
-	            return outcome.displayName.text;
-	        }
-	    },
-	    getQuestionLO: function getQuestionLO(item) {
-	        var questionLO;
-	        if (item.question.learningObjectiveIds.length > 0) {
-	            questionLO = item.question.learningObjectiveIds[0];
-	        } else {
-	            questionLO = '';
-	        }
+	  getInitialState: function getInitialState() {
+	    return {
+	      itemExpanded: false
+	    };
+	  },
+	  componentWillMount: function componentWillMount() {},
+	  componentDidMount: function componentDidMount() {},
+	  componentDidUpdate: function componentDidUpdate() {},
+	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
+	    var shouldUpdate = nextProps.item === this.props.item;
+	    console.log('should update item ' + this.props.item.id + ': ' + shouldUpdate);
+	    return shouldUpdate;
+	  },
+	  filterOutcomes: function filterOutcomes(item) {
+	    // return outcomes that are not currently being used somewhere
+	    // in a specific item
+	    return _.filter(this.props.outcomes, function (outcome) {
+	      return item.usedLOs.indexOf(outcome.id) < 0;
+	    });
+	  },
+	  getOutcomeDisplayName: function getOutcomeDisplayName(outcomeId) {
+	    var outcome = OutcomesStore.get(outcomeId);
+	    if (outcome == null) {
+	      return React.createElement(
+	        'p',
+	        { className: 'missing-lo' },
+	        'None linked yet'
+	      );
+	    } else {
+	      return outcome.displayName.text;
+	    }
+	  },
+	  getQuestionLO: function getQuestionLO(item) {
+	    var questionLO;
+	    if (item.question.learningObjectiveIds.length > 0) {
+	      questionLO = item.question.learningObjectiveIds[0];
+	    } else {
+	      questionLO = '';
+	    }
 
-	        return questionLO;
-	    },
-	    getRelatedItems: function getRelatedItems(outcomeId) {
-	        var items = this.props.relatedItems[outcomeId];
+	    return questionLO;
+	  },
+	  getRelatedItems: function getRelatedItems(outcomeId) {
+	    var items = this.props.relatedItems[outcomeId];
 
-	        if (typeof items !== 'undefined') {
-	            return items;
-	        } else {
-	            return [];
-	        }
-	    },
-	    renderItemAnswerLOs: function renderItemAnswerLOs(item) {
-	        // just generate the answer los
-	        var _this = this;
-	        return _.map(item.wrongAnswerLOs, function (outcomeId, index) {
-	            var visibleIndex = index + 1,
-	                answerId = item.wrongAnswerIds[index],
-	                relatedItems = _this.getRelatedItems(outcomeId),
-	                choiceLetter = ChoiceLabels[visibleIndex];
+	    if (typeof items !== 'undefined') {
+	      return items;
+	    } else {
+	      return [];
+	    }
+	  },
+	  renderItemAnswerLOs: function renderItemAnswerLOs(item) {
+	    // just generate the answer los
+	    var _this = this;
+	    return _.map(item.wrongAnswerLOs, function (outcomeId, index) {
+	      var visibleIndex = index + 1,
+	          answerId = item.wrongAnswerIds[index],
+	          relatedItems = _this.getRelatedItems(outcomeId),
+	          choiceLetter = ChoiceLabels[visibleIndex];
 
-	            return React.createElement(
-	                'div',
-	                { className: 'text-row-wrapper',
-	                    key: index },
-	                React.createElement(
-	                    'p',
-	                    { className: 'answer-label' },
-	                    choiceLetter,
-	                    ')'
-	                ),
-	                React.createElement(LOText, { answerId: answerId,
-	                    component: 'answer',
-	                    enableClickthrough: _this.props.enableClickthrough,
-	                    itemId: item.id,
-	                    libraryId: _this.props.libraryId,
-	                    outcomeDisplayName: _this.getOutcomeDisplayName(outcomeId),
-	                    outcomeId: _this.getQuestionLO(item),
-	                    outcomes: _this.filterOutcomes(item),
-	                    refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
-	                    relatedItems: relatedItems })
-	            );
-	        });
-	    },
-	    renderItemAnswerTexts: function renderItemAnswerTexts(item) {
-	        var _this = this;
-	        // just generate the answer objects
-	        return _.map(item.wrongAnswers, function (answer, index) {
-	            var visibleIndex = index + 1,
-	                wrongAnswerId = item.wrongAnswerIds[index],
-	                wrongAnswerLabel = 'Wrong Answer ' + visibleIndex,
-	                feedback = item.wrongAnswerFeedbacks[index],
-	                choiceLetter = ChoiceLabels[visibleIndex];
+	      return React.createElement(
+	        'div',
+	        { className: 'text-row-wrapper',
+	          key: index },
+	        React.createElement(
+	          'p',
+	          { className: 'answer-label' },
+	          choiceLetter,
+	          ')'
+	        ),
+	        React.createElement(LOText, { answerId: answerId,
+	          component: 'answer',
+	          enableClickthrough: _this.props.enableClickthrough,
+	          itemId: item.id,
+	          libraryId: _this.props.libraryId,
+	          outcomeDisplayName: _this.getOutcomeDisplayName(outcomeId),
+	          outcomeId: _this.getQuestionLO(item),
+	          outcomes: _this.filterOutcomes(item),
+	          refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
+	          relatedItems: relatedItems })
+	      );
+	    });
+	  },
+	  renderItemAnswerTexts: function renderItemAnswerTexts(item) {
+	    var _this = this;
+	    // just generate the answer objects
+	    return _.map(item.wrongAnswers, function (answer, index) {
+	      var visibleIndex = index + 1,
+	          wrongAnswerId = item.wrongAnswerIds[index],
+	          wrongAnswerLabel = 'Wrong Answer ' + visibleIndex,
+	          feedback = item.wrongAnswerFeedbacks[index],
+	          choiceLetter = ChoiceLabels[visibleIndex];
 
-	            return React.createElement(
-	                'div',
-	                { className: 'text-row-wrapper',
-	                    key: index },
-	                React.createElement(
-	                    'p',
-	                    { className: 'answer-label' },
-	                    choiceLetter,
-	                    ')'
-	                ),
-	                React.createElement(AnswerText, { answerId: wrongAnswerId,
-	                    answerText: answer.text,
-	                    enableClickthrough: _this.props.enableClickthrough,
-	                    expanded: _this.state.itemExpanded,
-	                    feedback: feedback,
-	                    itemId: item.id,
-	                    label: wrongAnswerLabel,
-	                    libraryId: _this.props.libraryId })
-	            );
-	        });
-	    },
-	    toggleItemState: function toggleItemState(e) {
-	        var clickedElement = e.target,
-	            targetClassName = clickedElement.className,
-	            updatedState = this.state.itemExpanded,
-	            itemId = e.currentTarget.dataset.id,
-	            isItem = clickedElement.parentElement.parentElement.dataset.type === 'item';
+	      return React.createElement(
+	        'div',
+	        { className: 'text-row-wrapper',
+	          key: index },
+	        React.createElement(
+	          'p',
+	          { className: 'answer-label' },
+	          choiceLetter,
+	          ')'
+	        ),
+	        React.createElement(AnswerText, { answerId: wrongAnswerId,
+	          answerText: answer.text,
+	          enableClickthrough: _this.props.enableClickthrough,
+	          expanded: _this.state.itemExpanded,
+	          feedback: feedback,
+	          itemId: item.id,
+	          label: wrongAnswerLabel,
+	          libraryId: _this.props.libraryId })
+	      );
+	    });
+	  },
+	  toggleItemState: function toggleItemState(e) {
+	    var clickedElement = e.target,
+	        targetClassName = clickedElement.className,
+	        updatedState = this.state.itemExpanded,
+	        itemId = e.currentTarget.dataset.id,
+	        isItem = clickedElement.parentElement.parentElement.dataset.type === 'item';
 
-	        if (targetClassName.indexOf('panel-title') >= 0 && isItem) {
-	            updatedState = !updatedState;
+	    if (targetClassName.indexOf('panel-title') >= 0 && isItem) {
+	      updatedState = !updatedState;
 
-	            this.setState({ itemExpanded: updatedState });
-	        }
-	    },
-	    render: function render() {
-	        var _this = this,
+	      this.setState({ itemExpanded: updatedState });
+	    }
+	  },
+	  render: function render() {
+	    var _this = this,
 
-	        // map the choiceIds, etc., in answers back to choices in questions
-	        updatedItem = this.props.item;
+	    // map the choiceIds, etc., in answers back to choices in questions
+	    updatedItem = this.props.item;
 
-	        var t0 = performance.now();
+	    var t0 = performance.now();
 
-	        var answers = AnswerExtraction(updatedItem);
+	    var answers = AnswerExtraction(updatedItem);
 
-	        updatedItem['correctAnswer'] = answers.correctAnswerText.text;
-	        updatedItem['correctAnswerId'] = answers.correctAnswerId;
-	        updatedItem['correctAnswerFeedback'] = answers.correctAnswerFeedback;
-	        updatedItem['questionRelatedItems'] = _this.getRelatedItems(updatedItem.learningObjectiveIds[0]);
-	        updatedItem['usedLOs'] = updatedItem.learningObjectiveIds;
-	        updatedItem['wrongAnswers'] = answers.wrongAnswerTexts;
-	        updatedItem['wrongAnswerFeedbacks'] = answers.wrongAnswerFeedbacks;
-	        updatedItem['wrongAnswerIds'] = answers.wrongAnswerIds;
-	        updatedItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
+	    updatedItem['correctAnswer'] = answers.correctAnswerText.text;
+	    updatedItem['correctAnswerId'] = answers.correctAnswerId;
+	    updatedItem['correctAnswerFeedback'] = answers.correctAnswerFeedback;
+	    updatedItem['questionRelatedItems'] = _this.getRelatedItems(updatedItem.learningObjectiveIds[0]);
+	    updatedItem['usedLOs'] = updatedItem.learningObjectiveIds;
+	    updatedItem['wrongAnswers'] = answers.wrongAnswerTexts;
+	    updatedItem['wrongAnswerFeedbacks'] = answers.wrongAnswerFeedbacks;
+	    updatedItem['wrongAnswerIds'] = answers.wrongAnswerIds;
+	    updatedItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
 
-	        var t1 = performance.now();
+	    var t1 = performance.now();
 
-	        console.log('call to each item sort block: ' + (t1 - t0) + ' milliseconds');
+	    console.log('call to each item sort block: ' + (t1 - t0) + ' milliseconds');
 
-	        var questionLO = _this.getQuestionLO(updatedItem),
-	            itemCreator = 'Unknown',
-	            itemControls;
+	    var questionLO = _this.getQuestionLO(updatedItem),
+	        itemCreator = 'Unknown',
+	        itemControls;
 
-	        if (_this.props.enableClickthrough) {
-	            itemControls = React.createElement(
-	                'div',
-	                { className: 'item-controls' },
-	                React.createElement(ItemControls, { item: updatedItem,
-	                    libraries: _this.props.libraries,
-	                    libraryId: _this.props.libraryId })
-	            );
-	        } else {
-	            itemControls = '';
-	        }
+	    if (_this.props.enableClickthrough) {
+	      itemControls = React.createElement(
+	        'div',
+	        { className: 'item-controls' },
+	        React.createElement(ItemControls, { item: updatedItem,
+	          libraries: _this.props.libraries,
+	          libraryId: _this.props.libraryId })
+	      );
+	    } else {
+	      itemControls = '';
+	    }
 
-	        if (updatedItem.hasOwnProperty('providerId')) {
-	            if (updatedItem.providerId != '') {
-	                itemCreator = updatedItem.providerId;
-	            }
-	        }
+	    if (updatedItem.hasOwnProperty('providerId')) {
+	      if (updatedItem.providerId != '') {
+	        itemCreator = updatedItem.providerId;
+	      }
+	    }
 
-	        return React.createElement(
-	            Row,
-	            null,
+	    return React.createElement(
+	      Row,
+	      null,
+	      React.createElement(
+	        Col,
+	        { sm: 6, md: 6, lg: 6 },
+	        React.createElement(
+	          Panel,
+	          { header: updatedItem.displayName.text,
+	            collapsible: true,
+	            'data-id': updatedItem.id,
+	            'data-type': 'item',
+	            expanded: _this.state.itemExpanded,
+	            onClick: _this.toggleItemState },
+	          React.createElement(
+	            'div',
+	            { className: 'text-row-wrapper' },
 	            React.createElement(
-	                Col,
-	                { sm: 6, md: 6, lg: 6 },
-	                React.createElement(
-	                    Panel,
-	                    { header: updatedItem.displayName.text,
-	                        collapsible: true,
-	                        'data-id': updatedItem.id,
-	                        'data-type': 'item',
-	                        expanded: _this.state.itemExpanded,
-	                        onClick: _this.toggleItemState },
-	                    React.createElement(
-	                        'div',
-	                        { className: 'text-row-wrapper' },
-	                        React.createElement(
-	                            'p',
-	                            { className: 'question-label' },
-	                            'Q:'
-	                        ),
-	                        React.createElement(QuestionText, { expanded: _this.state.itemExpanded,
-	                            questionText: updatedItem.question.text.text,
-	                            itemCreator: itemCreator })
-	                    ),
-	                    React.createElement(
-	                        'div',
-	                        { className: 'text-row-wrapper' },
-	                        React.createElement(
-	                            'p',
-	                            { className: 'answer-label' },
-	                            'a)'
-	                        ),
-	                        React.createElement(AnswerText, { answerId: updatedItem.correctAnswerId,
-	                            answerText: updatedItem.correctAnswer,
-	                            correctAnswer: 'true',
-	                            enableClickthrough: _this.props.enableClickthrough,
-	                            expanded: _this.state.itemExpanded,
-	                            feedback: updatedItem.correctAnswerFeedback,
-	                            itemId: updatedItem.id,
-	                            label: 'Correct Answer',
-	                            libraryId: _this.props.libraryId })
-	                    ),
-	                    _this.renderItemAnswerTexts(updatedItem),
-	                    itemControls
-	                )
+	              'p',
+	              { className: 'question-label' },
+	              'Q:'
+	            ),
+	            React.createElement(QuestionText, { expanded: _this.state.itemExpanded,
+	              questionText: updatedItem.question.text.text,
+	              itemCreator: itemCreator })
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'text-row-wrapper' },
+	            React.createElement(
+	              'p',
+	              { className: 'answer-label' },
+	              'a)'
+	            ),
+	            React.createElement(AnswerText, { answerId: updatedItem.correctAnswerId,
+	              answerText: updatedItem.correctAnswer,
+	              correctAnswer: 'true',
+	              enableClickthrough: _this.props.enableClickthrough,
+	              expanded: _this.state.itemExpanded,
+	              feedback: updatedItem.correctAnswerFeedback,
+	              itemId: updatedItem.id,
+	              label: 'Correct Answer',
+	              libraryId: _this.props.libraryId })
+	          ),
+	          _this.renderItemAnswerTexts(updatedItem),
+	          itemControls
+	        )
+	      ),
+	      React.createElement(
+	        Col,
+	        { sm: 6, md: 6, lg: 6 },
+	        React.createElement(
+	          Panel,
+	          { header: 'Learning Outcomes',
+	            collapsible: true,
+	            expanded: _this.state.itemExpanded },
+	          React.createElement(
+	            'div',
+	            { className: 'text-row-wrapper' },
+	            React.createElement(
+	              'p',
+	              { className: 'question-label' },
+	              'Q:'
+	            ),
+	            React.createElement(LOText, { component: 'question',
+	              enableClickthrough: _this.props.enableClickthrough,
+	              itemId: updatedItem.id,
+	              libraryId: _this.props.libraryId,
+	              outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
+	              outcomeId: questionLO,
+	              outcomes: _this.filterOutcomes(updatedItem),
+	              refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
+	              relatedItems: updatedItem.questionRelatedItems })
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'text-row-wrapper' },
+	            React.createElement(
+	              'p',
+	              { className: 'answer-label' },
+	              'a)'
 	            ),
 	            React.createElement(
-	                Col,
-	                { sm: 6, md: 6, lg: 6 },
-	                React.createElement(
-	                    Panel,
-	                    { header: 'Learning Outcomes',
-	                        collapsible: true,
-	                        expanded: _this.state.itemExpanded },
-	                    React.createElement(
-	                        'div',
-	                        { className: 'text-row-wrapper' },
-	                        React.createElement(
-	                            'p',
-	                            { className: 'question-label' },
-	                            'Q:'
-	                        ),
-	                        React.createElement(LOText, { component: 'question',
-	                            enableClickthrough: _this.props.enableClickthrough,
-	                            itemId: updatedItem.id,
-	                            libraryId: _this.props.libraryId,
-	                            outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
-	                            outcomeId: questionLO,
-	                            outcomes: _this.filterOutcomes(updatedItem),
-	                            refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
-	                            relatedItems: updatedItem.questionRelatedItems })
-	                    ),
-	                    React.createElement(
-	                        'div',
-	                        { className: 'text-row-wrapper' },
-	                        React.createElement(
-	                            'p',
-	                            { className: 'answer-label' },
-	                            'a)'
-	                        ),
-	                        React.createElement(
-	                            'p',
-	                            { className: 'correct-answer-lo' },
-	                            'Correct answer -- no confused LO'
-	                        )
-	                    ),
-	                    _this.renderItemAnswerLOs(updatedItem)
-	                )
+	              'p',
+	              { className: 'correct-answer-lo' },
+	              'Correct answer -- no confused LO'
 	            )
-	        );
-	    }
+	          ),
+	          _this.renderItemAnswerLOs(updatedItem)
+	        )
+	      )
+	    );
+	  }
 	});
 
 	module.exports = ItemRow;
