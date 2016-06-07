@@ -36,7 +36,8 @@ var ItemRow = React.createClass({
   componentDidUpdate: function () {
   },
   shouldComponentUpdate: function (nextProps, nextState) {
-    var shouldUpdate = nextProps.item !== this.props.item;
+    var shouldUpdate = nextProps.item !== this.props.item ||
+      this.state.itemExpanded !== nextState.itemExpanded;
     console.log('should update item ' + this.props.item.id + ': ' + shouldUpdate);
     return shouldUpdate;
   },

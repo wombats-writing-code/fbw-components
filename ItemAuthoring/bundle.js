@@ -52816,7 +52816,7 @@
 	  componentDidMount: function componentDidMount() {},
 	  componentDidUpdate: function componentDidUpdate() {},
 	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-	    var shouldUpdate = nextProps.item !== this.props.item;
+	    var shouldUpdate = nextProps.item !== this.props.item || this.state.itemExpanded !== nextState.itemExpanded;
 	    console.log('should update item ' + this.props.item.id + ': ' + shouldUpdate);
 	    return shouldUpdate;
 	  },
