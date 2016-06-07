@@ -25,10 +25,8 @@ module.exports = StyleSheet.create({
     flex: 1
   },
   missionRightIcon: {
-    color: '#656565'
-  },
-  missionRightIconWrapper: {
-    justifyContent: 'center'
+    color: '#656565',
+    justifyContent: 'center',
   },
   toggleCaret: {
     color: '#007AFF'
@@ -49,20 +47,23 @@ module.exports = StyleSheet.create({
     paddingTop: _lineHeight / 2,
     paddingBottom: _lineHeight / 2
   },
+  missionTypeIcon: {
+    flex: 0,
+    width: 30,
+    justifyContent: 'center',
+    marginRight: 10,
+    marginRight: 5,
+    resizeMode: 'contain'
+  },
   missionsListWrapper: {
     backgroundColor: 'white',
     flex: 1,
     margin: 2,
     padding: 1
   },
-  missionTypeIcon: {
-    justifyContent: 'center',
-    paddingRight: 5,
-    paddingLeft: 5
-  },
   missionTitle: {
     fontSize: _bodyFontSize,
-    letterSpacing: 1,
+    letterSpacing: .5,
     fontWeight: "600",
     color: '#333',
     marginBottom: _lineHeight / 2

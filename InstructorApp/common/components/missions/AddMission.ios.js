@@ -250,7 +250,7 @@ class AddMission extends Component {
               <DatePickerIOS date={this.state.missionStartDate}
                              minuteInterval={30}
                              mode="datetime"
-                             onDateChange={(date) => this.setState({missionStartDate: date})}
+                             onDateChange={(date) => this.setState({missionStartDate: new Date(date)})}
                              ref="startDateDatepicker"
                              timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}/>
             </View>
@@ -259,7 +259,7 @@ class AddMission extends Component {
               <DatePickerIOS date={this.state.missionDeadline}
                              minuteInterval={30}
                              mode="datetime"
-                             onDateChange={(date) => this.setState({missionDeadline: date})}
+                             onDateChange={(date) => this.setState({missionDeadline: new Date(date)})}
                              ref="deadlineDatepicker"
                              timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}/>
             </View>

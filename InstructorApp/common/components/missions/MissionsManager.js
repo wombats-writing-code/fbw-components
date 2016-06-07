@@ -106,7 +106,7 @@ class MissionsManager extends Component {
                                         sidebarOpen={this.state.drawerOpen}
                                         toggleSidebar={this._toggleSidebar} />}
               open={this.state.drawerOpen}
-              openDrawerOffset={0.65}
+              openDrawerOffset={0.7}
               panThreshold={1.5}
               side='left'
               style={styles.container}
