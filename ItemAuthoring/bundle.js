@@ -47777,6 +47777,7 @@
 	        return _.map(this.props.sortedItems, function (item) {
 	            return React.createElement(ItemRow, { enableClickthrough: _this.props.enableClickthrough,
 	                item: item,
+	                key: item.id,
 	                libraries: _this.props.libraries,
 	                libraryId: _this.props.libraryId,
 	                outcomes: _this.props.outcomes,
