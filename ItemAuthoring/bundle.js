@@ -47893,6 +47893,8 @@
 	        // map the choiceIds, etc., in answers back to choices in questions
 	        items = [];
 
+	        var t0 = performance.now();
+
 	        _.each(this.props.sortedItems, function (item) {
 	            var answers = AnswerExtraction(item);
 
@@ -47907,6 +47909,10 @@
 	            item['wrongAnswerLOs'] = answers.wrongAnswerLOs;
 	            items.push(item);
 	        });
+
+	        var t1 = performance.now();
+
+	        console.log('call to each item sort block: ' + (t1 - t0) + ' milliseconds');
 
 	        return _.map(items, function (item) {
 	            var questionLO = _this.getQuestionLO(item),
