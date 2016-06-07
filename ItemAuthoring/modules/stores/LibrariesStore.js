@@ -4,7 +4,7 @@ var LibrariesDispatcher = require('../dispatcher/LibrariesDispatcher');
 var AuthoringConstants = require('../constants/AuthoringConstants');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
-var MiddlewareService = require('../services/middleware.service')
+var MiddlewareService = require('../services/middleware.service');
 
 var ActionTypes = AuthoringConstants.ActionTypes;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;

@@ -9,6 +9,7 @@ var ShibSessionCheck = function (item) {
 
   if (path.indexOf('touchstone') >= 0) {
     setInterval(function () {
+      // TODO: move this to the middleware service
       if (hostLocation.indexOf('localhost') >= 0 || hostLocation.indexOf('127.0.0.1') >= 0) {
         var testUrl = '/touchstone/api/v1/assessment/libraries';
       } else {

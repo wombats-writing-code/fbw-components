@@ -36506,7 +36506,7 @@
 	var AuthoringConstants = __webpack_require__(14);
 	var EventEmitter = __webpack_require__(16).EventEmitter;
 	var _ = __webpack_require__(5);
-	var MiddlewareService = __webpack_require__(17)
+	var MiddlewareService = __webpack_require__(17);
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -47562,8 +47562,10 @@
 	        OutcomesStore.getAll(this.props.libraryId);
 	    },
 	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	        ModulesStore.getAll(nextProps.libraryId);
-	        OutcomesStore.getAll(nextProps.libraryId);
+	        if (nextProps.libraryId !== this.props.libraryId) {
+	            ModulesStore.getAll(nextProps.libraryId);
+	            OutcomesStore.getAll(nextProps.libraryId);
+	        }
 	    },
 	    filterOutcomes: function filterOutcomes(item) {
 	        // return outcomes that are not currently being used somewhere
@@ -53010,6 +53012,7 @@
 
 	  if (path.indexOf('touchstone') >= 0) {
 	    setInterval(function () {
+	      // TODO: move this to the middleware service
 	      if (hostLocation.indexOf('localhost') >= 0 || hostLocation.indexOf('127.0.0.1') >= 0) {
 	        var testUrl = '/touchstone/api/v1/assessment/libraries';
 	      } else {
