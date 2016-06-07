@@ -49686,7 +49686,8 @@
 	            ),
 	            React.createElement(
 	                Modal,
-	                { bsSize: 'lg', show: this.state.showModal,
+	                { backdrop: 'static',
+	                    bsSize: 'lg', show: this.state.showModal,
 	                    onHide: this.close,
 	                    onEntered: this.initializeEditors },
 	                React.createElement(

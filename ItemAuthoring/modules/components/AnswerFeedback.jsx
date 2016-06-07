@@ -84,7 +84,8 @@ var AnswerFeedback = React.createClass({
                     title="View Feedback">
                 Feedback
             </Button>
-            <Modal bsSize="lg" show={this.state.showModal}
+            <Modal backdrop="static"
+                   bsSize="lg" show={this.state.showModal}
                    onHide={this.close}
                    onEntered={this.initializeEditors}>
                 <Modal.Header closeButton>
