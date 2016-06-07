@@ -8,7 +8,6 @@ import React, {
 import {
   ListView,
   ScrollView,
-  StyleSheet,
   SwipeableListView,  // TODO: How to get this from RN 0.27?
   Text,
   TouchableHighlight,
@@ -22,95 +21,7 @@ var AssessmentConstants = require('../../constants/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
 var MissionStatus = require('../../../utilities/dateUtil/CheckMissionStatus');
 
-var styles = StyleSheet.create({
-  addMissionWrapper: {
-    flex: 1,
-    height: 60,
-    marginRight: -10
-  },
-  buttonText: {
-    fontSize: 50,
-    color: '#007AFF',
-    alignSelf: 'center'
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#D8D8D8',
-    alignItems: 'stretch'
-  },
-  missionIconWrapper: {
-    justifyContent: 'center',
-    marginRight: 5
-  },
-  missionInformation: {
-    flex: 1
-  },
-  missionLabel: {
-    fontSize: 10,
-    color: '#000000'
-  },
-  missionRightIcon: {
-    color: '#656565'
-  },
-  missionRightIconWrapper: {
-    justifyContent: 'center'
-  },
-  missionRow: {
-    flex: 1,
-    flexDirection: 'row'
-  },
-  missionsList: {
-  },
-  missionsListWrapper: {
-    backgroundColor: 'white',
-    flex: 1,
-    margin: 2,
-    padding: 1
-  },
-  missionSubtitle: {
-    color: '#656565',
-    fontSize: 8
-  },
-  missionWrapper: {
-    borderColor: 'black',
-    borderRadius: 5,
-    borderWidth: 1,
-    margin: 1,
-    padding: 5
-  },
-  missionWrapperSelected: {
-    backgroundColor: '#709CCE'
-  },
-  notification: {
-    backgroundColor: '#ff9c9c',
-    padding: 3
-  },
-  notificationText: {
-    fontSize: 10,
-    padding: 5
-  },
-  progressIcon: {
-    marginRight: 3
-  },
-  rounded: {
-    borderRadius: 3
-  },
-  sidebarFooter: {
-    height: 10
-  },
-  sidebarHeader: {
-    flexDirection: 'row'
-  },
-  toggleCaret: {
-    color: '#007AFF'
-  },
-  toggleWrapper: {
-    justifyContent: 'center',
-    paddingLeft: 5,
-    width: 10
-  }
-});
-
+var styles = require('./MissionsSidebar.styles')
 
 class MissionsSidebar extends Component {
   constructor(props) {
@@ -164,27 +75,24 @@ class MissionsSidebar extends Component {
     }
 
     if (rowData.genusTypeId == GenusTypes.IN_CLASS) {
-      icon = <Icon name="university"/>;
+      icon = <Icon name="university" style={styles.missionTypeIcon}/>;
     } else {
-      icon = <Icon name="calendar"/>;
+      icon = <Icon name="calendar" style={styles.missionTypeIcon}/>;
     }
 
     return ( // TODO: Change this onPress call depending on what is swiped / touched
         <TouchableHighlight onPress={() => this._editMission(rowData)}
                             style={rowStyles}>
+                            
           <View style={styles.missionRow}>
-            <View style={styles.missionIconWrapper}>
-              {icon}
-            </View>
+            {icon}
             <View style={styles.missionInformation}>
-              <View style={[styles.rowWrapper, styles.rounded]}>
                 <Text
-                    style={styles.missionLabel}
-                    numberOfLines={1}
+                    style={styles.missionTitle}
+                    numberOfLines={2}
                 >
-                  {rowData.displayName.text}
+                  {(rowData.displayName.text || '').toUpperCase()}
                 </Text>
-              </View>
               <View>
                 <Text style={styles.missionSubtitle}>
                   Start {rowData.startTime.month}-{rowData.startTime.day}-{rowData.startTime.year}
@@ -238,6 +146,7 @@ class MissionsSidebar extends Component {
             </View>
           </TouchableHighlight>
         </View>
+
         <View style={[styles.missionsListWrapper, styles.rounded]}>
           <ScrollView style={styles.missionsList}>
             {currentMissions}

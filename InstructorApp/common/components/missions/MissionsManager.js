@@ -34,6 +34,7 @@ var SortItemsByModules = require('../../../utilities/handcar/sortItemsByModules'
 var styles = StyleSheet.create({
   container: {
     flex: 1,
+    // width: 600,
     flexDirection: 'row'
   },
   questionDrawer: {
@@ -105,7 +106,7 @@ class MissionsManager extends Component {
                                         sidebarOpen={this.state.drawerOpen}
                                         toggleSidebar={this._toggleSidebar} />}
               open={this.state.drawerOpen}
-              openDrawerOffset={0.75}
+              openDrawerOffset={0.65}
               panThreshold={1.5}
               side='left'
               style={styles.container}
