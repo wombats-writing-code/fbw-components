@@ -95,8 +95,7 @@ class MissionsSidebar extends Component {
             <View style={styles.missionInformation}>
                 <Text
                     style={styles.missionTitle}
-                    numberOfLines={2}
-                >
+                    numberOfLines={2}>
                   {(rowData.displayName.text || '').toUpperCase()}
                 </Text>
               <View>
@@ -112,8 +111,8 @@ class MissionsSidebar extends Component {
             </View>
 
             <Icon name="angle-right" style={styles.missionRightIcon} />
-
           </View>
+
         </TouchableHighlight>);
   }
   render() {
@@ -136,20 +135,18 @@ class MissionsSidebar extends Component {
     }
     return (
       <View style={styles.container}>
-        <View style={styles.sidebarHeader}>
-          <TouchableHighlight onPress={() => this._addNewMission()}
-                              style={styles.addMissionWrapper}>
-            <Text style={styles.buttonText}>+</Text>
+
+        <View style={styles.sideBarNav}>
+          <TouchableHighlight onPress={() => this._addNewMission()}>
+            <Image style={styles.addNewMissionButton} source={require('./assets/add-icon.png')} />
           </TouchableHighlight>
-          <TouchableHighlight onPress={() => this.props.toggleSidebar()}
-                              style={styles.toggleWrapper}>
-            <View>
-              {toggleIcon}
-            </View>
+
+          <TouchableHighlight onPress={() => this.props.toggleSidebar()}>
+            {toggleIcon}
           </TouchableHighlight>
         </View>
 
-        <View style={[styles.missionsListWrapper, styles.rounded]}>
+        <View style={[styles.missionsListWrapper]}>
           <ScrollView style={styles.missionsList}>
             {currentMissions}
           </ScrollView>

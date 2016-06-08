@@ -45,9 +45,7 @@ class MissionsCalendar extends Component {
       <View style={styles.container}>
         <Animated.View style={{opacity: this.state.opacity}}>
           <ScrollView>
-            <Text>
-              A calendar!
-            </Text>
+            <Text> Now a calendar. will become a dashboard</Text>
           </ScrollView>
         </Animated.View>
       </View>
