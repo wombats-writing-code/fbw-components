@@ -152,17 +152,7 @@ var ItemRow = React.createClass({
     });
   },
   toggleItemState: function (e) {
-    var clickedElement = e.target,
-      targetClassName = clickedElement.className,
-      updatedState = this.state.itemExpanded,
-      itemId = e.currentTarget.dataset.id,
-      isItem = clickedElement.parentElement.parentElement.dataset.type === 'item';
-
-    if (targetClassName.indexOf('panel-title') >= 0 && isItem) {
-      updatedState = !updatedState;
-
-      this.setState({ itemExpanded: updatedState });
-    }
+    this.setState({ itemExpanded: !this.state.itemExpanded });
   },
   render: function () {
     var _this = this,
