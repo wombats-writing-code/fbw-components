@@ -36,13 +36,25 @@ var AssessmentItemStore = _.assign({}, EventEmitter.prototype, {
       _items = data.data.results;
       _this.emitChange();
     });
+  },
+  setItems: function (data) {
+    var _this = this,
+      params = {
+        data: data,
+        method: 'POST',
+        path: 'assessment/banks/' + data.bankId + '/assessments/' + data.assessmentId
+      };
+    qbankFetch(params, function (data) {
+      _items = data.data.results;
+      _this.emitChange();
+    });
   }
 });
 
 AssessmentItemStore.dispatchToken = AssessmentItemDispatcher.register(function (action) {
     switch(action.type) {
-        case ActionTypes.CREATE_ASSESSMENT:
-            AssessmentItemStore.createAssessment(action.content);
+        case ActionTypes.SET_ITEMS:
+            AssessmentItemStore.setItems(action.content);
             break;
         case ActionTypes.UPDATE_ASSESSMENT:
             AssessmentItemStore.updateAssessment(action.content);
