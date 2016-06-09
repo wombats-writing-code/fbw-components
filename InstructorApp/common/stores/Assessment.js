@@ -38,6 +38,22 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
         path: 'assessment/banks/' + data.bankId + '/assessments/' + assessmentData.id + '/assessmentsoffered'
       };
 
+      // set the Offered params for when solutions can be reviewed
+      offeredParams.data['reviewOptions'] = {
+        solution: {
+          duringAttempt: false,
+          afterAttempt: true,
+          beforeDeadline: true,
+          afterDeadline: true
+        },
+        whetherCorrect: {
+          duringAttempt: false,
+          afterAttempt: true,
+          beforeDeadline: true,
+          afterDeadline: true
+        }
+      };
+
       qbankFetch(offeredParams, function (offeredData) {
         var mashUp = assessmentData;
         mashUp.startTime = offeredData.startTime;
