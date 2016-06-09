@@ -8,12 +8,13 @@ import React, {
 import {
   ListView,
   ScrollView,
-  SwipeableListView,  // TODO: How to get this from RN 0.27?
   Text,
   Image,
   TouchableHighlight,
   View
   } from 'react-native';
+
+import SwipeableListView from 'SwipeableRow';
 
 var _ = require('lodash');
 var Icon = require('react-native-vector-icons/FontAwesome');
