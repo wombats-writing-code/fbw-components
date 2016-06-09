@@ -45,22 +45,16 @@ var styles = StyleSheet.create({
     marginTop: 5
   },
   buttonText: {
-    color: 'white',
+    color: '#444',
     fontSize: 10
   },
   cancelButton: {
-    left: 0,
-    position: 'absolute',
-    top: -50
   },
   container: {
     flex: 3,
     padding: 5
   },
   createButton: {
-    position: 'absolute',
-    right: 5,
-    top: -50
   },
   createButtonWrapper: {
     position: 'absolute',
@@ -208,18 +202,21 @@ class AddMission extends Component {
     return (
       <View style={styles.container}>
         <Animated.View style={{opacity: this.state.opacity}}>
+
           <View style={styles.actions}>
             <TouchableHighlight onPress={() => this.props.closeAdd()}>
               <View style={cancelButtonStyle}>
                 <Text style={styles.buttonText}>Cancel</Text>
               </View>
             </TouchableHighlight>
+
             <TouchableHighlight onPress={() => this.createAssessment()}
                                 style={styles.createButtonWrapper}>
               <View style={[styles.createButton, styles.roundedButton]}>
                 <Text style={styles.buttonText}>Create</Text>
               </View>
             </TouchableHighlight>
+            
           </View>
           <ScrollView onScroll={(event) => {console.log('scroll!')}}
                       style={ {height: this.state.height - 50 } }>
@@ -250,7 +247,7 @@ class AddMission extends Component {
               <DatePickerIOS date={this.state.missionStartDate}
                              minuteInterval={30}
                              mode="datetime"
-                             onDateChange={(date) => this.setState({missionStartDate: date})}
+                             onDateChange={(date) => this.setState({missionStartDate: new Date(date)})}
                              ref="startDateDatepicker"
                              timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}/>
             </View>
@@ -259,7 +256,7 @@ class AddMission extends Component {
               <DatePickerIOS date={this.state.missionDeadline}
                              minuteInterval={30}
                              mode="datetime"
-                             onDateChange={(date) => this.setState({missionDeadline: date})}
+                             onDateChange={(date) => this.setState({missionDeadline: new Date(date)})}
                              ref="deadlineDatepicker"
                              timeZoneOffsetInMinutes={this.state.timeZoneOffsetInHours * 60}/>
             </View>

@@ -20,6 +20,8 @@ import {
   View,
   } from 'react-native';
 
+var _ = require('lodash');
+
 var AssessmentConstants = require('../../constants/Assessment');
 
 var ActionTypes = AssessmentConstants.ActionTypes;

@@ -10,6 +10,7 @@ import {
   ScrollView,
   SwipeableListView,  // TODO: How to get this from RN 0.27?
   Text,
+  Image,
   TouchableHighlight,
   View
   } from 'react-native';
@@ -46,7 +47,7 @@ class MissionsSidebar extends Component {
   // alternatively, we can bind it below by this.renderRow.bind(this) in ListView.
   renderRow = (rowData, sectionId, rowId) => {
     // change icon that appears depending on now time vs. item deadline + startTime
-    var icon = '',
+    var missionTypeIcon = '',
       progressIcon = '',
       missionStatus = MissionStatus(rowData),
       rowStyles = [styles.missionWrapper],
@@ -64,33 +65,37 @@ class MissionsSidebar extends Component {
       rowStyles.push(styles.missionWrapperSelected);
     }
 
-    if (missionStatus == 'over') {
-      progressIcon = <Icon name="check"
-                           style={[styles.missionRightIcon, styles.progressIcon]} />;
-    } else if (missionStatus == 'pending') {
-      progressIcon = <Icon name="clock-o"
-                           style={[styles.missionRightIcon, styles.progressIcon]} />;
-    } else {
-      progressIcon = <View />;
+    // chooses mission icon depending on mission type and status of mission
+    if (rowData.genusTypeId == GenusTypes.IN_CLASS && missionStatus == 'over') {
+      missionTypeIcon = require('./assets/mission-type--complete-in-class.png');
+
+    } else if (rowData.genusTypeId == GenusTypes.IN_CLASS && missionStatus == 'pending') {
+      missionTypeIcon = require('./assets/mission-type--pending-in-class.png');
+
+    } else if (rowData.genusTypeId == GenusTypes.HOMEWORK && missionStatus == 'over') {
+      missionTypeIcon = require('./assets/mission-type--complete-out-class.png');
+
+    } else if (rowData.genusTypeId == GenusTypes.HOMEWORK && missionStatus == 'pending') {
+      missionTypeIcon = require('./assets/mission-type--pending-out-class.png');
     }
 
-    if (rowData.genusTypeId == GenusTypes.IN_CLASS) {
-      icon = <Icon name="university" style={styles.missionTypeIcon}/>;
-    } else {
-      icon = <Icon name="calendar" style={styles.missionTypeIcon}/>;
-    }
+    // console.log(missionTypeIcon, GenusTypes)
+
 
     return ( // TODO: Change this onPress call depending on what is swiped / touched
         <TouchableHighlight onPress={() => this._editMission(rowData)}
                             style={rowStyles}>
-                            
+
           <View style={styles.missionRow}>
-            {icon}
+            <Image
+              style={styles.missionTypeIcon}
+              source={missionTypeIcon}
+            />
+
             <View style={styles.missionInformation}>
                 <Text
                     style={styles.missionTitle}
-                    numberOfLines={2}
-                >
+                    numberOfLines={2}>
                   {(rowData.displayName.text || '').toUpperCase()}
                 </Text>
               <View>
@@ -104,14 +109,10 @@ class MissionsSidebar extends Component {
                 </Text>
               </View>
             </View>
-            <View style={styles.missionRightIconWrapper}>
-              {progressIcon}
-            </View>
-            <View style={styles.missionRightIconWrapper}>
-              <Icon name="angle-right"
-                    style={styles.missionRightIcon} />
-            </View>
+
+            <Icon name="angle-right" style={styles.missionRightIcon} />
           </View>
+
         </TouchableHighlight>);
   }
   render() {
@@ -134,20 +135,18 @@ class MissionsSidebar extends Component {
     }
     return (
       <View style={styles.container}>
-        <View style={styles.sidebarHeader}>
-          <TouchableHighlight onPress={() => this._addNewMission()}
-                              style={styles.addMissionWrapper}>
-            <Text style={styles.buttonText}>+</Text>
+
+        <View style={styles.sideBarNav}>
+          <TouchableHighlight onPress={() => this._addNewMission()}>
+            <Image style={styles.addNewMissionButton} source={require('./assets/add-icon.png')} />
           </TouchableHighlight>
-          <TouchableHighlight onPress={() => this.props.toggleSidebar()}
-                              style={styles.toggleWrapper}>
-            <View>
-              {toggleIcon}
-            </View>
+
+          <TouchableHighlight onPress={() => this.props.toggleSidebar()}>
+            {toggleIcon}
           </TouchableHighlight>
         </View>
 
-        <View style={[styles.missionsListWrapper, styles.rounded]}>
+        <View style={[styles.missionsListWrapper]}>
           <ScrollView style={styles.missionsList}>
             {currentMissions}
           </ScrollView>
