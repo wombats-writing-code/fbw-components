@@ -32,6 +32,29 @@ var Dispatcher = require('../../dispatchers/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
 
 var styles = StyleSheet.create({
+  itemCounter: {
+    color: '#a1a1a1',
+    textAlign: 'right',
+    width: 50
+  },
+  itemRow: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 5
+  },
+  itemState: {
+    width: 50
+  },
+  moduleDisplayName: {
+    flex: 1,
+    color: '#a1a1a1'
+  },
+  moduleNameWrapper: {
+    backgroundColor: '#0003c9',
+    flex: 1,
+    flexDirection: 'row',
+    padding: 5
+  }
 });
 
 
@@ -87,11 +110,20 @@ class QuestionAccordion extends Component {
     }
   }
   renderItemRow = (rowData, sectionId, rowId) => {
+    var itemIncludedIcon = <View />;
+
     return (
       <View style={styles.itemRow}>
-        <Text>
-          {rowData.displayName.text}
-        </Text>
+        <TouchableHighlight onPress={() => this.toggleItemInAssessment()}>
+          <View>
+            <View style={styles.itemState}>
+              {itemIncludedIcon}
+            </View>
+            <Text style={styles.itemDisplayName}>
+              {rowData.displayName.text}
+            </Text>
+          </View>
+        </TouchableHighlight>
       </View>
       );
   }
