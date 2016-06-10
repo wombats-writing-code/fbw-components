@@ -254,6 +254,7 @@ class AddMission extends Component {
             <View>
               <Text style={styles.inputLabel}>Deadline</Text>
               <DatePickerIOS date={this.state.missionDeadline}
+                             minimumDate={this.state.missionStartDate}
                              minuteInterval={30}
                              mode="datetime"
                              onDateChange={(date) => this.setState({missionDeadline: new Date(date)})}
