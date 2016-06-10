@@ -255,8 +255,9 @@ class QuestionCard extends Component {
             </View>
             <View>
               <View style={styles.toggleChoicesButton}>
-                <TouchableHighlight onPress={() => this._toggleChoiceState()}>
-                  <Text style={styles.toggleControl}>
+                <TouchableHighlight onPress={() => this._toggleChoiceState()},
+                                    style={styles.toggleControl}>
+                  <Text>
                     Toggle choices
                   </Text>
                 </TouchableHighlight>
