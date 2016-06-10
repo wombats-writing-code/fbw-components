@@ -23,15 +23,6 @@ import Accordion from 'react-native-collapsible/Accordion';
 var _ = require('lodash');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
-var AssessmentConstants = require('../../constants/Assessment');
-
-var ActionTypes = AssessmentConstants.ActionTypes;
-var AssessmentStore = require('../../stores/Assessment');
-var AssessmentItemStore = require('../../stores/AssessmentItem');
-var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
-var Dispatcher = require('../../dispatchers/Assessment');
-var GenusTypes = AssessmentConstants.GenusTypes;
-
 var styles = StyleSheet.create({
   includedItem: {
     color: '#355e3b',

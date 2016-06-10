@@ -44,12 +44,30 @@ var styles = StyleSheet.create({
     borderTopColor: 'green',
     borderTopWidth: 1
   },
+  questionAction: {
+    flex: 1
+  },
+  questionActions: {
+    borderRightColor: '#d2d2d2',
+    borderRightWidth: 1,
+    marginLeft: -5,
+    padding: 5
+  },
+  questionActionsWrapper: {
+    alignItems: 'center',
+    flex: 1
+  },
   questionCard: {
     borderColor: '#8f8f90',
     borderRadius: 5,
     borderWidth: 1,
+    flex: 1,
+    flexDirection: 'row',
     margin: 10,
     padding: 10
+  },
+  questionContent: {
+    flex: 1
   },
   questionDisplayNameWrapper: {
     flex: 1,
@@ -164,58 +182,92 @@ class QuestionCard extends Component {
   }
   render() {
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
-      questionLO = ModuleStore.getOutcome(this.props.item.learningObjectiveIds[0]);
+      questionLO = ModuleStore.getOutcome(this.props.item.learningObjectiveIds[0]),
+      moveUp = <View />,
+      moveDown = <View />,
+      myIndex = parseInt(this.props.index),
+      numItems = parseInt(this.props.numItems);
+
+    if (myIndex != 0) {
+      moveUp = <TouchableHighlight onPress={() => this.props.swapItems(myIndex - 1, myIndex)}>
+        <Icon name="caret-up" size={20} />
+      </TouchableHighlight>;
+    }
+
+    if (myIndex != (numItems - 1)) {
+      moveDown = <TouchableHighlight onPress={() => this.props.swapItems(myIndex, myIndex + 1)}>
+        <Icon name="caret-down" size={20} />
+      </TouchableHighlight>
+    }
 
     return (
       <Animated.View style={{opacity: this.state.opacity}}>
         <View style={styles.questionCard}>
-          <View style={styles.questionDisplayNameWrapper}>
-            <View style={styles.sectionLabel}>
-              <Text>
-                Q:
-              </Text>
-            </View>
-            <Text style={[styles.questionDisplayName, styles.sectionText]}>
-              {this.props.item.question.displayName.text}
-            </Text>
-          </View>
-          <View>
-            <TouchableHighlight onPress={() => this._toggleLOState()}
-                                style={styles.toggleLOButton}>
-              <Text style={styles.toggleControl}>
-                Toggle outcome
-              </Text>
-            </TouchableHighlight>
-            <Animated.View style={[{height: this.state.loHeight}, styles.questionLOWrapper]}>
-              <View style={styles.sectionLabel}>
-                <Icon name="crosshairs" />
+          <View style={styles.questionActions}>
+            <View style={styles.questionActionsWrapper}>
+              <View style={styles.questionContent}>
+                {moveUp}
               </View>
-              <View style={styles.questionLOTextWrapper}>
-                <Text style={styles.sectionText}>
-                  {questionLO.displayName.text}
+              <View style={styles.questionContent}>
+                <TouchableHighlight onPress={() => this.props.removeItem(this.props.item)}>
+                  <Icon name="trash"
+                        size={20} />
+                </TouchableHighlight>
+              </View>
+              <View style={styles.questionContent}>
+                {moveDown}
+              </View>
+            </View>
+          </View>
+          <View style={styles.questionContent}>
+            <View style={styles.questionDisplayNameWrapper}>
+              <View style={styles.sectionLabel}>
+                <Text>
+                  Q:
                 </Text>
               </View>
-            </Animated.View>
-          </View>
-          <View>
-            <WebView scrollEnabled={false}
-                     source={{html: this._wrapHTMLWithMathjax(this.props.item.question.text.text)}}
-                     style={styles.questionText} />
-          </View>
-          <View>
-            <View style={styles.toggleChoicesButton}>
-              <TouchableHighlight onPress={() => this._toggleChoiceState()}>
+              <Text style={[styles.questionDisplayName, styles.sectionText]}>
+                {this.props.item.question.displayName.text}
+              </Text>
+            </View>
+            <View>
+              <TouchableHighlight onPress={() => this._toggleLOState()}
+                                  style={styles.toggleLOButton}>
                 <Text style={styles.toggleControl}>
-                  Toggle choices
+                  Toggle outcome
                 </Text>
               </TouchableHighlight>
-            </View>
-            <View style={styles.choicesContent}>
-              <Animated.View style={{height: this.state.contentHeight}}>
-                <ListView dataSource={ds.cloneWithRows(this.props.item.question.choices)}
-                          renderRow={this.renderChoices}>
-                </ListView>
+              <Animated.View style={[{height: this.state.loHeight}, styles.questionLOWrapper]}>
+                <View style={styles.sectionLabel}>
+                  <Icon name="crosshairs" />
+                </View>
+                <View style={styles.questionLOTextWrapper}>
+                  <Text style={styles.sectionText}>
+                    {questionLO.displayName.text}
+                  </Text>
+                </View>
               </Animated.View>
+            </View>
+            <View>
+              <WebView scrollEnabled={false}
+                       source={{html: this._wrapHTMLWithMathjax(this.props.item.question.text.text)}}
+                       style={styles.questionText} />
+            </View>
+            <View>
+              <View style={styles.toggleChoicesButton}>
+                <TouchableHighlight onPress={() => this._toggleChoiceState()}>
+                  <Text style={styles.toggleControl}>
+                    Toggle choices
+                  </Text>
+                </TouchableHighlight>
+              </View>
+              <View style={styles.choicesContent}>
+                <Animated.View style={{height: this.state.contentHeight}}>
+                  <ListView dataSource={ds.cloneWithRows(this.props.item.question.choices)}
+                            renderRow={this.renderChoices}>
+                  </ListView>
+                </Animated.View>
+              </View>
             </View>
           </View>
         </View>
