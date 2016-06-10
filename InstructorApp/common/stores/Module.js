@@ -46,7 +46,15 @@ var ModuleStore = _.assign({}, EventEmitter.prototype, {
     });
   },
   getOutcome: function (outcomeId) {
-    return _outcomes[outcomeId];
+    if (_.keys(_outcomes).indexOf(outcomeId) >= 0) {
+      return _outcomes[outcomeId];
+    } else {
+      return {
+        displayName: {
+          text: 'Unknown LO'
+        }
+      }
+    }
   }
 });
 

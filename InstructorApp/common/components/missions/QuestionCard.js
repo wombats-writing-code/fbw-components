@@ -20,6 +20,8 @@ import {
 var _ = require('lodash');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
+var AssessmentItemConstants = require('../../constants/AssessmentItem');
+var MathJaxURL = AssessmentItemConstants.MathJax.URL;
 var ModuleStore = require('../../stores/Module');
 
 var styles = StyleSheet.create({
@@ -84,6 +86,7 @@ var styles = StyleSheet.create({
     backgroundColor: 'green',
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
+    opacity: 0.5,
     padding: 5,
     position: 'absolute',
     right: 0,
@@ -93,6 +96,7 @@ var styles = StyleSheet.create({
     backgroundColor: '#d2d2d2',
     borderTopLeftRadius: 5,
     borderTopRightRadius: 5,
+    opacity: 0.5,
     padding: 5,
     position: 'absolute',
     right: 0,
@@ -154,15 +158,13 @@ class QuestionCard extends Component {
         </View>
       </View>
       <WebView scrollEnabled={false}
-               source={{html: rowData.text}}
+               source={{html: this._wrapHTMLWithMathjax(rowData.text)}}
                style={styles.choiceText} />
     </View>
   }
   render() {
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
       questionLO = ModuleStore.getOutcome(this.props.item.learningObjectiveIds[0]);
-
-    console.log(this.props.item.question.text.text);
 
     return (
       <Animated.View style={{opacity: this.state.opacity}}>
@@ -197,7 +199,7 @@ class QuestionCard extends Component {
           </View>
           <View>
             <WebView scrollEnabled={false}
-                     source={{html: this.props.item.question.text.text}}
+                     source={{html: this._wrapHTMLWithMathjax(this.props.item.question.text.text)}}
                      style={styles.questionText} />
           </View>
           <View>
@@ -247,6 +249,17 @@ class QuestionCard extends Component {
         }).start();
       }
     });
+  }
+  _wrapHTMLWithMathjax = (markup) => {
+    return `<!DOCTYPE html>
+      <html>
+        <head>
+          <script src="${MathJaxURL}"></script>
+        </head>
+        <body>
+          ${markup}
+        </body>
+      </html>`;
   }
 }
 
