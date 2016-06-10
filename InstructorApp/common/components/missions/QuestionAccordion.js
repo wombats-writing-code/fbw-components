@@ -147,9 +147,23 @@ class QuestionAccordion extends Component {
       );
   }
   toggleItemInAssessment = (item) => {
-    var missionItems = this.props.missionItems;
-    missionItems.push(item);
-    this.props.updateItemsInMission(missionItems);
+    var missionItems = this.props.missionItems,
+      missionItemIds = _.map(missionItems, 'id'),
+      updatedMissionItems = [];
+
+    if (missionItemIds.indexOf(item.id) >= 0) {
+      // remove the item
+      _.each(missionItems, function (missionItem) {
+        if (item.id != missionItem.id) {
+          updatedMissionItems.push(missionItem);
+        }
+      });
+    } else {
+      updatedMissionItems = missionItems;
+      updatedMissionItems.push(item);
+    }
+
+    this.props.updateItemsInMission(updatedMissionItems);
   }
   render() {
     var itemsArray = this._formatSections();
