@@ -38,6 +38,10 @@ var styles = StyleSheet.create({
     flex: 1,
     height: 50
   },
+  choicesContent: {
+    borderTopColor: 'green',
+    borderTopWidth: 1
+  },
   questionCard: {
     borderColor: '#8f8f90',
     borderRadius: 5,
@@ -75,6 +79,27 @@ var styles = StyleSheet.create({
   sectionText: {
     flex: 1,
     padding: 3
+  },
+  toggleChoicesButton: {
+    backgroundColor: 'green',
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    padding: 5,
+    position: 'absolute',
+    right: 0,
+    top: -20
+  },
+  toggleLOButton: {
+    backgroundColor: '#d2d2d2',
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    padding: 5,
+    position: 'absolute',
+    right: 0,
+    top: -20
+  },
+  toggleControl: {
+    fontSize: 8
   }
 });
 
@@ -84,7 +109,10 @@ class QuestionCard extends Component {
     super(props);
 
     this.state = {
-      contentHeight: 0,
+      contentExpanded: false,
+      contentHeight: new Animated.Value(0),
+      loExpanded: true,
+      loHeight: new Animated.Value(75),
       opacity: new Animated.Value(0)
     };
   }
@@ -125,7 +153,8 @@ class QuestionCard extends Component {
           {choiceIcon}
         </View>
       </View>
-      <WebView source={{html: rowData.text}}
+      <WebView scrollEnabled={false}
+               source={{html: rowData.text}}
                style={styles.choiceText} />
     </View>
   }
@@ -148,35 +177,76 @@ class QuestionCard extends Component {
               {this.props.item.question.displayName.text}
             </Text>
           </View>
-          <View style={styles.questionLOWrapper}>
-            <View style={styles.sectionLabel}>
-              <Icon name="crosshairs" />
-            </View>
-            <View style={styles.questionLOTextWrapper}>
-              <Text style={styles.sectionText}>
-                {questionLO.displayName.text}
+          <View>
+            <TouchableHighlight onPress={() => this._toggleLOState()}
+                                style={styles.toggleLOButton}>
+              <Text style={styles.toggleControl}>
+                Toggle outcome
               </Text>
-            </View>
+            </TouchableHighlight>
+            <Animated.View style={[{height: this.state.loHeight}, styles.questionLOWrapper]}>
+              <View style={styles.sectionLabel}>
+                <Icon name="crosshairs" />
+              </View>
+              <View style={styles.questionLOTextWrapper}>
+                <Text style={styles.sectionText}>
+                  {questionLO.displayName.text}
+                </Text>
+              </View>
+            </Animated.View>
           </View>
           <View>
-            <WebView source={{html: this.props.item.question.text.text}}
+            <WebView scrollEnabled={false}
+                     source={{html: this.props.item.question.text.text}}
                      style={styles.questionText} />
           </View>
           <View>
             <View style={styles.toggleChoicesButton}>
-              <Text>
-                Toggle choices
-              </Text>
+              <TouchableHighlight onPress={() => this._toggleChoiceState()}>
+                <Text style={styles.toggleControl}>
+                  Toggle choices
+                </Text>
+              </TouchableHighlight>
             </View>
-            <View>
-              <ListView dataSource={ds.cloneWithRows(this.props.item.question.choices)}
-                        renderRow={this.renderChoices}>
-              </ListView>
+            <View style={styles.choicesContent}>
+              <Animated.View style={{height: this.state.contentHeight}}>
+                <ListView dataSource={ds.cloneWithRows(this.props.item.question.choices)}
+                          renderRow={this.renderChoices}>
+                </ListView>
+              </Animated.View>
             </View>
           </View>
         </View>
       </Animated.View>
     );
+  }
+  _toggleChoiceState = () => {
+    var _this = this;
+    this.setState({ contentExpanded: !this.state.contentExpanded }, function () {
+      if (_this.state.contentExpanded) {
+        Animated.timing(_this.state.contentHeight, {
+          toValue: 50 * _this.props.item.question.choices.length
+        }).start();
+      } else {
+        Animated.timing(_this.state.contentHeight, {
+          toValue: 0
+        }).start();
+      }
+    });
+  }
+  _toggleLOState = () => {
+    var _this = this;
+    this.setState({ loExpanded: !this.state.loExpanded }, function () {
+      if (_this.state.loExpanded) {
+        Animated.timing(_this.state.loHeight, {
+          toValue: 75
+        }).start();
+      } else {
+        Animated.timing(_this.state.loHeight, {
+          toValue: 0
+        }).start();
+      }
+    });
   }
 }
 

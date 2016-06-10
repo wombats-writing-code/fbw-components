@@ -131,7 +131,7 @@ class MissionQuestions extends Component {
             </Text>
           </TouchableHighlight>
           <ScrollView onScroll={(event) => {console.log('scroll!')}}
-                      style={ {height: this.state.height - 80 } }>
+                      style={ {height: this.state.height - 100 } }>
             {currentItems}
           </ScrollView>
         </Animated.View>
