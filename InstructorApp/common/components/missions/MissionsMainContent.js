@@ -86,6 +86,7 @@ class MissionsMainContent extends Component {
                                 bankId={this.props.bankId}
                                 closeDetails={this._revertToDefaultContent}
                                 mission={this.props.selectedMission}
+                                missionItems={this.props.missionItems}
                                 toggleQuestionDrawer={this.props.toggleQuestionDrawer} />;
       subtitle = this.props.selectedMission.displayName.text;
       title = 'Editing Mission';

@@ -41,28 +41,28 @@ var AssessmentItemStore = _.assign({}, EventEmitter.prototype, {
     var _this = this,
       params = {
         data: data,
-        method: 'POST',
-        path: 'assessment/banks/' + data.bankId + '/assessments/' + data.assessmentId
+        method: 'PUT',
+        path: 'assessment/banks/' + data.bankId + '/assessments/' + data.assessmentId + '/items'
       };
-    qbankFetch(params, function (data) {
-      _items = data.data.results;
-      _this.emitChange();
+    console.log(params);
+    qbankFetch(params, function (responseData) {
+      _this.getItems(data.bankId, data.assessmentId);
     });
   }
 });
 
 AssessmentItemStore.dispatchToken = AssessmentItemDispatcher.register(function (action) {
-    switch(action.type) {
-        case ActionTypes.SET_ITEMS:
-            AssessmentItemStore.setItems(action.content);
-            break;
-        case ActionTypes.UPDATE_ASSESSMENT:
-            AssessmentItemStore.updateAssessment(action.content);
-            break;
-        case ActionTypes.DELETE_ASSESSMENT:
-            AssessmentItemStore.deleteAssessment(action.content);
-            break;
-    }
+  switch(action.type) {
+    case ActionTypes.SET_ITEMS:
+      AssessmentItemStore.setItems(action.content);
+      break;
+    case ActionTypes.UPDATE_ASSESSMENT:
+      AssessmentItemStore.updateAssessment(action.content);
+      break;
+    case ActionTypes.DELETE_ASSESSMENT:
+      AssessmentItemStore.deleteAssessment(action.content);
+      break;
+  }
 });
 
 module.exports = AssessmentItemStore;

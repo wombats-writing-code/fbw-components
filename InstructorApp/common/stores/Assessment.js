@@ -20,7 +20,6 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
     this.on(CHANGE_EVENT, callback);
   },
   removeChangeListener: function (callback) {
-    // console.log(callback);
     this.removeListener(CHANGE_EVENT, callback);
   },
   createAssessment: function (data) {
@@ -80,8 +79,6 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
 
     qbankFetch(params, function (data) {
       var assessments = data.data.results;
-
-      // console.log('fetched assessments', assessments);
 
       numObjects = numObjects + assessments.length;
       if (numObjects != 0) {

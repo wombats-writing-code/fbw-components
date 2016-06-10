@@ -80,9 +80,6 @@ class MissionsSidebar extends Component {
       missionTypeIcon = require('./assets/mission-type--pending-out-class.png');
     }
 
-    // console.log(missionTypeIcon, GenusTypes)
-
-
     return ( // TODO: Change this onPress call depending on what is swiped / touched
         <TouchableHighlight onPress={() => this._editMission(rowData)}
                             style={rowStyles}>

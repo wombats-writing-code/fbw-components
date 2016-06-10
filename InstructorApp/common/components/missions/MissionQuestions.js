@@ -26,7 +26,6 @@ var AssessmentConstants = require('../../constants/Assessment');
 
 var ActionTypes = AssessmentConstants.ActionTypes;
 var AssessmentStore = require('../../stores/Assessment');
-var AssessmentItemStore = require('../../stores/AssessmentItem');
 var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
 var Dispatcher = require('../../dispatchers/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
@@ -57,25 +56,20 @@ class MissionQuestions extends Component {
     this.state = {
       allItems: [],
       height: 0,
-      items: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
       opacity: new Animated.Value(0)
     };
-
-    AssessmentItemStore.addChangeListener(this._updateItemsFromStore);
   }
   componentWillUnmount() {
     Animated.timing(this.state.opacity, {
       toValue: 0
     }).start();
-    AssessmentItemStore.removeChangeListener(this._updateItemsFromStore);
   }
   componentDidMount() {
     Animated.timing(this.state.opacity, {
       toValue: 1
     }).start();
-
+  console.log('in mission questions: ' + this.props.missionItems.length);
     this.setState({ height: Dimensions.get('window').height });
-    AssessmentItemStore.getItems(this.props.bankId, this.props.mission.id);
   }
   componentDidUpdate() {
     // issue with styling DatePickerIOS:
@@ -114,14 +108,14 @@ class MissionQuestions extends Component {
     this.setState({ height: Dimensions.get('window').height });
   }
   renderItemRow = (rowData, sectionId, rowId) => {
-
-  }
-  setItems(items) {
-    this.setState({ items: items });
+    return <View>
+      <Text>{rowData.displayName.text}</Text>
+    </View>
   }
   render() {
-    var currentItems = this.state.items.length > 0 ?
-                       ( <ListView dataSource={this.state.items}
+    var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}),
+      currentItems = this.props.missionItems.length > 0 ?
+                       ( <ListView dataSource={ds.cloneWithRows(this.props.missionItems)}
                                    renderRow={this.renderItemRow}>
                          </ListView> ) :
                        ( <View style={styles.notification}>
@@ -143,12 +137,6 @@ class MissionQuestions extends Component {
         </Animated.View>
       </View>
     );
-  }
-  _updateItemsFromStore = (items) => {
-    this.setItems(_.sortBy(items,
-      ['startTime.year', 'startTime.month', 'startTime.day',
-       'deadline.year', 'deadline.month', 'deadline.day',
-       'displayName.text']));
   }
 }
 

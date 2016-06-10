@@ -21,6 +21,7 @@ import {
 import Accordion from 'react-native-collapsible/Accordion';
 
 var _ = require('lodash');
+var Icon = require('react-native-vector-icons/FontAwesome');
 
 var AssessmentConstants = require('../../constants/Assessment');
 
@@ -32,21 +33,31 @@ var Dispatcher = require('../../dispatchers/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
 
 var styles = StyleSheet.create({
+  includedItem: {
+    color: '#355e3b',
+    textAlign: 'center'
+  },
   itemCounter: {
     color: '#a1a1a1',
     textAlign: 'right',
     width: 50
   },
+  itemDisplayName: {
+    flex: 1,
+    fontSize: 10,
+    color: '#a1a1a1'
+  },
   itemRow: {
     flex: 1,
     flexDirection: 'row',
-    padding: 5
+    padding: 10
   },
   itemState: {
-    width: 50
+    width: 25
   },
   moduleDisplayName: {
     flex: 1,
+    fontSize: 14,
     color: '#a1a1a1'
   },
   moduleNameWrapper: {
@@ -110,22 +121,35 @@ class QuestionAccordion extends Component {
     }
   }
   renderItemRow = (rowData, sectionId, rowId) => {
-    var itemIncludedIcon = <View />;
+    var itemIncludedIcon = <View />,
+      missionItemIds = _.map(this.props.missionItems, 'id');
+
+    if (missionItemIds.indexOf(rowData.id) >= 0) {
+      itemIncludedIcon = <View>
+        <Icon name="check" style={styles.includedItem} />
+      </View>;
+    }
 
     return (
-      <View style={styles.itemRow}>
-        <TouchableHighlight onPress={() => this.toggleItemInAssessment()}>
-          <View>
+      <View>
+        <TouchableHighlight onPress={() => this.toggleItemInAssessment(rowData)}>
+          <View style={styles.itemRow}>
             <View style={styles.itemState}>
               {itemIncludedIcon}
             </View>
-            <Text style={styles.itemDisplayName}>
+            <Text numberOfLines={1}
+                  style={styles.itemDisplayName}>
               {rowData.displayName.text}
             </Text>
           </View>
         </TouchableHighlight>
       </View>
       );
+  }
+  toggleItemInAssessment = (item) => {
+    var missionItems = this.props.missionItems;
+    missionItems.push(item);
+    this.props.updateItemsInMission(missionItems);
   }
   render() {
     var itemsArray = this._formatSections();
