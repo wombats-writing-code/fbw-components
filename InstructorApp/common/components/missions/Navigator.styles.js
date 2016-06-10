@@ -26,8 +26,12 @@ module.exports = StyleSheet.create({
     textAlign: 'center'
   },
   subTitle: {
-    fontSize: 10,
+    fontSize: 8,
     textAlign: 'center'
+  },
+  titleWithSubtitle: {
+    flex: 1,
+    flexDirection: 'column'
   },
   titleWrapper: {
     flex: 3,
