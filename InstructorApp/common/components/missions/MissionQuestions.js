@@ -29,6 +29,7 @@ var AssessmentStore = require('../../stores/Assessment');
 var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
 var Dispatcher = require('../../dispatchers/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
+var QuestionCard = require('./QuestionCard');
 
 var styles = StyleSheet.create({
   header: {
@@ -68,7 +69,6 @@ class MissionQuestions extends Component {
     Animated.timing(this.state.opacity, {
       toValue: 1
     }).start();
-  console.log('in mission questions: ' + this.props.missionItems.length);
     this.setState({ height: Dimensions.get('window').height });
   }
   componentDidUpdate() {
@@ -108,8 +108,8 @@ class MissionQuestions extends Component {
     this.setState({ height: Dimensions.get('window').height });
   }
   renderItemRow = (rowData, sectionId, rowId) => {
-    return <View>
-      <Text>{rowData.displayName.text}</Text>
+    return <View key={rowData.id}>
+      <QuestionCard item={rowData} />
     </View>
   }
   render() {
@@ -131,7 +131,7 @@ class MissionQuestions extends Component {
             </Text>
           </TouchableHighlight>
           <ScrollView onScroll={(event) => {console.log('scroll!')}}
-                      style={ {height: this.state.height - 50 } }>
+                      style={ {height: this.state.height - 80 } }>
             {currentItems}
           </ScrollView>
         </Animated.View>

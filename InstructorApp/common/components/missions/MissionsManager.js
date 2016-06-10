@@ -194,7 +194,6 @@ class MissionsManager extends Component {
     });
   }
   _updateMissionItemsFromStore = (items) => {
-    console.log('in missions manager, update items from store: ' + items.length);
     this.setState({ missionItems: items });
   }
   _updateMissionsFromStore = (missions) => {

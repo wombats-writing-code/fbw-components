@@ -23,7 +23,7 @@ var AssessmentConstants = require('../../constants/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
 var MissionStatus = require('../../../utilities/dateUtil/CheckMissionStatus');
 
-var styles = require('./MissionsSidebar.styles')
+var styles = require('./MissionsSidebar.styles');
 
 class MissionsSidebar extends Component {
   constructor(props) {
