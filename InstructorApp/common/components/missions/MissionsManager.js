@@ -98,8 +98,8 @@ class MissionsManager extends Component {
     }
     // set panThreshold to 1.5 because acceptPan doesn't seem to work?
     return (
-      <Drawer acceptPan={false}
-              captureGestures={false}
+      <Drawer acceptPan={true}
+              captureGestures={'open'}
               content={<MissionsSidebar changeContent={this._changeContent}
                                         missions={this.state.missions}
                                         selectMission={this.setSelectedMission}
@@ -111,14 +111,16 @@ class MissionsManager extends Component {
               side='left'
               style={styles.container}
               tweenHandler={Drawer.tweenPresets.parallax}>
-      <Drawer acceptPan={false}
-                captureGestures={false}
-                content={<QuestionsDrawer items={this.state.sortedItems} />}
-                open={this.state.questionDrawerOpen}
-                openDrawerOffset={0.5}
-                panThreshold={1.5}
-                side='right'
-                type='overlay'>
+
+
+        <Drawer acceptPan={false}
+                  captureGestures={false}
+                  content={<QuestionsDrawer items={this.state.sortedItems} />}
+                  open={this.state.questionDrawerOpen}
+                  openDrawerOffset={0.5}
+                  panThreshold={1.5}
+                  side='right'
+                  type='overlay'>
           <View>
             <MissionsMainContent bankId={bankId}
                                  changeContent={this._changeContent}
