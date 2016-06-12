@@ -55,8 +55,13 @@ class MissionsContentNavbar extends Component {
           <View style={styles.navBar}>
             {toggleSidebar}
 
-            <View style={styles.titleWrapper}>
-                <Text style={styles.title}>{(this.props.title || '').toUpperCase()}</Text>
+            <View style={styles.titleWithSubtitle}>
+              <View style={styles.titleWrapper}>
+                  <Text style={styles.title}>{(this.props.title || '').toUpperCase()}</Text>
+              </View>
+              <View style={styles.subtitleWrapper}>
+                  <Text style={styles.subTitle}>{(this.props.subtitle || '').toUpperCase()}</Text>
+              </View>
             </View>
           </View>
         </Animated.View>

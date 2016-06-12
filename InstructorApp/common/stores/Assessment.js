@@ -20,7 +20,6 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
     this.on(CHANGE_EVENT, callback);
   },
   removeChangeListener: function (callback) {
-    // console.log(callback);
     this.removeListener(CHANGE_EVENT, callback);
   },
   createAssessment: function (data) {
@@ -36,6 +35,22 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
         data: data,
         method: 'POST',
         path: 'assessment/banks/' + data.bankId + '/assessments/' + assessmentData.id + '/assessmentsoffered'
+      };
+
+      // set the Offered params for when solutions can be reviewed
+      offeredParams.data['reviewOptions'] = {
+        solution: {
+          duringAttempt: false,
+          afterAttempt: true,
+          beforeDeadline: true,
+          afterDeadline: true
+        },
+        whetherCorrect: {
+          duringAttempt: false,
+          afterAttempt: true,
+          beforeDeadline: true,
+          afterDeadline: true
+        }
       };
 
       qbankFetch(offeredParams, function (offeredData) {
@@ -64,8 +79,6 @@ var AssessmentStore = _.assign({}, EventEmitter.prototype, {
 
     qbankFetch(params, function (data) {
       var assessments = data.data.results;
-
-      // console.log('fetched assessments', assessments);
 
       numObjects = numObjects + assessments.length;
       if (numObjects != 0) {

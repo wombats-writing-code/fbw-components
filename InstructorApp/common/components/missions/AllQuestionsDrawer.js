@@ -93,7 +93,9 @@ class AllQuestionsDrawer extends Component {
     // TODO: make this a set of collapsible accordions with <ListView> inside of each...
     // TODO: close X button
     var currentItems = _.keys(this.props.items).length > 0 ?
-                       ( <QuestionAccordion items={this.props.items} /> ) :
+                       ( <QuestionAccordion items={this.props.items}
+                                            missionItems={this.props.missionItems}
+                                            updateItemsInMission={this.props.updateItemsInMission} /> ) :
                        ( <View style={styles.notification}>
                            <Text style={[styles.notificationText]}>No questions</Text>
                          </View> );

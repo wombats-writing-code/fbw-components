@@ -8,12 +8,13 @@ import React, {
 import {
   ListView,
   ScrollView,
-  SwipeableListView,  // TODO: How to get this from RN 0.27?
   Text,
   Image,
   TouchableHighlight,
   View
   } from 'react-native';
+
+import SwipeableListView from 'SwipeableRow';
 
 var _ = require('lodash');
 var Icon = require('react-native-vector-icons/FontAwesome');
@@ -22,7 +23,7 @@ var AssessmentConstants = require('../../constants/Assessment');
 var GenusTypes = AssessmentConstants.GenusTypes;
 var MissionStatus = require('../../../utilities/dateUtil/CheckMissionStatus');
 
-var styles = require('./MissionsSidebar.styles')
+var styles = require('./MissionsSidebar.styles');
 
 class MissionsSidebar extends Component {
   constructor(props) {
@@ -78,9 +79,6 @@ class MissionsSidebar extends Component {
     } else if (rowData.genusTypeId == GenusTypes.HOMEWORK && missionStatus == 'pending') {
       missionTypeIcon = require('./assets/mission-type--pending-out-class.png');
     }
-
-    // console.log(missionTypeIcon, GenusTypes)
-
 
     return ( // TODO: Change this onPress call depending on what is swiped / touched
         <TouchableHighlight onPress={() => this._editMission(rowData)}

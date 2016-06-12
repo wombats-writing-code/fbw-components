@@ -21,17 +21,42 @@ import {
 import Accordion from 'react-native-collapsible/Accordion';
 
 var _ = require('lodash');
-
-var AssessmentConstants = require('../../constants/Assessment');
-
-var ActionTypes = AssessmentConstants.ActionTypes;
-var AssessmentStore = require('../../stores/Assessment');
-var AssessmentItemStore = require('../../stores/AssessmentItem');
-var DateConvert = require('../../../utilities/dateUtil/ConvertDateToDictionary');
-var Dispatcher = require('../../dispatchers/Assessment');
-var GenusTypes = AssessmentConstants.GenusTypes;
+var Icon = require('react-native-vector-icons/FontAwesome');
 
 var styles = StyleSheet.create({
+  includedItem: {
+    color: '#355e3b',
+    textAlign: 'center'
+  },
+  itemCounter: {
+    color: '#a1a1a1',
+    textAlign: 'right',
+    width: 50
+  },
+  itemDisplayName: {
+    flex: 1,
+    fontSize: 10,
+    color: '#a1a1a1'
+  },
+  itemRow: {
+    flex: 1,
+    flexDirection: 'row',
+    padding: 10
+  },
+  itemState: {
+    width: 25
+  },
+  moduleDisplayName: {
+    flex: 1,
+    fontSize: 14,
+    color: '#a1a1a1'
+  },
+  moduleNameWrapper: {
+    backgroundColor: '#0003c9',
+    flex: 1,
+    flexDirection: 'row',
+    padding: 5
+  }
 });
 
 
@@ -87,13 +112,49 @@ class QuestionAccordion extends Component {
     }
   }
   renderItemRow = (rowData, sectionId, rowId) => {
+    var itemIncludedIcon = <View />,
+      missionItemIds = _.map(this.props.missionItems, 'id');
+
+    if (missionItemIds.indexOf(rowData.id) >= 0) {
+      itemIncludedIcon = <View>
+        <Icon name="check" style={styles.includedItem} />
+      </View>;
+    }
+
     return (
-      <View style={styles.itemRow}>
-        <Text>
-          {rowData.displayName.text}
-        </Text>
+      <View>
+        <TouchableHighlight onPress={() => this.toggleItemInAssessment(rowData)}>
+          <View style={styles.itemRow}>
+            <View style={styles.itemState}>
+              {itemIncludedIcon}
+            </View>
+            <Text numberOfLines={1}
+                  style={styles.itemDisplayName}>
+              {rowData.displayName.text}
+            </Text>
+          </View>
+        </TouchableHighlight>
       </View>
       );
+  }
+  toggleItemInAssessment = (item) => {
+    var missionItems = this.props.missionItems,
+      missionItemIds = _.map(missionItems, 'id'),
+      updatedMissionItems = [];
+
+    if (missionItemIds.indexOf(item.id) >= 0) {
+      // remove the item
+      _.each(missionItems, function (missionItem) {
+        if (item.id != missionItem.id) {
+          updatedMissionItems.push(missionItem);
+        }
+      });
+    } else {
+      updatedMissionItems = missionItems;
+      updatedMissionItems.push(item);
+    }
+
+    this.props.updateItemsInMission(updatedMissionItems);
   }
   render() {
     var itemsArray = this._formatSections();

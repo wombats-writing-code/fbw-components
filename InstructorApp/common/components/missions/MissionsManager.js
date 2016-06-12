@@ -21,6 +21,9 @@ var _ = require('lodash');
 var Icon = require('react-native-vector-icons/FontAwesome');
 
 var AssessmentStore = require('../../stores/Assessment');
+var AssessmentItemConstants = require('../../constants/AssessmentItem');
+var AssessmentItemDispatcher = require('../../dispatchers/AssessmentItem');
+var AssessmentItemStore = require('../../stores/AssessmentItem');
 var ItemStore = require('../../stores/Item');
 var ModuleStore = require('../../stores/Module');
 var UserStore = require('../../stores/User');
@@ -52,6 +55,7 @@ class MissionsManager extends Component {
       content: 'calendar',
       drawerOpen: true,
       loading: true,
+      missionItems: [],
       missions: [],
       modules: [],
       questionDrawerOpen: false,
@@ -59,11 +63,13 @@ class MissionsManager extends Component {
       sortedItems: {}
     };
     AssessmentStore.addChangeListener(this._updateMissionsFromStore);
+    AssessmentItemStore.addChangeListener(this._updateMissionItemsFromStore);
     ItemStore.addChangeListener(this._updateItemsFromStore);
     ModuleStore.addChangeListener(this._updateModulesFromStore);
   }
   componentWillUnmount() {
     AssessmentStore.removeChangeListener(this._updateMissionsFromStore);
+    AssessmentItemStore.removeChangeListener(this._updateMissionItemsFromStore);
     ItemStore.removeChangeListener(this._updateItemsFromStore);
     ModuleStore.removeChangeListener(this._updateModulesFromStore);
   }
@@ -78,8 +84,6 @@ class MissionsManager extends Component {
     this.setState({ allItems: items });
   }
   setMissions(missions) {
-    console.log('setMissions');
-
     this.setState({ missions: missions });
     this.setState({ loading: false });
   }
@@ -89,6 +93,8 @@ class MissionsManager extends Component {
     }
     this.setState({ selectedMission: mission });
     this.setState({ content: mode });
+
+    AssessmentItemStore.getItems(UserStore.getData().bankId, mission.id);
   }
   render() {
     var bankId = UserStore.getData().bankId;
@@ -112,19 +118,21 @@ class MissionsManager extends Component {
               style={styles.container}
               tweenHandler={Drawer.tweenPresets.parallax}>
 
-
-        <Drawer acceptPan={false}
-                  captureGestures={false}
-                  content={<QuestionsDrawer items={this.state.sortedItems} />}
-                  open={this.state.questionDrawerOpen}
-                  openDrawerOffset={0.5}
-                  panThreshold={1.5}
-                  side='right'
-                  type='overlay'>
+      <Drawer acceptPan={false}
+              captureGestures={false}
+              content={<QuestionsDrawer items={this.state.sortedItems}
+                                        missionItems={this.state.missionItems}
+                                        updateItemsInMission={this._updateItemsInMission} />}
+              open={this.state.questionDrawerOpen}
+              openDrawerOffset={0.5}
+              panThreshold={1.5}
+              side='right'
+              type='overlay'>
           <View>
             <MissionsMainContent bankId={bankId}
                                  changeContent={this._changeContent}
                                  content={this.state.content}
+                                 missionItems={this.state.missionItems}
                                  missions={this.state.missions}
                                  selectedMission={this.state.selectedMission}
                                  sidebarOpen={this.state.drawerOpen}
@@ -159,12 +167,9 @@ class MissionsManager extends Component {
     this.setState({ drawerOpen: !this.state.drawerOpen });
   }
   _updateItemsFromStore = (items) => {
-
     var alphabeticalItems = _.sortBy(items,
       ['displayName.text']),
       moduleItems = {};
-
-      console.log('_updateItemsFromStore');
 
     this.setItems(alphabeticalItems);
 
@@ -179,9 +184,20 @@ class MissionsManager extends Component {
       this.setState({ sortedItems: SortItemsByModules(this.state.modules, alphabeticalItems) });
     }
   }
+  _updateItemsInMission = (items) => {
+    AssessmentItemDispatcher.dispatch({
+        type: AssessmentItemConstants.ActionTypes.SET_ITEMS,
+        content: {
+          assessmentId: this.state.selectedMission.id,
+          bankId: UserStore.getData().bankId,
+          itemIds: _.map(items, 'id')
+        }
+    });
+  }
+  _updateMissionItemsFromStore = (items) => {
+    this.setState({ missionItems: items });
+  }
   _updateMissionsFromStore = (missions) => {
-    console.log('_updateMissionsFromStore');
-
     // sort missions by startTime first
     this.setMissions(_.sortBy(missions,
       ['startTime.year', 'startTime.month', 'startTime.day',
