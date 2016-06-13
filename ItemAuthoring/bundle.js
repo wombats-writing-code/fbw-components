@@ -47769,9 +47769,7 @@
 	    },
 	    componentWillMount: function componentWillMount() {},
 	    componentDidMount: function componentDidMount() {},
-	    componentDidUpdate: function componentDidUpdate() {
-	        console.log('updating ItemsList');
-	    },
+	    componentDidUpdate: function componentDidUpdate() {},
 	    renderItems: function renderItems() {
 	        var _this = this;
 	        return _.map(this.props.sortedItems, function (item) {
@@ -51148,8 +51146,6 @@
 	    // map the choiceIds, etc., in answers back to choices in questions
 	    updatedItem = this.props.item;
 
-	    var t0 = performance.now();
-
 	    var answers = AnswerExtraction(updatedItem);
 
 	    updatedItem['correctAnswer'] = answers.correctAnswerText.text;
@@ -51161,10 +51157,6 @@
 	    updatedItem['wrongAnswerFeedbacks'] = answers.wrongAnswerFeedbacks;
 	    updatedItem['wrongAnswerIds'] = answers.wrongAnswerIds;
 	    updatedItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
-
-	    var t1 = performance.now();
-
-	    console.log('call to each item sort block: ' + (t1 - t0) + ' milliseconds');
 
 	    var questionLO = _this.getQuestionLO(updatedItem),
 	        itemCreator = 'Unknown',

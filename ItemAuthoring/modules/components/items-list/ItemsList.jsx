@@ -34,7 +34,6 @@ var ItemsList = React.createClass({
     componentDidMount: function () {
     },
     componentDidUpdate: function () {
-      console.log('updating ItemsList');
     },
     renderItems: function () {
       var _this = this;
