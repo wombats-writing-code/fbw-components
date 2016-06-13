@@ -49816,31 +49816,34 @@
 
 	var React = __webpack_require__(1);
 
+	var CopyItem = __webpack_require__(99);
 	var DeleteItem = __webpack_require__(65);
 	var EditItem = __webpack_require__(66);
 	var TransferItem = __webpack_require__(70);
 
 	var ItemControls = React.createClass({
-	    displayName: 'ItemControls',
+	  displayName: 'ItemControls',
 
-	    getInitialState: function getInitialState() {
-	        return {};
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    render: function render() {
-	        return React.createElement(
-	            'div',
-	            null,
-	            React.createElement(TransferItem, { item: this.props.item,
-	                libraries: this.props.libraries,
-	                libraryId: this.props.libraryId }),
-	            React.createElement(EditItem, { item: this.props.item,
-	                libraryId: this.props.libraryId }),
-	            React.createElement(DeleteItem, { item: this.props.item,
-	                libraryId: this.props.libraryId })
-	        );
-	    }
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  componentWillMount: function componentWillMount() {},
+	  componentDidMount: function componentDidMount() {},
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(CopyItem, { item: this.props.item,
+	        libraryId: this.props.libraryId }),
+	      React.createElement(TransferItem, { item: this.props.item,
+	        libraries: this.props.libraries,
+	        libraryId: this.props.libraryId }),
+	      React.createElement(EditItem, { item: this.props.item,
+	        libraryId: this.props.libraryId }),
+	      React.createElement(DeleteItem, { item: this.props.item,
+	        libraryId: this.props.libraryId })
+	    );
+	  }
 	});
 
 	module.exports = ItemControls;
@@ -53130,6 +53133,99 @@
 	};
 
 	module.exports = ShibSessionCheck;
+
+/***/ },
+/* 99 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// CopyItem.jsx
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Button = ReactBS.Button;
+	var Glyphicon = ReactBS.Glyphicon;
+
+	var $s = __webpack_require__(29);
+
+	var ActionTypes = __webpack_require__(14).ActionTypes;
+	var AnswerExtraction = __webpack_require__(48);
+	var Dispatcher = __webpack_require__(9);
+	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var LibraryItemsStore = __webpack_require__(8);
+	var MiddlewareService = __webpack_require__(17);
+
+	var CopyItem = React.createClass({
+	  displayName: 'CopyItem',
+
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  componentWillMount: function componentWillMount() {},
+	  componentDidUpdate: function componentDidUpdate() {},
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
+	  copyItem: function copyItem(e) {
+	    var payload = {
+	      itemType: 'multiple-choice',
+	      libraryId: this.props.libraryId,
+	      provenanceId: this.props.item.id
+	    },
+	        originalItem = this.props.item,
+	        choiceData = AnswerExtraction(this.props.item);
+
+	    payload['displayName'] = 'Copy of ' + originalItem.displayName.text;
+	    payload['description'] = originalItem.description.text;
+
+	    payload['question'] = {
+	      text: originalItem.question.text.text,
+	      choices: [choiceData.correctAnswerText]
+	    };
+	    payload['learningObjectiveId'] = originalItem.learningObjectiveIds[0];
+
+	    payload['answers'] = [{
+	      choiceId: 0,
+	      feedback: choiceData.correctAnswerFeedback,
+	      genusTypeId: GenusTypes.CORRECT_ANSWER
+	    }];
+
+	    _.each(choiceData.wrongAnswerTexts, function (wrongAnswerText, index) {
+	      var wrongChoiceId = index + 1,
+	          // because right answer is already there
+	      wrongChoiceFeedback = choiceData.wrongAnswerFeedbacks[index],
+	          wrongChoiceLO = choiceData.wrongAnswerLOs[index];
+
+	      payload.question.choices.push(wrongAnswerText);
+
+	      payload.answers.push({
+	        choiceId: wrongChoiceId,
+	        feedback: wrongChoiceFeedback,
+	        genusTypeId: GenusTypes.WRONG_ANSWER,
+	        learningObjectiveId: wrongChoiceLO
+	      });
+	    });
+
+	    Dispatcher.dispatch({
+	      type: ActionTypes.CREATE_ITEM,
+	      content: payload
+	    });
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'span',
+	      null,
+	      React.createElement(
+	        Button,
+	        { onClick: this.copyItem,
+	          bsSize: 'large',
+	          title: 'Copy Item' },
+	        React.createElement(Glyphicon, { glyph: 'copy' })
+	      )
+	    );
+	  }
+	});
+
+	module.exports = CopyItem;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }
 /******/ ])));
