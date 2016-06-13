@@ -56,7 +56,7 @@ var ItemRow = React.createClass({
 
     var shouldUpdate = unequalPropsItem ||
       this.state.itemExpanded !== nextState.itemExpanded;
-    console.log('should update item ' + this.props.item.id + ': ' + shouldUpdate);
+
     if (shouldUpdate) {
       if (unequalPropsItem) {
         console.log('props changed');
