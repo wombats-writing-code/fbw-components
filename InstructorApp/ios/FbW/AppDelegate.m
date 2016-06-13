@@ -33,9 +33,11 @@
 
    // for running on computer simulator
   jsCodeLocation = [NSURL URLWithString:@"http://localhost:8081/index.ios.bundle?platform=ios&dev=true"];
+  //jsCodeLocation = [NSURL URLWithString:@"http://localhost:8081/index.ios.bundle?platform=ios&dev=true"];
+  //jsCodeLocation = [NSURL URLWithString:@"http://18.127.7.173:8081/index.ios.bundle?platform=ios&dev=true"];
 
   // luwen's line for running on her device
-  jsCodeLocation = [NSURL URLWithString:@"http://10.0.0.146:8081/index.ios.bundle?platform=ios&dev=true"];
+  //jsCodeLocation = [NSURL URLWithString:@"http://10.0.0.146:8081/index.ios.bundle?platform=ios&dev=true"];
 
   /**
    * OPTION 2
