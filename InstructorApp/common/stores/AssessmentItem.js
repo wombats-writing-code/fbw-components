@@ -39,11 +39,17 @@ var AssessmentItemStore = _.assign({}, EventEmitter.prototype, {
   },
   setItems: function (data) {
     var _this = this,
+      originalItems = data['items'],
       params = {
         data: data,
         method: 'PUT',
         path: 'assessment/banks/' + data.bankId + '/assessments/' + data.assessmentId + '/items'
       };
+
+    params.data.itemIds = _.map(originalItems, 'id');
+    _items = originalItems;
+    this.emitChange();
+
     qbankFetch(params, function (responseData) {
       _this.getItems(data.bankId, data.assessmentId);
     });

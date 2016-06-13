@@ -144,7 +144,7 @@ class MissionQuestions extends Component {
       content: {
         assessmentId: this.props.mission.id,
         bankId: UserStore.getData().bankId,
-        itemIds: _.map(updatedItems, 'id')
+        items: updatedItems
       }
     });
   }

@@ -190,7 +190,7 @@ class MissionsManager extends Component {
         content: {
           assessmentId: this.state.selectedMission.id,
           bankId: UserStore.getData().bankId,
-          itemIds: _.map(items, 'id')
+          items: items
         }
     });
   }
