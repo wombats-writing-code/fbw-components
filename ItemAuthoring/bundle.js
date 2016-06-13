@@ -51138,7 +51138,9 @@
 	    });
 	  },
 	  toggleItemState: function toggleItemState(e) {
-	    this.setState({ itemExpanded: !this.state.itemExpanded });
+	    if (e.target.className == 'panel-title') {
+	      this.setState({ itemExpanded: !this.state.itemExpanded });
+	    }
 	  },
 	  render: function render() {
 	    var _this = this,

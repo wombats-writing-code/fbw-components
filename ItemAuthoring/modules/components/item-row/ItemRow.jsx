@@ -152,7 +152,9 @@ var ItemRow = React.createClass({
     });
   },
   toggleItemState: function (e) {
-    this.setState({ itemExpanded: !this.state.itemExpanded });
+    if (e.target.className == 'panel-title') {
+      this.setState({ itemExpanded: !this.state.itemExpanded });
+    }
   },
   render: function () {
     var _this = this,
