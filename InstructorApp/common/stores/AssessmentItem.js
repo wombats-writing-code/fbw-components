@@ -53,7 +53,6 @@ var AssessmentItemStore = _.assign({}, EventEmitter.prototype, {
 AssessmentItemStore.dispatchToken = AssessmentItemDispatcher.register(function (action) {
   switch(action.type) {
     case ActionTypes.SET_ITEMS:
-      console.log(action.content);
       AssessmentItemStore.setItems(action.content);
       break;
     case ActionTypes.UPDATE_ASSESSMENT:
