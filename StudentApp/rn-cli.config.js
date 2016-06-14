@@ -4,7 +4,7 @@
 const blacklist = require('react-native/packager/blacklist');
 
 var myBlacklist = [
-  /InstructorApp\/node_modules\/.+\/node_modules\/fbjs\/.*/
+  /StudentApp\/node_modules\/.+\/node_modules\/fbjs\/.*/
 ]
 
 module.exports = {
