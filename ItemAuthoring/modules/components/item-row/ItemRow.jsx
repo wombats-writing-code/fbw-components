@@ -152,9 +152,11 @@ var ItemRow = React.createClass({
     });
   },
   toggleItemState: function (e) {
-    if (e.target.className == 'panel-title') {
-      this.setState({ itemExpanded: !this.state.itemExpanded });
-    }
+    // NOTE: Do NOT add any sort of validation check here
+    //       It seems to break Jennifer's set up for whatever reason...
+    //if (e.target.className == 'panel-title') {
+    this.setState({ itemExpanded: !this.state.itemExpanded });
+    //}
   },
   render: function () {
     var _this = this,
