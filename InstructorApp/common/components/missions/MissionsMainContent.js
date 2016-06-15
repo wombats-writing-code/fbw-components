@@ -67,12 +67,14 @@ class MissionsMainContent extends Component {
       // TODO: this subtitle should reflect the term of the chosen course
       subtitle = 'Spring 2016';
       title = 'Mission Control';
+      
     } else if (this.props.content == 'addMission') {
       content = <AddMission bankId={this.props.bankId}
                             closeAdd={this._revertToDefaultContent}
                             sidebarOpen={this.props.sidebarOpen} />;
       subtitle = '';
       title = 'Add New Mission';
+
     } else if (this.props.content == 'missionStatus' ||
       this.props.content == 'missionEdit' ||
       this.props.content == 'missionDelete') {

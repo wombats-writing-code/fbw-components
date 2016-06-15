@@ -102,7 +102,9 @@ class MissionsManager extends Component {
     if (this.state.loading) {
       return this.renderLoadingView();
     }
+
     // set panThreshold to 1.5 because acceptPan doesn't seem to work?
+    // TODO: fix pan gesture
     return (
       <Drawer acceptPan={true}
               panCloseMask={5}
@@ -118,7 +120,6 @@ class MissionsManager extends Component {
               style={styles.container}
       >
 
-
               <MissionsMainContent bankId={bankId}
                                    changeContent={this._changeContent}
                                    content={this.state.content}
@@ -128,6 +129,7 @@ class MissionsManager extends Component {
                                    sidebarOpen={this.state.drawerOpen}
                                    toggleQuestionDrawer={this._toggleQuestionDrawer}
                                    toggleSidebar={this._toggleSidebar}
+                                   width={this._mainContentWidth}
                                    />
       </Drawer>
     )
