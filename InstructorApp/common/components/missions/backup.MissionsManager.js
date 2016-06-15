@@ -36,6 +36,7 @@ var SortItemsByModules = require('../../../utilities/handcar/sortItemsByModules'
 var styles = StyleSheet.create({
   container: {
     flex: 1,
+    // width: 600,
     flexDirection: 'row'
   },
   questionDrawer: {
@@ -64,8 +65,6 @@ class MissionsManager extends Component {
     AssessmentItemStore.addChangeListener(this._updateMissionItemsFromStore);
     ItemStore.addChangeListener(this._updateItemsFromStore);
     ModuleStore.addChangeListener(this._updateModulesFromStore);
-
-    this._mainContentWidth = .75;
   }
   componentWillUnmount() {
     AssessmentStore.removeChangeListener(this._updateMissionsFromStore);
@@ -105,20 +104,30 @@ class MissionsManager extends Component {
     // set panThreshold to 1.5 because acceptPan doesn't seem to work?
     return (
       <Drawer acceptPan={true}
-              panCloseMask={5}
-              negotiatePan={true}
-              type="overlay"
+              captureGestures={'open'}
               content={<MissionsSidebar changeContent={this._changeContent}
                                         missions={this.state.missions}
                                         selectMission={this.setSelectedMission}
                                         sidebarOpen={this.state.drawerOpen}
                                         toggleSidebar={this._toggleSidebar} />}
               open={this.state.drawerOpen}
-              openDrawerOffset={.75}
+              openDrawerOffset={0.7}
+              panThreshold={1.5}
+              side='left'
               style={styles.container}
-      >
+              tweenHandler={Drawer.tweenPresets.parallax}>
 
-
+        <Drawer acceptPan={false}
+                captureGestures={false}
+                content={<QuestionsDrawer items={this.state.sortedItems}
+                                          missionItems={this.state.missionItems}
+                                          updateItemsInMission={this._updateItemsInMission} />}
+                open={this.state.questionDrawerOpen}
+                openDrawerOffset={0.5}
+                panThreshold={1.5}
+                side='right'
+                type='overlay'>
+            <View>
               <MissionsMainContent bankId={bankId}
                                    changeContent={this._changeContent}
                                    content={this.state.content}
@@ -127,8 +136,9 @@ class MissionsManager extends Component {
                                    selectedMission={this.state.selectedMission}
                                    sidebarOpen={this.state.drawerOpen}
                                    toggleQuestionDrawer={this._toggleQuestionDrawer}
-                                   toggleSidebar={this._toggleSidebar}
-                                   />
+                                   toggleSidebar={this._toggleSidebar} />
+            </View>
+          </Drawer>
       </Drawer>
     )
   }

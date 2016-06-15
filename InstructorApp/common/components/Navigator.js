@@ -28,10 +28,6 @@ var styles = StyleSheet.create({
   navBarText: {
     fontSize: 16,
   },
-  navBarTitleText: {
-    color: 'white',
-    fontWeight: '500',
-  },
   navBarLeftButton: {
     paddingLeft: 10,
   },
@@ -46,8 +42,9 @@ var styles = StyleSheet.create({
     backgroundColor: '#EAEAEA',
   },
 });
-var NavigationBarRouteMapper = {
 
+
+var NavigationBarRouteMapper = {
   LeftButton: function(route, navigator, index, navState) {
     if (index === 0) {
       return null;
@@ -98,12 +95,13 @@ var FbWNavigator = React.createClass({
                           initialRoute={{id: 'missions', title: 'Missions', index: 0}}
                           renderScene={(route, nav) =>
                             {return this.renderScene(route, nav)}}
+
                           navigationBar={
-                  <Navigator.NavigationBar
-                    routeMapper={NavigationBarRouteMapper}
-                    style={styles.navBar}
-                  />
-                }
+                            <Navigator.NavigationBar
+                              routeMapper={NavigationBarRouteMapper}
+                              style={styles.navBar}
+                            />
+                          }
         />
     },
     renderScene: function (route, nav) {
