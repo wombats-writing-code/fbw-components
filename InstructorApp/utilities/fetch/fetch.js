@@ -21,7 +21,7 @@ var qbankFetch = function (params, _callback) {
         headerPath = decodeURIComponent(headerPath);
     }
     headers.append('x-api-key', credentials.AccessKeyId);
-    headers.append('x-api-proxy', credentials.Proxy);
+    headers.append('x-api-proxy', 'foostudent');
     headers.append('host', credentials.Host);
     headers.append('request-line', headerPath);
     headers.append('accept', 'application/json');
