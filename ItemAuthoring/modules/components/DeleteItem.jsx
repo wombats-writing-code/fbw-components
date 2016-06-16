@@ -19,9 +19,10 @@ var DeleteItem = React.createClass({
         this.setState({showModal: false});
     },
     open: function (e) {
-        this.setState({showModal: true}, function () {
+      e.stopPropagation();
+      this.setState({showModal: true}, function () {
 
-        });
+      });
     },
     save: function (e) {
         dispatcher.dispatch({

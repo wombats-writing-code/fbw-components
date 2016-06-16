@@ -26,6 +26,8 @@ var CopyItem = React.createClass({
     componentWillReceiveProps: function (nextProps) {
     },
     copyItem: function (e) {
+      e.stopPropagation();
+
       var payload = {
         itemType: 'multiple-choice',
         libraryId: this.props.libraryId,

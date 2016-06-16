@@ -51,9 +51,10 @@ var AnswerFeedback = React.createClass({
         // do nothing, since we have to grab the data from CKEditor
     },
     open: function (e) {
-        this.setState({showModal: true}, function () {
+      e.stopPropagation();
+      this.setState({showModal: true}, function () {
 
-        });
+      });
     },
     save: function () {
         var feedback = CKEDITOR.instances.feedback.getData(),
@@ -81,7 +82,7 @@ var AnswerFeedback = React.createClass({
         var title = "Feedback for: " + this.props.feedbackSource;
         return <div>
             <Button onClick={this.open}
-                    title="View Feedback">
+                    title="Edit Feedback">
                 Feedback
             </Button>
             <Modal backdrop="static"
