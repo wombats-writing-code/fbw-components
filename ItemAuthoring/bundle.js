@@ -47923,82 +47923,107 @@
 	var FormGroup = ReactBS.FormGroup;
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
+	var Panel = ReactBS.Panel;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var AnswerFeedback = __webpack_require__(61);
+	var AnswerFeedbackPreviewBtn = __webpack_require__(103);
 	var Dispatcher = __webpack_require__(9);
 	var SetIFrameHeight = __webpack_require__(63);
 	var WrapHTML = __webpack_require__(62);
 
 	var AnswerText = React.createClass({
-	    displayName: 'AnswerText',
+	  displayName: 'AnswerText',
 
-	    getInitialState: function getInitialState() {
-	        var confusedLO = this.props.confusedLO === 'None linked yet' ? '' : this.props.confusedLO;
-	        return {
-	            confusedLO: confusedLO,
-	            showModal: false
-	        };
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	        if (nextProps.expanded) {
-	            SetIFrameHeight(this.refs.myFrame);
-	        }
-	    },
-	    render: function render() {
-	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
-	            return {
-	                value: outcome.id,
-	                label: outcome.displayName.text
-	            };
-	        }),
-	            linkButton = '',
-	            answerHTML = WrapHTML(this.props.answerText);
-
-	        if (this.props.enableClickthrough) {
-	            if (!this.props.correctAnswer) {
-	                linkButton = React.createElement(
-	                    'div',
-	                    { className: 'wrong-answer-actions' },
-	                    React.createElement(AnswerFeedback, { answerId: this.props.answerId,
-	                        feedback: this.props.feedback,
-	                        feedbackSource: this.props.label,
-	                        itemId: this.props.itemId,
-	                        libraryId: this.props.libraryId })
-	                );
-	            } else {
-	                linkButton = React.createElement(
-	                    'div',
-	                    { className: 'right-answer-actions' },
-	                    React.createElement(Glyphicon, { className: 'right-answer-check',
-	                        glyph: 'ok' }),
-	                    React.createElement(AnswerFeedback, { answerId: this.props.answerId,
-	                        feedback: this.props.feedback,
-	                        feedbackSource: this.props.label,
-	                        itemId: this.props.itemId,
-	                        libraryId: this.props.libraryId })
-	                );
-	            }
-	        }
-
-	        return React.createElement(
-	            'div',
-	            { className: 'taggable-text' },
-	            React.createElement(
-	                'div',
-	                { className: 'text-blob' },
-	                React.createElement('iframe', { ref: 'myFrame',
-	                    srcDoc: answerHTML,
-	                    frameBorder: 0,
-	                    width: '100%',
-	                    sandbox: 'allow-scripts allow-same-origin'
-	                })
-	            ),
-	            linkButton
-	        );
+	  getInitialState: function getInitialState() {
+	    var confusedLO = this.props.confusedLO === 'None linked yet' ? '' : this.props.confusedLO;
+	    return {
+	      confusedLO: confusedLO,
+	      showModal: false,
+	      showPreview: false
+	    };
+	  },
+	  componentWillMount: function componentWillMount() {},
+	  componentDidMount: function componentDidMount() {},
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    if (nextProps.expanded) {
+	      SetIFrameHeight(this.refs.myFrame);
 	    }
+	  },
+	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
+	    if (nextState.showPreview) {
+	      SetIFrameHeight(this.refs.myPreviewFrame);
+	    }
+	  },
+	  render: function render() {
+	    var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
+	      return {
+	        value: outcome.id,
+	        label: outcome.displayName.text
+	      };
+	    }),
+	        linkButton = '',
+	        answerHTML = WrapHTML(this.props.answerText),
+	        previewHTML = WrapHTML(this.props.feedback);
+
+	    if (this.props.enableClickthrough) {
+	      if (!this.props.correctAnswer) {
+	        linkButton = React.createElement('div', { className: 'wrong-answer-actions' });
+	      } else {
+	        linkButton = React.createElement(
+	          'div',
+	          { className: 'right-answer-actions' },
+	          React.createElement(
+	            'div',
+	            { className: 'right-answer-actions-top-row' },
+	            React.createElement(Glyphicon, { className: 'right-answer-check',
+	              glyph: 'ok' }),
+	            React.createElement(AnswerFeedback, { answerId: this.props.answerId,
+	              feedback: this.props.feedback,
+	              feedbackSource: this.props.label,
+	              itemId: this.props.itemId,
+	              libraryId: this.props.libraryId }),
+	            React.createElement(AnswerFeedbackPreviewBtn, { feedback: this.props.feedback,
+	              togglePreview: this._togglePreview })
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'right-answer-feedback-preview' },
+	            React.createElement(
+	              Panel,
+	              { collapsible: true,
+	                expanded: this.state.showPreview },
+	              React.createElement('iframe', { ref: 'myPreviewFrame',
+	                srcDoc: previewHTML,
+	                frameBorder: 0,
+	                width: '100%',
+	                sandbox: 'allow-scripts allow-same-origin'
+	              })
+	            )
+	          )
+	        );
+	      }
+	    }
+
+	    return React.createElement(
+	      'div',
+	      { className: 'taggable-text' },
+	      React.createElement(
+	        'div',
+	        { className: 'text-blob' },
+	        React.createElement('iframe', { ref: 'myFrame',
+	          srcDoc: answerHTML,
+	          frameBorder: 0,
+	          width: '100%',
+	          sandbox: 'allow-scripts allow-same-origin'
+	        })
+	      ),
+	      linkButton
+	    );
+	  },
+	  _togglePreview: function _togglePreview() {
+	    this.setState({ showPreview: !this.state.showPreview });
+	  }
 	});
 
 	module.exports = AnswerText;
@@ -48039,7 +48064,7 @@
 
 
 	// module
-	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n    float: right;\n    display: flex;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}", ""]);
+	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n  float: right;\n  display: flex;\n  flex-direction: column;\n}\n\n.right-answer-actions-top-row {\n  display: flex;\n}\n\n.right-answer-actions,\n.text-blob {\n    flex: 1 1 50%;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}\n\n.taggable-text {\n    display: flex;\n    flex-direction: row;\n}", ""]);
 
 	// exports
 
@@ -49650,6 +49675,7 @@
 	        // do nothing, since we have to grab the data from CKEditor
 	    },
 	    open: function open(e) {
+	        e.stopPropagation();
 	        this.setState({ showModal: true }, function () {});
 	    },
 	    save: function save() {
@@ -49680,7 +49706,7 @@
 	            React.createElement(
 	                Button,
 	                { onClick: this.open,
-	                    title: 'View Feedback' },
+	                    title: 'Edit Feedback' },
 	                'Feedback'
 	            ),
 	            React.createElement(
@@ -49877,6 +49903,8 @@
 	  componentDidUpdate: function componentDidUpdate() {},
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
 	  copyItem: function copyItem(e) {
+	    e.stopPropagation();
+
 	    var payload = {
 	      itemType: 'multiple-choice',
 	      libraryId: this.props.libraryId,
@@ -49966,6 +49994,7 @@
 	        this.setState({ showModal: false });
 	    },
 	    open: function open(e) {
+	        e.stopPropagation();
 	        this.setState({ showModal: true }, function () {});
 	    },
 	    save: function save(e) {
@@ -50080,6 +50109,7 @@
 	        this.setState({ showModal: false });
 	    },
 	    open: function open(e) {
+	        e.stopPropagation();
 	        this.setState({ showModal: true });
 	    },
 	    render: function render() {
@@ -50840,6 +50870,7 @@
 	        this.setState({ showModal: false });
 	    },
 	    open: function open(e) {
+	        e.stopPropagation();
 	        this.setState({ showModal: true });
 	    },
 	    render: function render() {
@@ -51280,7 +51311,7 @@
 	      null,
 	      React.createElement(
 	        Col,
-	        { sm: 6, md: 6, lg: 6 },
+	        { sm: 7, md: 7, lg: 7 },
 	        React.createElement(
 	          Panel,
 	          { header: updatedItem.displayName.text,
@@ -51325,7 +51356,7 @@
 	      ),
 	      React.createElement(
 	        Col,
-	        { sm: 6, md: 6, lg: 6 },
+	        { sm: 4, md: 4, lg: 4 },
 	        React.createElement(
 	          Panel,
 	          { header: 'Learning Outcomes',
@@ -53222,6 +53253,91 @@
 	};
 
 	module.exports = ShibSessionCheck;
+
+/***/ },
+/* 100 */,
+/* 101 */,
+/* 102 */,
+/* 103 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// AnswerFeedbackPreviewBtn.jsx
+	'use strict';
+
+	__webpack_require__(104);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Button = ReactBS.Button;
+
+	var SetIFrameHeight = __webpack_require__(63);
+	var WrapHTML = __webpack_require__(62);
+
+	var AnswerFeedbackPreviewBtn = React.createClass({
+	  displayName: 'AnswerFeedbackPreviewBtn',
+
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  toggle: function toggle(e) {
+	    e.stopPropagation();
+	    this.props.togglePreview();
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'answer-feedback-preview' },
+	      React.createElement(
+	        Button,
+	        { onClick: this.toggle,
+	          title: 'Preview Feedback' },
+	        'Preview Feedback'
+	      )
+	    );
+	  }
+	});
+
+	module.exports = AnswerFeedbackPreviewBtn;
+
+/***/ },
+/* 104 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(105);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./AnswerFeedbackPreviewBtn.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./AnswerFeedbackPreviewBtn.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 105 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".answer-feedback-preview button {\n  height: 34px;\n  margin-left: 5px;\n  margin-right: 5px;\n}", ""]);
+
+	// exports
+
 
 /***/ }
 /******/ ])));

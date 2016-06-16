@@ -19,6 +19,8 @@ import {
 
 var Error = require('./error/Error');
 var Login = require('./login/SimpleLogin');
+var Missions = require('./missions/Missions');
+
 
 var createReducer = (params) => {
   return (state, action) => {
@@ -30,17 +32,22 @@ var createReducer = (params) => {
 class FbWRouter extends Component {
   constructor(props) {
     super (props);
-
     this.state = {
     };
   }
   render() {
     return <Router createReducer={createReducer}>
       <Scene key="modal" component={Modal} >
-        <Scene key="root" hideNavBar hideTabBar>
-          <Scene key="login" component={Login} />
+        <Scene key="root">
+          <Scene component={Login}
+                 initial={true}
+                 key="login"
+                 title="Fly-by-Wire" />
+          <Scene component={Missions}
+                 key="missions"
+                 title="Your Missions" />
         </Scene>
-        <Scene key="error" component={Error}/>
+        <Scene key="error" component={Error} title="Error!" />
       </Scene>
     </Router>;
   }

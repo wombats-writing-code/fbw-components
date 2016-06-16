@@ -25,7 +25,8 @@ var TransferItem = React.createClass({
         this.setState({ showModal: false });
     },
     open: function (e) {
-        this.setState({ showModal: true});
+      e.stopPropagation();
+      this.setState({ showModal: true});
     },
     render: function () {
         return <div>

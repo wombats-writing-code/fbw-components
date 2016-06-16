@@ -29,7 +29,8 @@ var styles = StyleSheet.create({
     padding: 10
   },
   closeButtonText: {
-    color: 'white'
+    color: 'white',
+    textAlign: 'center'
   },
   error: {
     alignItems: "center",
