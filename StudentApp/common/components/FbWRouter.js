@@ -19,6 +19,7 @@ import {
 
 var Error = require('./error/Error');
 var Login = require('./login/SimpleLogin');
+var Missions = require('./missions/Missions');
 
 
 var createReducer = (params) => {
@@ -42,6 +43,9 @@ class FbWRouter extends Component {
                  initial={true}
                  key="login"
                  title="Fly-by-Wire" />
+          <Scene component={Missions}
+                 key="missions"
+                 title="Your Missions" />
         </Scene>
         <Scene key="error" component={Error} title="Error!" />
       </Scene>

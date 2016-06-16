@@ -4,14 +4,13 @@
 var QBankSignature = require('../signingUtil/QBankSignature');
 var credentials = require('../../common/constants/qbank_credentials');
 
-var qbank = new QBankSignature();
-
 let URL = 'https://' + credentials.Host + '/api/v2/';
 
 
-var qbankFetch = function (params, _callback) {
+var qbankFetch = function (params, _callback, _qbankErrorCallback) {
     // wrapper around global fetch to include signing
-    var now = new Date(),
+    var qbank = new QBankSignature(),
+        now = new Date(),
         headers = new Headers(),
         url = URL + params.path,
         headerPath = url.split('mit.edu')[1],
@@ -36,7 +35,6 @@ var qbankFetch = function (params, _callback) {
           'host': headers.get('host'),
           'x-api-proxy': headers.get('x-api-proxy')
         },
-        body: '',
         credentials
     };
     qbank.setParams(options);
@@ -56,6 +54,7 @@ var qbankFetch = function (params, _callback) {
         headers.append('Content-Type', 'application/json');
       }
     }
+
     fetch(url, fetchInit)
         .then(function (response) {
             if (response.ok) {
@@ -66,6 +65,12 @@ var qbankFetch = function (params, _callback) {
                 response.text().then(function (responseText) {
                     console.log('Not a 200 response: ' + url);
                     console.log('Error returned: ' + responseText);
+                  try {
+                    _qbankErrorCallback();
+                  } catch (e) {
+
+                  }
+
                 });
             }
         })
