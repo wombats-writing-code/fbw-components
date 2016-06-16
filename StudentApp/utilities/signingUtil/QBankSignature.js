@@ -9,7 +9,6 @@
 // with public key: sIcaXKd67Y80MufpCB73
 // and private key: LKswkklexT14vbudS4jOGzHvcEG48O1dAvhcVSJQ
 var crypto = require('crypto-js');
-var moment = require('moment');
 var Buffer = require('buffer').Buffer;
 
 var ALGORITHM = 'hmac-sha256';
