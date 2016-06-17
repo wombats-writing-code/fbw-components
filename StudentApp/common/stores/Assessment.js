@@ -5,7 +5,7 @@ var AssessmentConstants = require('../constants/Assessment');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
 
-var qbankFetch = require('../../utilities/qbank/fetch');
+var qbankFetch = require('../../utilities/fetch/qbankFetch');
 
 var ActionTypes = AssessmentConstants.ActionTypes;
 var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;

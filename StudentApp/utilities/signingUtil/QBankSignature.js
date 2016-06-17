@@ -36,10 +36,10 @@ class QBankSignature {
   }
   getStringToSign() {
     var stringToSign = `${this.method.toUpperCase()} ${this.pathName} HTTP/1.1
-accept: ${this.headers.accept}
-date: ${this.datetime}
-host: ${this.headers.host}
-x-api-proxy: ${this.headers['x-api-proxy']}`;
+      accept: ${this.headers.accept}
+      date: ${this.datetime}
+      host: ${this.headers.host}
+      x-api-proxy: ${this.headers['x-api-proxy']}`;
 
     return stringToSign;
   }

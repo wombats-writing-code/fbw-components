@@ -5,8 +5,8 @@ var AuthorizationConstants = require('../constants/Authorization');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
 
-var qbankCredentials = require('../constants/qbank_credentials');
-var qbankFetch = require('../../utilities/qbank/fetch');
+var qbankCredentials = require('../../utilities/credentials/qbank_credentials');
+var qbankFetch = require('../../utilities/fetch/qbankFetch');
 
 var BaseBanks = AuthorizationConstants.BaseBanks;
 var StudentAuthorizationFunctions = AuthorizationConstants.StudentAuthorizationFunctions;

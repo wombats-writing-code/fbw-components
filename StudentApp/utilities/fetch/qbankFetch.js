@@ -2,12 +2,14 @@
 'use strict';
 
 var QBankSignature = require('../signingUtil/QBankSignature');
-var credentials = require('../../common/constants/qbank_credentials');
+var credentials = require('../credentials/qbank_credentials');
+var fetchWithHandling = require('./fetchWithHandling');
 
-let URL = 'https://' + credentials.Host + '/api/v2/';
 
+var qbankFetch = function (params, successCallback, errorCallback) {
 
-var qbankFetch = function (params, _callback, _qbankErrorCallback) {
+    let URL = 'https://' + credentials.Host + '/api/v2/';
+
     // wrapper around global fetch to include signing
     var qbank = new QBankSignature(),
         now = new Date(),
@@ -55,29 +57,8 @@ var qbankFetch = function (params, _callback, _qbankErrorCallback) {
       }
     }
 
-    fetch(url, fetchInit)
-        .then(function (response) {
-            if (response.ok) {
-                response.json().then(function (responseData) {
-                    _callback(responseData);
-                });
-            } else {
-                response.text().then(function (responseText) {
-                    console.log('Not a 200 response: ' + url);
-                    console.log('Error returned: ' + responseText);
-                  try {
-                    _qbankErrorCallback();
-                  } catch (e) {
+    _fetchWithHandling(url, successCallback, errorCallback);
 
-                  }
-
-                });
-            }
-        })
-        .catch(function (error) {
-            console.log('Error fetching: ' + url);
-            console.log('Error with fetch! ' + error.message);
-        });
 };
 
 module.exports = qbankFetch;
