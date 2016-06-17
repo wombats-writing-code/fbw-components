@@ -47939,8 +47939,7 @@
 	    var confusedLO = this.props.confusedLO === 'None linked yet' ? '' : this.props.confusedLO;
 	    return {
 	      confusedLO: confusedLO,
-	      showModal: false,
-	      showPreview: false
+	      showModal: false
 	    };
 	  },
 	  componentWillMount: function componentWillMount() {},
@@ -47948,11 +47947,6 @@
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    if (nextProps.expanded) {
 	      SetIFrameHeight(this.refs.myFrame);
-	    }
-	  },
-	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
-	    if (nextState.showPreview) {
-	      SetIFrameHeight(this.refs.myPreviewFrame);
 	    }
 	  },
 	  render: function render() {
@@ -47963,8 +47957,7 @@
 	      };
 	    }),
 	        linkButton = '',
-	        answerHTML = WrapHTML(this.props.answerText),
-	        previewHTML = WrapHTML(this.props.feedback);
+	        answerHTML = WrapHTML(this.props.answerText);
 
 	    if (this.props.enableClickthrough) {
 	      if (!this.props.correctAnswer) {
@@ -47988,22 +47981,7 @@
 	                libraryId: this.props.libraryId })
 	            ),
 	            React.createElement(AnswerFeedbackPreviewBtn, { feedback: this.props.feedback,
-	              togglePreview: this._togglePreview })
-	          ),
-	          React.createElement(
-	            'div',
-	            { className: 'right-answer-feedback-preview' },
-	            React.createElement(
-	              Panel,
-	              { collapsible: true,
-	                expanded: this.state.showPreview },
-	              React.createElement('iframe', { ref: 'myPreviewFrame',
-	                srcDoc: previewHTML,
-	                frameBorder: 0,
-	                width: '100%',
-	                sandbox: 'allow-scripts allow-same-origin'
-	              })
-	            )
+	              togglePreview: this.props.togglePreview })
 	          )
 	        );
 	      }
@@ -48024,9 +48002,6 @@
 	      ),
 	      linkButton
 	    );
-	  },
-	  _togglePreview: function _togglePreview() {
-	    this.setState({ showPreview: !this.state.showPreview });
 	  }
 	});
 
@@ -51204,18 +51179,26 @@
 	var LOText = __webpack_require__(79);
 	var OutcomesStore = __webpack_require__(86);
 	var QuestionText = __webpack_require__(88);
+	var SetIFrameHeight = __webpack_require__(66);
+	var WrapHTML = __webpack_require__(62);
 
 	var ItemRow = React.createClass({
 	  displayName: 'ItemRow',
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      itemExpanded: false
+	      itemExpanded: false,
+	      showPreview: false
 	    };
 	  },
 	  componentWillMount: function componentWillMount() {},
 	  componentDidMount: function componentDidMount() {},
 	  componentDidUpdate: function componentDidUpdate() {},
+	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
+	    if (nextState.showPreview) {
+	      SetIFrameHeight(this.refs.myPreviewFrame);
+	    }
+	  },
 	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
 	    var equalityKeys = ["minStringLength", "displayName", "description", "license", "texts", "bankId", "question", "answers", "id", "recordTypeIds", "providerId", "brandingIds", "assignedBankIds", "genusTypeId", "type", "maxStringLength", "learningObjectiveIds"],
 	        _this = this,
@@ -51223,25 +51206,11 @@
 
 	    unequalPropsItem = _.some(equalityKeys, function (key) {
 	      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
-	      if (unequalProp) {
-	        console.log(key + ' is the unequal prop for item ' + _this.props.item.id);
-	        console.log(nextProps.item[key]);
-	        console.log(_this.props.item[key]);
-	      }
 	      return unequalProp;
 	    });
 
-	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded;
+	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded || this.state.showPreview !== nextState.showPreview;
 
-	    if (shouldUpdate) {
-	      if (unequalPropsItem) {
-	        console.log('props changed');
-	      }
-
-	      if (this.state.itemExpanded !== nextState.itemExpanded) {
-	        console.log('expanded state changed');
-	      }
-	    }
 	    return shouldUpdate;
 	  },
 	  filterOutcomes: function filterOutcomes(item) {
@@ -51358,7 +51327,8 @@
 	    // map the choiceIds, etc., in answers back to choices in questions
 	    updatedItem = this.props.item;
 
-	    var answers = AnswerExtraction(updatedItem);
+	    var answers = AnswerExtraction(updatedItem),
+	        previewHTML = WrapHTML(answers.correctAnswerFeedback);
 
 	    updatedItem['correctAnswer'] = answers.correctAnswerText.text;
 	    updatedItem['correctAnswerId'] = answers.correctAnswerId;
@@ -51434,7 +51404,23 @@
 	              feedback: updatedItem.correctAnswerFeedback,
 	              itemId: updatedItem.id,
 	              label: 'Correct Answer',
-	              libraryId: _this.props.libraryId })
+	              libraryId: _this.props.libraryId,
+	              togglePreview: _this._togglePreview })
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'right-answer-feedback-preview' },
+	            React.createElement(
+	              Panel,
+	              { collapsible: true,
+	                expanded: _this.state.showPreview },
+	              React.createElement('iframe', { ref: 'myPreviewFrame',
+	                srcDoc: previewHTML,
+	                frameBorder: 0,
+	                width: '100%',
+	                sandbox: 'allow-scripts allow-same-origin'
+	              })
+	            )
 	          ),
 	          _this.renderItemAnswerTexts(updatedItem),
 	          itemControls
@@ -51484,6 +51470,9 @@
 	        )
 	      )
 	    );
+	  },
+	  _togglePreview: function _togglePreview() {
+	    this.setState({ showPreview: !this.state.showPreview });
 	  }
 	});
 
@@ -51525,7 +51514,7 @@
 
 
 	// module
-	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n\n.panel-body {\n  padding-left: 0;\n}", ""]);
+	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n\n.panel-body {\n  padding-left: 0;\n}\n\n.right-answer-feedback-preview {\n  margin-left: 15px;\n  padding: 5px;\n}", ""]);
 
 	// exports
 

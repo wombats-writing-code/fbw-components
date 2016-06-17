@@ -47,3 +47,8 @@
 .panel-body {
   padding-left: 0;
 }
+
+.right-answer-feedback-preview {
+  margin-left: 15px;
+  padding: 5px;
+}

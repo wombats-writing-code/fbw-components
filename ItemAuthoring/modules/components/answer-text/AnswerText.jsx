@@ -28,8 +28,7 @@ var AnswerText = React.createClass({
     var confusedLO = this.props.confusedLO === 'None linked yet' ? '' : this.props.confusedLO;
     return {
       confusedLO: confusedLO,
-      showModal: false,
-      showPreview: false
+      showModal: false
     };
   },
   componentWillMount: function() {
@@ -41,11 +40,6 @@ var AnswerText = React.createClass({
       SetIFrameHeight(this.refs.myFrame);
     }
   },
-  componentWillUpdate: function (nextProps, nextState) {
-    if (nextState.showPreview) {
-      SetIFrameHeight(this.refs.myPreviewFrame);
-    }
-  },
   render: function () {
     var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
       return {
@@ -54,8 +48,7 @@ var AnswerText = React.createClass({
       };
     }),
       linkButton = '',
-      answerHTML = WrapHTML(this.props.answerText),
-      previewHTML = WrapHTML(this.props.feedback);
+      answerHTML = WrapHTML(this.props.answerText);
 
     if (this.props.enableClickthrough) {
       if (!this.props.correctAnswer) {
@@ -74,18 +67,7 @@ var AnswerText = React.createClass({
                               libraryId={this.props.libraryId} />
             </div>
             <AnswerFeedbackPreviewBtn feedback={this.props.feedback}
-                                      togglePreview={this._togglePreview}/>
-          </div>
-          <div className="right-answer-feedback-preview">
-            <Panel collapsible
-                   expanded={this.state.showPreview}>
-              <iframe ref="myPreviewFrame"
-                      srcDoc={previewHTML}
-                      frameBorder={0}
-                      width="100%"
-                      sandbox="allow-scripts allow-same-origin"
-                      ></iframe>
-            </Panel>
+                                      togglePreview={this.props.togglePreview}/>
           </div>
         </div>
       }
@@ -103,9 +85,6 @@ var AnswerText = React.createClass({
       {linkButton}
     </div>
 
-  },
-  _togglePreview: function () {
-    this.setState({ showPreview: !this.state.showPreview });
   }
 });
 

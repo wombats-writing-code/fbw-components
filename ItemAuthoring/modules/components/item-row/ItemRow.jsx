@@ -21,12 +21,15 @@ var ItemControls = require('../ItemControls');
 var LOText = require('../lo-text/LOText');
 var OutcomesStore = require('../../stores/OutcomesStore');
 var QuestionText = require('../question-text/QuestionText');
+var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
+var WrapHTML = require('../../utilities/WrapHTML');
 
 
 var ItemRow = React.createClass({
   getInitialState: function () {
     return {
-      itemExpanded: false
+      itemExpanded: false,
+      showPreview: false
     };
   },
   componentWillMount: function() {
@@ -34,6 +37,11 @@ var ItemRow = React.createClass({
   componentDidMount: function () {
   },
   componentDidUpdate: function () {
+  },
+  componentWillUpdate: function (nextProps, nextState) {
+    if (nextState.showPreview) {
+      SetIFrameHeight(this.refs.myPreviewFrame);
+    }
   },
   shouldComponentUpdate: function (nextProps, nextState) {
     var equalityKeys = ["minStringLength", "displayName", "description",
@@ -46,26 +54,13 @@ var ItemRow = React.createClass({
 
     unequalPropsItem = _.some(equalityKeys, function (key) {
       var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
-      if (unequalProp) {
-        console.log(key + ' is the unequal prop for item ' + _this.props.item.id);
-        console.log(nextProps.item[key]);
-        console.log(_this.props.item[key]);
-      }
       return unequalProp;
     });
 
     var shouldUpdate = unequalPropsItem ||
-      this.state.itemExpanded !== nextState.itemExpanded;
+      this.state.itemExpanded !== nextState.itemExpanded ||
+      this.state.showPreview !== nextState.showPreview;
 
-    if (shouldUpdate) {
-      if (unequalPropsItem) {
-        console.log('props changed');
-      }
-
-      if (this.state.itemExpanded !== nextState.itemExpanded) {
-        console.log('expanded state changed');
-      }
-    }
     return shouldUpdate;
   },
   filterOutcomes: function (item) {
@@ -163,7 +158,8 @@ var ItemRow = React.createClass({
       // map the choiceIds, etc., in answers back to choices in questions
       updatedItem = this.props.item;
 
-    var answers = AnswerExtraction(updatedItem);
+    var answers = AnswerExtraction(updatedItem),
+      previewHTML = WrapHTML(answers.correctAnswerFeedback);
 
     updatedItem['correctAnswer'] = answers.correctAnswerText.text;
     updatedItem['correctAnswerId'] = answers.correctAnswerId;
@@ -208,7 +204,6 @@ var ItemRow = React.createClass({
             <QuestionText expanded={_this.state.itemExpanded}
                           questionText={updatedItem.question.text.text}
                           itemCreator={itemCreator} />
-
           </div>
           <div className="text-row-wrapper">
             <p className="answer-label">a)</p>
@@ -220,7 +215,19 @@ var ItemRow = React.createClass({
                         feedback={updatedItem.correctAnswerFeedback}
                         itemId={updatedItem.id}
                         label="Correct Answer"
-                        libraryId={_this.props.libraryId} />
+                        libraryId={_this.props.libraryId}
+                        togglePreview={_this._togglePreview} />
+          </div>
+          <div className="right-answer-feedback-preview">
+            <Panel collapsible
+                   expanded={_this.state.showPreview}>
+              <iframe ref="myPreviewFrame"
+                      srcDoc={previewHTML}
+                      frameBorder={0}
+                      width="100%"
+                      sandbox="allow-scripts allow-same-origin"
+                      ></iframe>
+            </Panel>
           </div>
           {_this.renderItemAnswerTexts(updatedItem)}
           {itemControls}
@@ -252,6 +259,9 @@ var ItemRow = React.createClass({
         </Panel>
       </Col>
     </Row>
+  },
+  _togglePreview: function () {
+    this.setState({ showPreview: !this.state.showPreview });
   }
 });
 
