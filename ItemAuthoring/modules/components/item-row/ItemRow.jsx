@@ -196,7 +196,7 @@ var ItemRow = React.createClass({
     }
 
     return <Row>
-      <Col sm={7} md={7} lg={7}>
+      <Col sm={8} md={8} lg={8}>
         <Panel header={updatedItem.displayName.text}
                collapsible
                data-id={updatedItem.id}
