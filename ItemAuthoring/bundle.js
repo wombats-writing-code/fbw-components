@@ -51619,7 +51619,7 @@
 
 
 	// module
-	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-controls {\n    display: flex;\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
+	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-controls {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
 
 	// exports
 
