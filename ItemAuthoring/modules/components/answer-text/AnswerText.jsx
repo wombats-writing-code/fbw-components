@@ -64,13 +64,15 @@ var AnswerText = React.createClass({
       } else {
         linkButton = <div className="right-answer-actions">
           <div className="right-answer-actions-top-row">
-            <Glyphicon className="right-answer-check"
-                       glyph="ok" />
-            <AnswerFeedback answerId={this.props.answerId}
-                            feedback={this.props.feedback}
-                            feedbackSource={this.props.label}
-                            itemId={this.props.itemId}
-                            libraryId={this.props.libraryId} />
+            <div className="actions-horizontal-row">
+              <Glyphicon className="right-answer-check"
+                         glyph="ok" />
+              <AnswerFeedback answerId={this.props.answerId}
+                              feedback={this.props.feedback}
+                              feedbackSource={this.props.label}
+                              itemId={this.props.itemId}
+                              libraryId={this.props.libraryId} />
+            </div>
             <AnswerFeedbackPreviewBtn feedback={this.props.feedback}
                                       togglePreview={this._togglePreview}/>
           </div>

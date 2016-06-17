@@ -47976,13 +47976,17 @@
 	          React.createElement(
 	            'div',
 	            { className: 'right-answer-actions-top-row' },
-	            React.createElement(Glyphicon, { className: 'right-answer-check',
-	              glyph: 'ok' }),
-	            React.createElement(AnswerFeedback, { answerId: this.props.answerId,
-	              feedback: this.props.feedback,
-	              feedbackSource: this.props.label,
-	              itemId: this.props.itemId,
-	              libraryId: this.props.libraryId }),
+	            React.createElement(
+	              'div',
+	              { className: 'actions-horizontal-row' },
+	              React.createElement(Glyphicon, { className: 'right-answer-check',
+	                glyph: 'ok' }),
+	              React.createElement(AnswerFeedback, { answerId: this.props.answerId,
+	                feedback: this.props.feedback,
+	                feedbackSource: this.props.label,
+	                itemId: this.props.itemId,
+	                libraryId: this.props.libraryId })
+	            ),
 	            React.createElement(AnswerFeedbackPreviewBtn, { feedback: this.props.feedback,
 	              togglePreview: this._togglePreview })
 	          ),
@@ -48064,7 +48068,7 @@
 
 
 	// module
-	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n  float: right;\n  display: flex;\n  flex-direction: column;\n}\n\n.right-answer-actions-top-row {\n  display: flex;\n}\n\n.right-answer-actions,\n.text-blob {\n    flex: 1 1 50%;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}\n\n.taggable-text {\n    display: flex;\n    flex-direction: row;\n}", ""]);
+	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n  float: right;\n  display: flex;\n  flex-direction: column;\n}\n\n.right-answer-actions-top-row {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.actions-horizontal-row {\n  display: flex;\n}\n\n.right-answer-actions,\n.text-blob {\n    flex: 1 1 50%;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}\n\n.taggable-text {\n    display: flex;\n    flex-direction: row;\n}", ""]);
 
 	// exports
 
