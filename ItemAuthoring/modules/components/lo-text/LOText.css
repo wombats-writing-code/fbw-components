@@ -4,7 +4,10 @@
 }
 
 .outcome-controls {
-    display: flex;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
 }
 
 .outcome-text .badge {

@@ -106,9 +106,9 @@
 	var LibrariesStore = __webpack_require__(18);
 
 	var ItemWrapper = __webpack_require__(20);
-	var LibrarySelector = __webpack_require__(98);
+	var LibrarySelector = __webpack_require__(101);
 
-	var ShibSessionCheck = __webpack_require__(99);
+	var ShibSessionCheck = __webpack_require__(102);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
@@ -36576,7 +36576,7 @@
 
 	var AddItem = __webpack_require__(25);
 	var ItemSearch = __webpack_require__(39);
-	var ItemStatus = __webpack_require__(95);
+	var ItemStatus = __webpack_require__(98);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -47524,10 +47524,10 @@
 
 	var ItemsList = __webpack_require__(45);
 	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(92);
-	var ModulesStore = __webpack_require__(93);
-	var OutcomesStore = __webpack_require__(83);
-	var SortItemsByModuleOutcomes = __webpack_require__(94);
+	var LORelatedItems = __webpack_require__(95);
+	var ModulesStore = __webpack_require__(96);
+	var OutcomesStore = __webpack_require__(86);
+	var SortItemsByModuleOutcomes = __webpack_require__(97);
 
 	var ModulesList = React.createClass({
 	    displayName: 'ModulesList',
@@ -47755,11 +47755,11 @@
 
 	var AnswerExtraction = __webpack_require__(48);
 	var AnswerText = __webpack_require__(49);
-	var ItemControls = __webpack_require__(64);
-	var ItemRow = __webpack_require__(73);
-	var LOText = __webpack_require__(76);
-	var OutcomesStore = __webpack_require__(83);
-	var QuestionText = __webpack_require__(85);
+	var ItemControls = __webpack_require__(67);
+	var ItemRow = __webpack_require__(76);
+	var LOText = __webpack_require__(79);
+	var OutcomesStore = __webpack_require__(86);
+	var QuestionText = __webpack_require__(88);
 
 	var ItemsList = React.createClass({
 	    displayName: 'ItemsList',
@@ -47927,9 +47927,9 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var AnswerFeedback = __webpack_require__(61);
-	var AnswerFeedbackPreviewBtn = __webpack_require__(103);
+	var AnswerFeedbackPreviewBtn = __webpack_require__(63);
 	var Dispatcher = __webpack_require__(9);
-	var SetIFrameHeight = __webpack_require__(63);
+	var SetIFrameHeight = __webpack_require__(66);
 	var WrapHTML = __webpack_require__(62);
 
 	var AnswerText = React.createClass({
@@ -47939,8 +47939,7 @@
 	    var confusedLO = this.props.confusedLO === 'None linked yet' ? '' : this.props.confusedLO;
 	    return {
 	      confusedLO: confusedLO,
-	      showModal: false,
-	      showPreview: false
+	      showModal: false
 	    };
 	  },
 	  componentWillMount: function componentWillMount() {},
@@ -47948,11 +47947,6 @@
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
 	    if (nextProps.expanded) {
 	      SetIFrameHeight(this.refs.myFrame);
-	    }
-	  },
-	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
-	    if (nextState.showPreview) {
-	      SetIFrameHeight(this.refs.myPreviewFrame);
 	    }
 	  },
 	  render: function render() {
@@ -47963,8 +47957,7 @@
 	      };
 	    }),
 	        linkButton = '',
-	        answerHTML = WrapHTML(this.props.answerText),
-	        previewHTML = WrapHTML(this.props.feedback);
+	        answerHTML = WrapHTML(this.props.answerText);
 
 	    if (this.props.enableClickthrough) {
 	      if (!this.props.correctAnswer) {
@@ -47976,30 +47969,19 @@
 	          React.createElement(
 	            'div',
 	            { className: 'right-answer-actions-top-row' },
-	            React.createElement(Glyphicon, { className: 'right-answer-check',
-	              glyph: 'ok' }),
-	            React.createElement(AnswerFeedback, { answerId: this.props.answerId,
-	              feedback: this.props.feedback,
-	              feedbackSource: this.props.label,
-	              itemId: this.props.itemId,
-	              libraryId: this.props.libraryId }),
-	            React.createElement(AnswerFeedbackPreviewBtn, { feedback: this.props.feedback,
-	              togglePreview: this._togglePreview })
-	          ),
-	          React.createElement(
-	            'div',
-	            { className: 'right-answer-feedback-preview' },
 	            React.createElement(
-	              Panel,
-	              { collapsible: true,
-	                expanded: this.state.showPreview },
-	              React.createElement('iframe', { ref: 'myPreviewFrame',
-	                srcDoc: previewHTML,
-	                frameBorder: 0,
-	                width: '100%',
-	                sandbox: 'allow-scripts allow-same-origin'
-	              })
-	            )
+	              'div',
+	              { className: 'actions-horizontal-row' },
+	              React.createElement(Glyphicon, { className: 'right-answer-check',
+	                glyph: 'ok' }),
+	              React.createElement(AnswerFeedback, { answerId: this.props.answerId,
+	                feedback: this.props.feedback,
+	                feedbackSource: this.props.label,
+	                itemId: this.props.itemId,
+	                libraryId: this.props.libraryId })
+	            ),
+	            React.createElement(AnswerFeedbackPreviewBtn, { feedback: this.props.feedback,
+	              togglePreview: this.props.togglePreview })
 	          )
 	        );
 	      }
@@ -48020,9 +48002,6 @@
 	      ),
 	      linkButton
 	    );
-	  },
-	  _togglePreview: function _togglePreview() {
-	    this.setState({ showPreview: !this.state.showPreview });
 	  }
 	});
 
@@ -48064,7 +48043,7 @@
 
 
 	// module
-	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n  float: right;\n  display: flex;\n  flex-direction: column;\n}\n\n.right-answer-actions-top-row {\n  display: flex;\n}\n\n.right-answer-actions,\n.text-blob {\n    flex: 1 1 50%;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}\n\n.taggable-text {\n    display: flex;\n    flex-direction: row;\n}", ""]);
+	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n  float: right;\n  display: flex;\n  flex-direction: column;\n}\n\n.right-answer-actions-top-row {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.actions-horizontal-row {\n  display: flex;\n}\n\n.right-answer-actions,\n.text-blob {\n    flex: 1 1 50%;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}\n\n.taggable-text {\n    display: flex;\n    flex-direction: row;\n}", ""]);
 
 	// exports
 
@@ -49790,6 +49769,88 @@
 
 /***/ },
 /* 63 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// AnswerFeedbackPreviewBtn.jsx
+	'use strict';
+
+	__webpack_require__(64);
+
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var Button = ReactBS.Button;
+
+	var SetIFrameHeight = __webpack_require__(66);
+	var WrapHTML = __webpack_require__(62);
+
+	var AnswerFeedbackPreviewBtn = React.createClass({
+	  displayName: 'AnswerFeedbackPreviewBtn',
+
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	  toggle: function toggle(e) {
+	    e.stopPropagation();
+	    this.props.togglePreview();
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'answer-feedback-preview' },
+	      React.createElement(
+	        Button,
+	        { onClick: this.toggle,
+	          title: 'Preview Feedback' },
+	        'Preview Feedback'
+	      )
+	    );
+	  }
+	});
+
+	module.exports = AnswerFeedbackPreviewBtn;
+
+/***/ },
+/* 64 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(65);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./AnswerFeedbackPreviewBtn.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./AnswerFeedbackPreviewBtn.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 65 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".answer-feedback-preview button {\n  height: 34px;\n  margin-left: 5px;\n  margin-right: 5px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 66 */
 /***/ function(module, exports) {
 
 	// SetIFrameHeight.js
@@ -49831,7 +49892,7 @@
 	module.exports = SetIFrameHeight;
 
 /***/ },
-/* 64 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemControls.js
@@ -49840,10 +49901,10 @@
 
 	var React = __webpack_require__(1);
 
-	var CopyItem = __webpack_require__(65);
-	var DeleteItem = __webpack_require__(66);
-	var EditItem = __webpack_require__(67);
-	var TransferItem = __webpack_require__(71);
+	var CopyItem = __webpack_require__(68);
+	var DeleteItem = __webpack_require__(69);
+	var EditItem = __webpack_require__(70);
+	var TransferItem = __webpack_require__(74);
 
 	var ItemControls = React.createClass({
 	  displayName: 'ItemControls',
@@ -49873,7 +49934,7 @@
 	module.exports = ItemControls;
 
 /***/ },
-/* 65 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// CopyItem.jsx
@@ -49968,7 +50029,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 66 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// DeleteItem.jsx
@@ -50078,13 +50139,13 @@
 	module.exports = DeleteItem;
 
 /***/ },
-/* 67 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// EditItem.jsx
 	'use strict';
 
-	__webpack_require__(68);
+	__webpack_require__(71);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -50092,7 +50153,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var EditMultipleChoice = __webpack_require__(70);
+	var EditMultipleChoice = __webpack_require__(73);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 
 	var EditItem = React.createClass({
@@ -50140,13 +50201,13 @@
 	module.exports = EditItem;
 
 /***/ },
-/* 68 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(69);
+	var content = __webpack_require__(72);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -50166,7 +50227,7 @@
 	}
 
 /***/ },
-/* 69 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -50180,7 +50241,7 @@
 
 
 /***/ },
-/* 70 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// EditMultipleChoice.jsx
@@ -50843,7 +50904,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 71 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// TransferItem.jsx
@@ -50854,7 +50915,7 @@
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 
-	var AssignableBanks = __webpack_require__(72);
+	var AssignableBanks = __webpack_require__(75);
 
 	var TransferItem = React.createClass({
 	    displayName: 'TransferItem',
@@ -50896,7 +50957,7 @@
 	module.exports = TransferItem;
 
 /***/ },
-/* 72 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AssignableBanks.jsx
@@ -51092,14 +51153,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 73 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemRow.js
 
 	'use strict';
 
-	__webpack_require__(74);
+	__webpack_require__(77);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -51114,22 +51175,30 @@
 
 	var AnswerExtraction = __webpack_require__(48);
 	var AnswerText = __webpack_require__(49);
-	var ItemControls = __webpack_require__(64);
-	var LOText = __webpack_require__(76);
-	var OutcomesStore = __webpack_require__(83);
-	var QuestionText = __webpack_require__(85);
+	var ItemControls = __webpack_require__(67);
+	var LOText = __webpack_require__(79);
+	var OutcomesStore = __webpack_require__(86);
+	var QuestionText = __webpack_require__(88);
+	var SetIFrameHeight = __webpack_require__(66);
+	var WrapHTML = __webpack_require__(62);
 
 	var ItemRow = React.createClass({
 	  displayName: 'ItemRow',
 
 	  getInitialState: function getInitialState() {
 	    return {
-	      itemExpanded: false
+	      itemExpanded: false,
+	      showPreview: false
 	    };
 	  },
 	  componentWillMount: function componentWillMount() {},
 	  componentDidMount: function componentDidMount() {},
 	  componentDidUpdate: function componentDidUpdate() {},
+	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
+	    if (nextState.showPreview) {
+	      SetIFrameHeight(this.refs.myPreviewFrame);
+	    }
+	  },
 	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
 	    var equalityKeys = ["minStringLength", "displayName", "description", "license", "texts", "bankId", "question", "answers", "id", "recordTypeIds", "providerId", "brandingIds", "assignedBankIds", "genusTypeId", "type", "maxStringLength", "learningObjectiveIds"],
 	        _this = this,
@@ -51137,25 +51206,11 @@
 
 	    unequalPropsItem = _.some(equalityKeys, function (key) {
 	      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
-	      if (unequalProp) {
-	        console.log(key + ' is the unequal prop for item ' + _this.props.item.id);
-	        console.log(nextProps.item[key]);
-	        console.log(_this.props.item[key]);
-	      }
 	      return unequalProp;
 	    });
 
-	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded;
+	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded || this.state.showPreview !== nextState.showPreview;
 
-	    if (shouldUpdate) {
-	      if (unequalPropsItem) {
-	        console.log('props changed');
-	      }
-
-	      if (this.state.itemExpanded !== nextState.itemExpanded) {
-	        console.log('expanded state changed');
-	      }
-	    }
 	    return shouldUpdate;
 	  },
 	  filterOutcomes: function filterOutcomes(item) {
@@ -51272,7 +51327,8 @@
 	    // map the choiceIds, etc., in answers back to choices in questions
 	    updatedItem = this.props.item;
 
-	    var answers = AnswerExtraction(updatedItem);
+	    var answers = AnswerExtraction(updatedItem),
+	        previewHTML = WrapHTML(answers.correctAnswerFeedback);
 
 	    updatedItem['correctAnswer'] = answers.correctAnswerText.text;
 	    updatedItem['correctAnswerId'] = answers.correctAnswerId;
@@ -51311,7 +51367,7 @@
 	      null,
 	      React.createElement(
 	        Col,
-	        { sm: 7, md: 7, lg: 7 },
+	        { sm: 8, md: 8, lg: 8 },
 	        React.createElement(
 	          Panel,
 	          { header: updatedItem.displayName.text,
@@ -51348,7 +51404,23 @@
 	              feedback: updatedItem.correctAnswerFeedback,
 	              itemId: updatedItem.id,
 	              label: 'Correct Answer',
-	              libraryId: _this.props.libraryId })
+	              libraryId: _this.props.libraryId,
+	              togglePreview: _this._togglePreview })
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'right-answer-feedback-preview' },
+	            React.createElement(
+	              Panel,
+	              { collapsible: true,
+	                expanded: _this.state.showPreview },
+	              React.createElement('iframe', { ref: 'myPreviewFrame',
+	                srcDoc: previewHTML,
+	                frameBorder: 0,
+	                width: '100%',
+	                sandbox: 'allow-scripts allow-same-origin'
+	              })
+	            )
 	          ),
 	          _this.renderItemAnswerTexts(updatedItem),
 	          itemControls
@@ -51398,6 +51470,9 @@
 	        )
 	      )
 	    );
+	  },
+	  _togglePreview: function _togglePreview() {
+	    this.setState({ showPreview: !this.state.showPreview });
 	  }
 	});
 
@@ -51405,13 +51480,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 74 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(75);
+	var content = __webpack_require__(78);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51431,7 +51506,7 @@
 	}
 
 /***/ },
-/* 75 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51439,25 +51514,25 @@
 
 
 	// module
-	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n", ""]);
+	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n\n.panel-body {\n  padding-left: 0;\n}\n\n.right-answer-feedback-preview {\n  margin-left: 15px;\n  padding: 5px;\n}", ""]);
 
 	// exports
 
 
 /***/ },
-/* 76 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LOText.js
 
 	'use strict';
 
-	__webpack_require__(77);
+	__webpack_require__(80);
 
 	var React = __webpack_require__(1);
 
-	var LinkLO = __webpack_require__(79);
-	var LORelatedItemsBadge = __webpack_require__(80);
+	var LinkLO = __webpack_require__(82);
+	var LORelatedItemsBadge = __webpack_require__(83);
 
 	var LOText = React.createClass({
 	    displayName: 'LOText',
@@ -51503,13 +51578,13 @@
 	module.exports = LOText;
 
 /***/ },
-/* 77 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(78);
+	var content = __webpack_require__(81);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51529,7 +51604,7 @@
 	}
 
 /***/ },
-/* 78 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51537,13 +51612,13 @@
 
 
 	// module
-	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-controls {\n    display: flex;\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
+	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-controls {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 79 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
@@ -51706,13 +51781,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 80 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItemsBadge.jsx
 	'use strict';
 
-	__webpack_require__(81);
+	__webpack_require__(84);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -51725,7 +51800,7 @@
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
-	var OutcomesStore = __webpack_require__(83);
+	var OutcomesStore = __webpack_require__(86);
 
 	var LORelatedItemsBadge = React.createClass({
 	    displayName: 'LORelatedItemsBadge',
@@ -51809,13 +51884,13 @@
 	module.exports = LORelatedItemsBadge;
 
 /***/ },
-/* 81 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(82);
+	var content = __webpack_require__(85);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51835,7 +51910,7 @@
 	}
 
 /***/ },
-/* 82 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51849,14 +51924,14 @@
 
 
 /***/ },
-/* 83 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// OutcomesStore.js
 
 	'use strict';
 
-	var OutcomesDispatcher = __webpack_require__(84);
+	var OutcomesDispatcher = __webpack_require__(87);
 	var AuthoringConstants = __webpack_require__(14);
 	var MiddlewareService = __webpack_require__(17);
 
@@ -51915,22 +51990,22 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 84 */
+/* 87 */
 9,
-/* 85 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
 
 	'use strict';
 
-	__webpack_require__(86);
+	__webpack_require__(89);
 	__webpack_require__(52);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Select = __webpack_require__(54);
-	var ReactTooltip = __webpack_require__(88);
+	var ReactTooltip = __webpack_require__(91);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -51940,8 +52015,8 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
-	var OsidId = __webpack_require__(91);
-	var SetIFrameHeight = __webpack_require__(63);
+	var OsidId = __webpack_require__(94);
+	var SetIFrameHeight = __webpack_require__(66);
 	var WrapHTML = __webpack_require__(62);
 
 	var QuestionText = React.createClass({
@@ -52028,13 +52103,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 86 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(87);
+	var content = __webpack_require__(90);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -52054,7 +52129,7 @@
 	}
 
 /***/ },
-/* 87 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -52068,16 +52143,16 @@
 
 
 /***/ },
-/* 88 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	module.exports = __webpack_require__(89)
+	module.exports = __webpack_require__(92)
 
 
 /***/ },
-/* 89 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -52096,7 +52171,7 @@
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _style = __webpack_require__(90);
+	var _style = __webpack_require__(93);
 
 	var _style2 = _interopRequireDefault(_style);
 
@@ -52845,7 +52920,7 @@
 
 
 /***/ },
-/* 90 */
+/* 93 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -52857,7 +52932,7 @@
 
 
 /***/ },
-/* 91 */
+/* 94 */
 /***/ function(module, exports) {
 
 	// OsidId.js
@@ -52874,7 +52949,7 @@
 	module.exports = OsidId;
 
 /***/ },
-/* 92 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItems.js
@@ -52909,7 +52984,7 @@
 	module.exports = LORelatedItems;
 
 /***/ },
-/* 93 */
+/* 96 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ModulesStore.js
@@ -52970,7 +53045,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 94 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// SortItemsByModuleOutcomes.js
@@ -53016,20 +53091,20 @@
 	module.exports = SortItemsByModuleOutcomes;
 
 /***/ },
-/* 95 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
 
 	'use strict';
 
-	__webpack_require__(96);
+	__webpack_require__(99);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Glyphicon = ReactBS.Glyphicon;
 	var Label = ReactBS.Label;
-	var ReactTooltip = __webpack_require__(88);
+	var ReactTooltip = __webpack_require__(91);
 
 	var AuthoringConstants = __webpack_require__(14);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
@@ -53102,13 +53177,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 96 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(97);
+	var content = __webpack_require__(100);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -53128,7 +53203,7 @@
 	}
 
 /***/ },
-/* 97 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -53142,7 +53217,7 @@
 
 
 /***/ },
-/* 98 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
@@ -53215,7 +53290,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 99 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ShibSessionCheck.js
@@ -53253,91 +53328,6 @@
 	};
 
 	module.exports = ShibSessionCheck;
-
-/***/ },
-/* 100 */,
-/* 101 */,
-/* 102 */,
-/* 103 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// AnswerFeedbackPreviewBtn.jsx
-	'use strict';
-
-	__webpack_require__(104);
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Button = ReactBS.Button;
-
-	var SetIFrameHeight = __webpack_require__(63);
-	var WrapHTML = __webpack_require__(62);
-
-	var AnswerFeedbackPreviewBtn = React.createClass({
-	  displayName: 'AnswerFeedbackPreviewBtn',
-
-	  getInitialState: function getInitialState() {
-	    return {};
-	  },
-	  toggle: function toggle(e) {
-	    e.stopPropagation();
-	    this.props.togglePreview();
-	  },
-	  render: function render() {
-	    return React.createElement(
-	      'div',
-	      { className: 'answer-feedback-preview' },
-	      React.createElement(
-	        Button,
-	        { onClick: this.toggle,
-	          title: 'Preview Feedback' },
-	        'Preview Feedback'
-	      )
-	    );
-	  }
-	});
-
-	module.exports = AnswerFeedbackPreviewBtn;
-
-/***/ },
-/* 104 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(105);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./AnswerFeedbackPreviewBtn.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./AnswerFeedbackPreviewBtn.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 105 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(23)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".answer-feedback-preview button {\n  height: 34px;\n  margin-left: 5px;\n  margin-right: 5px;\n}", ""]);
-
-	// exports
-
 
 /***/ }
 /******/ ])));

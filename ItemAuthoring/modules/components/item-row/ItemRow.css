@@ -43,3 +43,12 @@
 .text-blob {
     flex: 1 1 90%;
 }
+
+.panel-body {
+  padding-left: 0;
+}
+
+.right-answer-feedback-preview {
+  margin-left: 15px;
+  padding: 5px;
+}
