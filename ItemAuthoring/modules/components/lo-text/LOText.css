@@ -14,8 +14,18 @@
     margin-right: 5px;
 }
 
-.outcome-display-name {
+.outcome-display-name,
+.outcome-description {
     flex: 1 1 100%;
 }
 
+.outcome-description {
+  color: gray;
+  font-size: 10pt;
+}
+
+.outcome-text-wrapper {
+  display: flex;
+  flex-direction: column;
+}
 

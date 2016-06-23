@@ -37,9 +37,14 @@ var LOText = React.createClass({
         }
 
         return <div className="outcome-text">
+          <div className="outcome-text-wrapper">
             <div className="outcome-display-name">
                 {this.props.outcomeDisplayName}
             </div>
+            <div className="outcome-description">
+              {this.props.outcomeDescription}
+            </div>
+          </div>
             {loControls}
         </div>;
     }

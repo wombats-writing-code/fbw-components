@@ -70,6 +70,14 @@ var ItemRow = React.createClass({
       return item.usedLOs.indexOf(outcome.id) < 0;
     })
   },
+  getOutcomeDescription: function (outcomeId) {
+    var outcome = OutcomesStore.get(outcomeId);
+    if (outcome == null) {
+      return '';
+    } else {
+      return outcome.description.text;
+    }
+  },
   getOutcomeDisplayName: function (outcomeId) {
     var outcome = OutcomesStore.get(outcomeId);
     if (outcome == null) {
@@ -114,6 +122,7 @@ var ItemRow = React.createClass({
                 enableClickthrough={_this.props.enableClickthrough}
                 itemId={item.id}
                 libraryId={_this.props.libraryId}
+                outcomeDescription={_this.getOutcomeDescription(outcomeId)}
                 outcomeDisplayName={_this.getOutcomeDisplayName(outcomeId)}
                 outcomeId={_this.getQuestionLO(item)}
                 outcomes={_this.filterOutcomes(item)}
@@ -243,6 +252,7 @@ var ItemRow = React.createClass({
                     enableClickthrough={_this.props.enableClickthrough}
                     itemId={updatedItem.id}
                     libraryId={_this.props.libraryId}
+                    outcomeDescription={_this.getOutcomeDescription(questionLO)}
                     outcomeDisplayName={_this.getOutcomeDisplayName(questionLO)}
                     outcomeId={questionLO}
                     outcomes={_this.filterOutcomes(updatedItem)}

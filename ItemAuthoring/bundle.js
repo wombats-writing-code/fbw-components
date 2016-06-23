@@ -51220,6 +51220,14 @@
 	      return item.usedLOs.indexOf(outcome.id) < 0;
 	    });
 	  },
+	  getOutcomeDescription: function getOutcomeDescription(outcomeId) {
+	    var outcome = OutcomesStore.get(outcomeId);
+	    if (outcome == null) {
+	      return '';
+	    } else {
+	      return outcome.description.text;
+	    }
+	  },
 	  getOutcomeDisplayName: function getOutcomeDisplayName(outcomeId) {
 	    var outcome = OutcomesStore.get(outcomeId);
 	    if (outcome == null) {
@@ -51275,6 +51283,7 @@
 	          enableClickthrough: _this.props.enableClickthrough,
 	          itemId: item.id,
 	          libraryId: _this.props.libraryId,
+	          outcomeDescription: _this.getOutcomeDescription(outcomeId),
 	          outcomeDisplayName: _this.getOutcomeDisplayName(outcomeId),
 	          outcomeId: _this.getQuestionLO(item),
 	          outcomes: _this.filterOutcomes(item),
@@ -51446,6 +51455,7 @@
 	              enableClickthrough: _this.props.enableClickthrough,
 	              itemId: updatedItem.id,
 	              libraryId: _this.props.libraryId,
+	              outcomeDescription: _this.getOutcomeDescription(questionLO),
 	              outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
 	              outcomeId: questionLO,
 	              outcomes: _this.filterOutcomes(updatedItem),
@@ -51567,8 +51577,17 @@
 	            { className: 'outcome-text' },
 	            React.createElement(
 	                'div',
-	                { className: 'outcome-display-name' },
-	                this.props.outcomeDisplayName
+	                { className: 'outcome-text-wrapper' },
+	                React.createElement(
+	                    'div',
+	                    { className: 'outcome-display-name' },
+	                    this.props.outcomeDisplayName
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { className: 'outcome-description' },
+	                    this.props.outcomeDescription
+	                )
 	            ),
 	            loControls
 	        );
@@ -51612,7 +51631,7 @@
 
 
 	// module
-	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-controls {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name {\n    flex: 1 1 100%;\n}\n\n\n", ""]);
+	exports.push([module.id, ".outcome-text {\n    display: flex;\n    width: 100%;\n}\n\n.outcome-controls {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n\n}\n\n.outcome-text .badge {\n    margin-right: 5px;\n}\n\n.outcome-display-name,\n.outcome-description {\n    flex: 1 1 100%;\n}\n\n.outcome-description {\n  color: gray;\n  font-size: 10pt;\n}\n\n.outcome-text-wrapper {\n  display: flex;\n  flex-direction: column;\n}\n\n", ""]);
 
 	// exports
 
