@@ -107,7 +107,7 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
           url = '/raw_data/CAD_items.json';
         } else {
             var ts = new Date();
-          url = this.url() + id + '/items?wronganswers&ts=' + ts.toISOString();
+          url = this.url() + id + '/items?wronganswers&unrandomized&ts=' + ts.toISOString();
         }
 
         fetch(url, {
