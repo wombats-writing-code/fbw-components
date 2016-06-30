@@ -20,8 +20,6 @@ var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
 var AnswerFeedback = require('../AnswerFeedback');
 var AnswerFeedbackPreviewBtn = require('../answer-feedback-preview-btn/AnswerFeedbackPreviewBtn');
 var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
-var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
-var WrapHTML = require('../../utilities/WrapHTML');
 
 var AnswerText = React.createClass({
   getInitialState: function () {
@@ -34,11 +32,15 @@ var AnswerText = React.createClass({
   componentWillMount: function() {
   },
   componentDidMount: function () {
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
   },
   componentWillReceiveProps: function (nextProps) {
-    if (nextProps.expanded) {
-      SetIFrameHeight(this.refs.myFrame);
-    }
+  },
+  componentDidUpdate: function (nextProps, nextState) {
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+  },
+  getAnswerText: function () {
+    return {__html: this.props.answerText};
   },
   render: function () {
     var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
@@ -47,8 +49,7 @@ var AnswerText = React.createClass({
         label: outcome.displayName.text
       };
     }),
-      linkButton = '',
-      answerHTML = WrapHTML(this.props.answerText);
+      linkButton = '';
 
     if (this.props.enableClickthrough) {
       if (!this.props.correctAnswer) {
@@ -75,12 +76,8 @@ var AnswerText = React.createClass({
 
     return <div className="taggable-text">
       <div className="text-blob">
-        <iframe ref="myFrame"
-                srcDoc={answerHTML}
-                frameBorder={0}
-                width="100%"
-                sandbox="allow-scripts allow-same-origin"
-                ></iframe>
+        <div dangerouslySetInnerHTML={this.getAnswerText()}>
+        </div>
       </div>
       {linkButton}
     </div>

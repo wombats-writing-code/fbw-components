@@ -40,6 +40,8 @@
 }
 
 .taggable-text {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
+  width: 80%;
+  overflow: hidden;
 }

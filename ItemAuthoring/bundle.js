@@ -47929,8 +47929,6 @@
 	var AnswerFeedback = __webpack_require__(61);
 	var AnswerFeedbackPreviewBtn = __webpack_require__(63);
 	var Dispatcher = __webpack_require__(9);
-	var SetIFrameHeight = __webpack_require__(66);
-	var WrapHTML = __webpack_require__(62);
 
 	var AnswerText = React.createClass({
 	  displayName: 'AnswerText',
@@ -47943,11 +47941,15 @@
 	    };
 	  },
 	  componentWillMount: function componentWillMount() {},
-	  componentDidMount: function componentDidMount() {},
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	    if (nextProps.expanded) {
-	      SetIFrameHeight(this.refs.myFrame);
-	    }
+	  componentDidMount: function componentDidMount() {
+	    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
+	  componentDidUpdate: function componentDidUpdate(nextProps, nextState) {
+	    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+	  },
+	  getAnswerText: function getAnswerText() {
+	    return { __html: this.props.answerText };
 	  },
 	  render: function render() {
 	    var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
@@ -47956,8 +47958,7 @@
 	        label: outcome.displayName.text
 	      };
 	    }),
-	        linkButton = '',
-	        answerHTML = WrapHTML(this.props.answerText);
+	        linkButton = '';
 
 	    if (this.props.enableClickthrough) {
 	      if (!this.props.correctAnswer) {
@@ -47993,12 +47994,7 @@
 	      React.createElement(
 	        'div',
 	        { className: 'text-blob' },
-	        React.createElement('iframe', { ref: 'myFrame',
-	          srcDoc: answerHTML,
-	          frameBorder: 0,
-	          width: '100%',
-	          sandbox: 'allow-scripts allow-same-origin'
-	        })
+	        React.createElement('div', { dangerouslySetInnerHTML: this.getAnswerText() })
 	      ),
 	      linkButton
 	    );
@@ -48043,7 +48039,7 @@
 
 
 	// module
-	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n  float: right;\n  display: flex;\n  flex-direction: column;\n}\n\n.right-answer-actions-top-row {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.actions-horizontal-row {\n  display: flex;\n}\n\n.right-answer-actions,\n.text-blob {\n    flex: 1 1 50%;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}\n\n.taggable-text {\n    display: flex;\n    flex-direction: row;\n}", ""]);
+	exports.push([module.id, ".wrong-answer-actions,\n.right-answer-actions {\n  float: right;\n  display: flex;\n  flex-direction: column;\n}\n\n.right-answer-actions-top-row {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n}\n\n.actions-horizontal-row {\n  display: flex;\n}\n\n.right-answer-actions,\n.text-blob {\n    flex: 1 1 50%;\n}\n\n.wrong-answer-actions button,\n.right-answer-actions button {\n    height: 34px;\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.wrong-answer-actions .badge {\n    background-color: gray;\n    margin-right: 5px;\n}\n\n.right-answer-check {\n    color: green;\n    margin-left: 16px;\n    margin-right: 12px;\n    margin-top: 5px;\n}\n\n.taggable-text {\n  display: flex;\n  flex-direction: row;\n  width: 80%;\n  overflow: hidden;\n}", ""]);
 
 	// exports
 
@@ -52035,8 +52031,6 @@
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
 	var OsidId = __webpack_require__(94);
-	var SetIFrameHeight = __webpack_require__(66);
-	var WrapHTML = __webpack_require__(62);
 
 	var QuestionText = React.createClass({
 	    displayName: 'QuestionText',
@@ -52049,15 +52043,19 @@
 	        };
 	    },
 	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	        if (nextProps.expanded) {
-	            SetIFrameHeight(this.refs.myFrame);
-	        }
+	    componentDidMount: function componentDidMount() {
+	        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+	    },
+	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
+	    componentDidUpdate: function componentDidUpdate(nextProps, nextState) {
+	        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 	    },
 	    close: function close() {
 	        this.setState({ showModal: false });
 	        this.reset();
+	    },
+	    getQuestionText: function getQuestionText() {
+	        return { __html: this.props.questionText };
 	    },
 	    onChange: function onChange(e) {
 	        if (e == null) {
@@ -52095,8 +52093,7 @@
 	        this.close();
 	    },
 	    render: function render() {
-	        var questionText = WrapHTML(this.props.questionText),
-	            agent = OsidId.getIdentifier(this.props.itemCreator);
+	        var agent = OsidId.getIdentifier(this.props.itemCreator);
 
 	        return React.createElement(
 	            'div',
@@ -52104,12 +52101,7 @@
 	            React.createElement(
 	                'div',
 	                { className: 'text-blob' },
-	                React.createElement('iframe', { ref: 'myFrame',
-	                    srcDoc: questionText,
-	                    frameBorder: 0,
-	                    width: '100%',
-	                    sandbox: 'allow-same-origin allow-scripts'
-	                })
+	                React.createElement('div', { dangerouslySetInnerHTML: this.getQuestionText() })
 	            ),
 	            React.createElement(Glyphicon, { glyph: 'envelope',
 	                'data-tip': agent }),

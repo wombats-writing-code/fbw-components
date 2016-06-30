@@ -19,8 +19,6 @@ var Modal = ReactBS.Modal;
 var ActionTypes = require('../../constants/AuthoringConstants').ActionTypes;
 var Dispatcher = require('../../dispatcher/LibraryItemsDispatcher');
 var OsidId = require('../../utilities/OsidId');
-var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
-var WrapHTML = require('../../utilities/WrapHTML');
 
 var QuestionText = React.createClass({
     getInitialState: function () {
@@ -33,15 +31,19 @@ var QuestionText = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     },
     componentWillReceiveProps: function (nextProps) {
-        if (nextProps.expanded) {
-            SetIFrameHeight(this.refs.myFrame);
-        }
+    },
+    componentDidUpdate: function (nextProps, nextState) {
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
     },
     close: function () {
         this.setState({showModal: false});
         this.reset();
+    },
+    getQuestionText: function () {
+      return {__html: this.props.questionText};
     },
     onChange: function (e) {
         if (e == null) {
@@ -81,17 +83,12 @@ var QuestionText = React.createClass({
         this.close();
     },
     render: function () {
-        var questionText = WrapHTML(this.props.questionText),
-            agent = OsidId.getIdentifier(this.props.itemCreator);
+        var agent = OsidId.getIdentifier(this.props.itemCreator);
 
         return <div className="taggable-text">
             <div className="text-blob">
-                <iframe ref="myFrame"
-                        srcDoc={questionText}
-                        frameBorder={0}
-                        width="100%"
-                        sandbox="allow-same-origin allow-scripts"
-                        ></iframe>
+              <div dangerouslySetInnerHTML={this.getQuestionText()}>
+              </div>
             </div>
             <Glyphicon glyph="envelope"
                        data-tip={agent} />
