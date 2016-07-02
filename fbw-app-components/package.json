@@ -1,0 +1,16 @@
+{
+  "name": "fbw-app-components",
+  "version": "0.0.1",
+  "dependencies": {
+  },
+  "description": "FbW App Components",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Fly-by-Wire"
+  ],
+  "author": "Fly-by-Wire team",
+  "license": "MIT"
+}
