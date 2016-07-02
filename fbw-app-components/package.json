@@ -1,7 +1,10 @@
 {
   "name": "fbw-app-components",
-  "version": "0.0.2",
-  "dependencies": {},
+  "version": "0.0.3",
+  "dependencies": {
+    "react": "^15.1.0",
+    "react-native": "^0.28.0"
+  },
   "description": "FbW App Components",
   "main": "index.js",
   "scripts": {
