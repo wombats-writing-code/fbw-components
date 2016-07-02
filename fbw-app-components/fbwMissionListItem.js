@@ -19,7 +19,7 @@ export default class fbwMissionListIem extends Component {
       </View>
     }
 
-    const styles = StyleSheet.create({
+    var styles = StyleSheet.create({
       headerContainer: {
         alignItems: 'center',
         flexWrap: 'nowrap',

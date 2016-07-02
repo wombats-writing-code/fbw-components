@@ -8,7 +8,7 @@ import {View, StyleSheet, TouchableHighlight} from "react-native";
     shouldShowMenuIcon: Boolean,
     onPressMenuIcon: function,
   }
-  
+
 */
 export default class fbwHeader extends Component {
 
@@ -38,7 +38,7 @@ export default class fbwHeader extends Component {
 
     }
 
-    const styles = StyleSheet.create({
+    var styles = StyleSheet.create({
       headerContainer: {
         alignItems: 'center',
         flexWrap: 'nowrap',
