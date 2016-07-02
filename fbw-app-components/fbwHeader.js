@@ -16,7 +16,7 @@ var styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'nowrap',
     flexDirection: 'row',
-    background: '#fff',
+    backgroundColor: '#fff',
     paddingBottom: 12,
     paddingTop: 30,            // so we don't hit the phone controls
     marginBottom: 18,

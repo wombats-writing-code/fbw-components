@@ -12,27 +12,9 @@ import {View, StyleSheet, TouchableHighlight} from "react-native";
 */
 
 var styles = StyleSheet.create({
-  headerContainer: {
-    alignItems: 'center',
-    flexWrap: 'nowrap',
-    flexDirection: 'row',
-    background: '#fff',
-    paddingBottom: 12,
-    paddingTop: 30,            // so we don't hit the phone controls
-    marginBottom: 18,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-  },
-  menuIcon: {
-  },
-  title: {
-    fontWeight: "700",
-    textAlign: 'center',
-  },
-  subTitle: {
-    textAlign: 'center',
-    color: '#999'
-  },
+  listItemWrapper: {
+    backgroundColor: '#fff'
+  }
 })
 
 export default class fbwMissionListIem extends Component {
