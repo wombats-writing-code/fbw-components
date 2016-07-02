@@ -1,6 +1,6 @@
 {
   "name": "fbw-app-components",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "dependencies": {
     "react": "^15.1.0",
     "react-native": "^0.28.0"
