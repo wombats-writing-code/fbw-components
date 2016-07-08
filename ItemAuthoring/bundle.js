@@ -50382,14 +50382,15 @@
 	            var errorState = _this.state.wrongAnswerErrors[index],
 	                feedback = _this.state.wrongAnswerFeedbacks[index],
 	                answerId = _this.state.wrongAnswerIds[index],
-	                choiceId = _this.state.wrongChoiceIds[index];
+	                choiceId = _this.state.wrongChoiceIds[index],
+	                key = typeof answerId === 'undefined' ? index : answerId;
 
 	            return React.createElement(WrongAnswerEditor, { answerId: answerId,
 	                choiceId: choiceId,
 	                error: errorState,
 	                feedback: feedback,
 	                index: index,
-	                key: answerId,
+	                key: key,
 	                remove: _this.removeWrongAnswer,
 	                text: wrongAnswer.text });
 	        });
@@ -50676,7 +50677,7 @@
 	                if (_this.state.removedAnswerIds.indexOf(wrongAnswerId) < 0) {
 	                    // answer was not deleted, so add it back to the
 	                    // payload with the given MC3 ID
-	                    if (wrongAnswerId != null) {
+	                    if (wrongAnswerId.indexOf('assessment.Answer') >= 0) {
 	                        payload.answers.push({
 	                            answerId: wrongAnswerId,
 	                            choiceId: wrongChoiceId,
