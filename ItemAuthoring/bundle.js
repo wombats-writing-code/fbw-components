@@ -47100,6 +47100,7 @@
 	var ConfigureCKEditor = function (editor, repositoryId) {
 	    var MiddlewareService = __webpack_require__(17);
 
+	    editor.config.allowedContent = true;
 	    editor.config.extraPlugins = 'uploadimage';
 	    editor.config.filebrowserUploadUrl = MiddlewareService.host() + '/repository/repositories/' + repositoryId + '/assets';
 	    editor.config.mathJaxLib = '//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default';
