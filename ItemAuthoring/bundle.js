@@ -37597,12 +37597,12 @@
 	                        React.createElement(
 	                            ControlLabel,
 	                            null,
-	                            'Correct Answer Feedback (recommended)'
+	                            'Solution Explanation (recommended)'
 	                        ),
 	                        React.createElement(FormControl, { componentClass: 'textarea',
 	                            value: this.state.correctAnswerFeedback,
 	                            onChange: this.onChange,
-	                            placeholder: 'Feedback for the correct answer' })
+	                            placeholder: 'Solution Explanation' })
 	                    ),
 	                    wrongAnswers,
 	                    React.createElement(
@@ -50858,12 +50858,12 @@
 	                        React.createElement(
 	                            ControlLabel,
 	                            null,
-	                            'Correct Answer Feedback (recommended)'
+	                            'Solution Explanation (recommended)'
 	                        ),
 	                        React.createElement(FormControl, { componentClass: 'textarea',
 	                            value: this.state.correctAnswerFeedback,
 	                            onChange: this.onChange,
-	                            placeholder: 'Feedback for the correct answer' })
+	                            placeholder: 'Solution Explanation' })
 	                    ),
 	                    React.createElement(
 	                        ListGroup,

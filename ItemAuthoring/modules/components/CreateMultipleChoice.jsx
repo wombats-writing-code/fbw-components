@@ -357,11 +357,11 @@ var CreateMultipleChoice = React.createClass({
                     {questionString}
                     {correctAnswer}
                     <FormGroup controlId="correctAnswerFeedback">
-                        <ControlLabel>Correct Answer Feedback (recommended)</ControlLabel>
+                        <ControlLabel>Solution Explanation (recommended)</ControlLabel>
                         <FormControl componentClass="textarea"
                                      value={this.state.correctAnswerFeedback}
                                      onChange={this.onChange}
-                                     placeholder="Feedback for the correct answer" />
+                                     placeholder="Solution Explanation" />
                     </FormGroup>
                     {wrongAnswers}
                     <Button onClick={this.addWrongAnswer}
