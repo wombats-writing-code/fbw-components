@@ -49675,7 +49675,7 @@
 	        }
 	    },
 	    render: function render() {
-	        var title = "Feedback for: " + this.props.feedbackSource;
+	        var title = "Solution Explanation for: " + this.props.feedbackSource;
 	        return React.createElement(
 	            'div',
 	            null,

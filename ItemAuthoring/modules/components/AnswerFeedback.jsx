@@ -79,7 +79,7 @@ var AnswerFeedback = React.createClass({
         }
     },
     render: function () {
-        var title = "Feedback for: " + this.props.feedbackSource;
+        var title = "Solution Explanation for: " + this.props.feedbackSource;
         return <div>
             <Button onClick={this.open}
                     title="Edit Feedback">
