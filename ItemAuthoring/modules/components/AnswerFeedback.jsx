@@ -83,7 +83,7 @@ var AnswerFeedback = React.createClass({
         return <div>
             <Button onClick={this.open}
                     title="Edit Feedback">
-                Feedback
+                Solution Explanation
             </Button>
             <Modal backdrop="static"
                    bsSize="lg" show={this.state.showModal}

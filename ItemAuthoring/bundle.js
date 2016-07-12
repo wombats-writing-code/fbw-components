@@ -49683,7 +49683,7 @@
 	                Button,
 	                { onClick: this.open,
 	                    title: 'Edit Feedback' },
-	                'Feedback'
+	                'Solution Explanation'
 	            ),
 	            React.createElement(
 	                Modal,
@@ -49797,8 +49797,8 @@
 	      React.createElement(
 	        Button,
 	        { onClick: this.toggle,
-	          title: 'Preview Feedback' },
-	        'Preview Feedback'
+	          title: 'Preview Solution Explanation' },
+	        'Preview Solution Explanation'
 	      )
 	    );
 	  }

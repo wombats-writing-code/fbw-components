@@ -21,8 +21,8 @@ var AnswerFeedbackPreviewBtn = React.createClass({
   render: function () {
     return <div className="answer-feedback-preview">
       <Button onClick={this.toggle}
-              title="Preview Feedback">
-          Preview Feedback
+              title="Preview Solution Explanation">
+          Preview Solution Explanation
       </Button>
     </div>
   }
