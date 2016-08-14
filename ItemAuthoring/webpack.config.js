@@ -26,6 +26,11 @@ module.exports = {
             test: /\.scss$/,
             loader: 'style!css!sass'
             },
+            {
+              test: 'xoces',
+              // loader: "imports?this=>window"
+              loader: 'imports?window=>{}!exports?window.xoces!./node_modules/xoces/dist/xoces.js'
+            },
 /*
 		{
 		test: /\.png$/,
@@ -42,7 +47,8 @@ module.exports = {
 			jQuery: "jquery",
 			"window.jQuery": "jquery",
 			"keymirror": "keymirror",
-			"classNames": "classNames"
+			"classNames": "classNames",
+      // 'xoces': 'xoces'
 		})
 	],
     externals: {
@@ -59,6 +65,8 @@ module.exports = {
 		'react-dom': path.resolve( __dirname, './node_modules/react-dom/index.js'),
 		'keymirror': path.resolve( __dirname, './node_modules/keymirror/index.js'),
 		'classnames': path.resolve( __dirname, './node_modules/classnames/index.js'),
+    'xoces': path.resolve(__dirname, './node_modules/xoces/dist/xoces.js'),
+    'rhumbl-dao': path.resolve(__dirname, './node_modules/rhumbl-dao/dist/dao.js')
 	},
         extensions: ['', '.js', '.jsx']
     }
