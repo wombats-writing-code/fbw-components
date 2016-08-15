@@ -60,9 +60,6 @@ var ItemAuthoring = React.createClass({
 
         return (
           <Grid>
-              <Dashboard outcomes={this.state.outcomes} modules={this.state.modules}
-                        relationships={this.state.relationships}/>
-
               <Row>
                   <Col sm={6} md={3} lg={3}>
                       <LibrarySelector libraries={this.state.libraries}
