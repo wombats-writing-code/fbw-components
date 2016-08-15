@@ -106,9 +106,9 @@
 	var LibrariesStore = __webpack_require__(18);
 
 	var ItemWrapper = __webpack_require__(20);
-	var LibrarySelector = __webpack_require__(101);
+	var LibrarySelector = __webpack_require__(104);
 
-	var ShibSessionCheck = __webpack_require__(102);
+	var ShibSessionCheck = __webpack_require__(105);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
@@ -36574,9 +36574,9 @@
 
 	var LibraryItemsStore = __webpack_require__(8);
 
-	var AddItem = __webpack_require__(25);
-	var ItemSearch = __webpack_require__(39);
-	var ItemStatus = __webpack_require__(98);
+	var AddItem = __webpack_require__(29);
+	var ItemSearch = __webpack_require__(43);
+	var ItemStatus = __webpack_require__(99);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -36976,10 +36976,140 @@
 /* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
+	/* WEBPACK VAR INJECTION */(function(_) {// ModulesStore.js
+
+	'use strict';
+
+	var AuthoringConstants = __webpack_require__(14);
+	var MiddlewareService = __webpack_require__(17);
+
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _modules = [];
+
+	var ModulesStore = _.assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _modules);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    get: function (id) {
+	        return _.find(_modules, function (module) {
+	            return module.id == id;
+	        });
+	    },
+	    getAll: function (libraryId) {
+	        var _this = this,
+	            url = this.url() + libraryId + '/modules';
+	        fetch(url, {
+	            cache: "no-store",
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _modules = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting modules: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
+
+	      return MiddlewareService.host() + '/learning/objectivebanks/';
+	    }
+	});
+
+
+	module.exports = ModulesStore;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(_) {// OutcomesStore.js
+
+	'use strict';
+
+	var OutcomesDispatcher = __webpack_require__(27);
+	var AuthoringConstants = __webpack_require__(14);
+	var MiddlewareService = __webpack_require__(17);
+
+	var EventEmitter = __webpack_require__(16).EventEmitter;
+
+	var ActionTypes = AuthoringConstants.ActionTypes;
+	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
+
+	var _outcomes = [];
+
+	var OutcomesStore = _.assign({}, EventEmitter.prototype, {
+	    emitChange: function () {
+	        this.emit(CHANGE_EVENT, _outcomes);
+	    },
+	    addChangeListener: function (callback) {
+	        this.on(CHANGE_EVENT, callback);
+	    },
+	    removeChangeListener: function (callback) {
+	        this.removeListener(CHANGE_EVENT, callback);
+	    },
+	    get: function (id) {
+	        return _.find(_outcomes, function (outcome) {
+	            return outcome.id == id;
+	        });
+	    },
+	    getAll: function (libraryId) {
+	        var _this = this,
+	            url = this.url() + libraryId + '/objectives';
+	        fetch(url, {
+	            cache: "no-store",
+	            credentials: "same-origin"
+	        }).then(function (response) {
+	            response.json().then(function (data) {
+	                _outcomes = data;
+	                _this.emitChange();
+	            });
+	        })
+	        .catch(function (error) {
+	            console.log('Problem with getting objectives: ' + error.message);
+	        });
+	    },
+	    url: function () {
+	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
+
+	      return MiddlewareService.host() + '/learning/objectivebanks/';
+	    }
+	});
+
+	OutcomesStore.dispatchToken = OutcomesDispatcher.register(function (action) {
+	    switch(action.type) {
+	    }
+	});
+
+	module.exports = OutcomesStore;
+
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 27 */
+9,
+/* 28 */,
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// AddItem.js
 	'use strict';
 
-	__webpack_require__(26);
+	__webpack_require__(30);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -36994,9 +37124,9 @@
 	var _ = __webpack_require__(5);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CreateMultipleChoice = __webpack_require__(28);
+	var CreateMultipleChoice = __webpack_require__(32);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var ItemTypesStore = __webpack_require__(38);
+	var ItemTypesStore = __webpack_require__(42);
 
 	var AddItem = React.createClass({
 	    displayName: 'AddItem',
@@ -37132,13 +37262,13 @@
 	module.exports = AddItem;
 
 /***/ },
-/* 26 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(27);
+	var content = __webpack_require__(31);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -37158,7 +37288,7 @@
 	}
 
 /***/ },
-/* 27 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -37172,7 +37302,7 @@
 
 
 /***/ },
-/* 28 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CreateMultipleChoice.jsx
@@ -37190,17 +37320,17 @@
 
 	var _ = __webpack_require__(5);
 
-	var $s = __webpack_require__(29);
+	var $s = __webpack_require__(33);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CKEditorModalHack = __webpack_require__(30);
-	var ConfigureCKEditor = __webpack_require__(33);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(34);
+	var CKEditorModalHack = __webpack_require__(34);
+	var ConfigureCKEditor = __webpack_require__(37);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(38);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(35);
+	var WrongAnswerEditor = __webpack_require__(39);
 
 	var CreateMultipleChoice = React.createClass({
 	    displayName: 'CreateMultipleChoice',
@@ -37635,7 +37765,7 @@
 	module.exports = CreateMultipleChoice;
 
 /***/ },
-/* 29 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -37764,7 +37894,7 @@
 
 
 /***/ },
-/* 30 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CKEditorModalHack.js
@@ -37776,7 +37906,7 @@
 
 	'use strict';
 
-	var $ = __webpack_require__(31);
+	var $ = __webpack_require__(35);
 	var _ = __webpack_require__(5);
 
 
@@ -37787,7 +37917,7 @@
 	module.exports = CKEditorModalHack;
 
 /***/ },
-/* 31 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function() {
@@ -47053,7 +47183,7 @@
 	    // file names, and jQuery is normally delivered in a lowercase file name.
 	    // Do this after creating the global so that if an AMD module wants to call
 	    // noConflict to hide this version of jQuery, it will work.
-	    if ( "function" === "function" && __webpack_require__(32) && __webpack_require__(32).jQuery ) {
+	    if ( "function" === "function" && __webpack_require__(36) && __webpack_require__(36).jQuery ) {
 	    	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () { return jQuery; }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    }
 	    
@@ -47080,7 +47210,7 @@
 
 
 /***/ },
-/* 32 */
+/* 36 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
@@ -47088,14 +47218,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ },
-/* 33 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ConfigureCKEditor.js
 
 	'use strict';
 
-	var $ = __webpack_require__(31);
+	var $ = __webpack_require__(35);
 
 	var ConfigureCKEditor = function (editor, repositoryId) {
 	    var MiddlewareService = __webpack_require__(17);
@@ -47109,7 +47239,7 @@
 	module.exports = ConfigureCKEditor;
 
 /***/ },
-/* 34 */
+/* 38 */
 /***/ function(module, exports) {
 
 	// ConvertLibraryId2RepositoryId.js
@@ -47122,13 +47252,13 @@
 	module.exports = ConvertLibraryId2RepositoryId;
 
 /***/ },
-/* 35 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// WrongAnswerEditor.js
 	'use strict';
 
-	__webpack_require__(36);
+	__webpack_require__(40);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -47261,13 +47391,13 @@
 	module.exports = WrongAnswerEditor;
 
 /***/ },
-/* 36 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(37);
+	var content = __webpack_require__(41);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -47287,7 +47417,7 @@
 	}
 
 /***/ },
-/* 37 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -47301,7 +47431,7 @@
 
 
 /***/ },
-/* 38 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemTypesStore.js
@@ -47360,14 +47490,14 @@
 
 
 /***/ },
-/* 39 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemSearch.js
 
 	'use strict';
 
-	__webpack_require__(40);
+	__webpack_require__(44);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -47377,7 +47507,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var InputGroup = ReactBS.InputGroup;
 
-	var ModulesList = __webpack_require__(42);
+	var ModulesList = __webpack_require__(46);
 	var LibraryItemsStore = __webpack_require__(8);
 
 	var ItemSearch = React.createClass({
@@ -47466,13 +47596,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 40 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(41);
+	var content = __webpack_require__(45);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -47492,7 +47622,7 @@
 	}
 
 /***/ },
-/* 41 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -47506,14 +47636,14 @@
 
 
 /***/ },
-/* 42 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ModulesList.js
 
 	'use strict';
 
-	__webpack_require__(43);
+	__webpack_require__(47);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -47523,12 +47653,12 @@
 	var Panel = ReactBS.Panel;
 	var Row = ReactBS.Row;
 
-	var ItemsList = __webpack_require__(45);
+	var ItemsList = __webpack_require__(49);
 	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(95);
-	var ModulesStore = __webpack_require__(96);
-	var OutcomesStore = __webpack_require__(86);
-	var SortItemsByModuleOutcomes = __webpack_require__(97);
+	var LORelatedItems = __webpack_require__(97);
+	var ModulesStore = __webpack_require__(25);
+	var OutcomesStore = __webpack_require__(26);
+	var SortItemsByModuleOutcomes = __webpack_require__(98);
 
 	var ModulesList = React.createClass({
 	    displayName: 'ModulesList',
@@ -47694,13 +47824,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 43 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(44);
+	var content = __webpack_require__(48);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -47720,7 +47850,7 @@
 	}
 
 /***/ },
-/* 44 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -47734,14 +47864,14 @@
 
 
 /***/ },
-/* 45 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemsList.js
 
 	'use strict';
 
-	__webpack_require__(46);
+	__webpack_require__(50);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -47754,13 +47884,13 @@
 	var ChoiceLabels = AuthoringConstants.ChoiceLabels;
 	var GenusTypes = AuthoringConstants.GenusTypes;
 
-	var AnswerExtraction = __webpack_require__(48);
-	var AnswerText = __webpack_require__(49);
-	var ItemControls = __webpack_require__(67);
-	var ItemRow = __webpack_require__(76);
-	var LOText = __webpack_require__(79);
-	var OutcomesStore = __webpack_require__(86);
-	var QuestionText = __webpack_require__(88);
+	var AnswerExtraction = __webpack_require__(52);
+	var AnswerText = __webpack_require__(53);
+	var ItemControls = __webpack_require__(71);
+	var ItemRow = __webpack_require__(80);
+	var LOText = __webpack_require__(83);
+	var OutcomesStore = __webpack_require__(26);
+	var QuestionText = __webpack_require__(90);
 
 	var ItemsList = React.createClass({
 	    displayName: 'ItemsList',
@@ -47797,13 +47927,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 46 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(47);
+	var content = __webpack_require__(51);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -47823,9 +47953,9 @@
 	}
 
 /***/ },
-/* 47 */
+/* 51 */
 22,
-/* 48 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerExtraction.js
@@ -47905,19 +48035,19 @@
 	module.exports = AnswerExtraction;
 
 /***/ },
-/* 49 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
 
 	'use strict';
 
-	__webpack_require__(50);
-	__webpack_require__(52);
+	__webpack_require__(54);
+	__webpack_require__(56);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(54);
+	var Select = __webpack_require__(58);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -47927,8 +48057,8 @@
 	var Panel = ReactBS.Panel;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerFeedback = __webpack_require__(61);
-	var AnswerFeedbackPreviewBtn = __webpack_require__(63);
+	var AnswerFeedback = __webpack_require__(65);
+	var AnswerFeedbackPreviewBtn = __webpack_require__(67);
 	var Dispatcher = __webpack_require__(9);
 
 	var AnswerText = React.createClass({
@@ -48006,13 +48136,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 50 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(51);
+	var content = __webpack_require__(55);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -48032,7 +48162,7 @@
 	}
 
 /***/ },
-/* 51 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -48046,13 +48176,13 @@
 
 
 /***/ },
-/* 52 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(53);
+	var content = __webpack_require__(57);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -48072,7 +48202,7 @@
 	}
 
 /***/ },
-/* 53 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -48086,7 +48216,7 @@
 
 
 /***/ },
-/* 54 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48107,27 +48237,27 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _reactInputAutosize = __webpack_require__(55);
+	var _reactInputAutosize = __webpack_require__(59);
 
 	var _reactInputAutosize2 = _interopRequireDefault(_reactInputAutosize);
 
-	var _classnames = __webpack_require__(56);
+	var _classnames = __webpack_require__(60);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsStripDiacritics = __webpack_require__(57);
+	var _utilsStripDiacritics = __webpack_require__(61);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
-	var _Async = __webpack_require__(58);
+	var _Async = __webpack_require__(62);
 
 	var _Async2 = _interopRequireDefault(_Async);
 
-	var _Option = __webpack_require__(59);
+	var _Option = __webpack_require__(63);
 
 	var _Option2 = _interopRequireDefault(_Option);
 
-	var _Value = __webpack_require__(60);
+	var _Value = __webpack_require__(64);
 
 	var _Value2 = _interopRequireDefault(_Value);
 
@@ -49003,7 +49133,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 55 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49134,7 +49264,7 @@
 	module.exports = AutosizeInput;
 
 /***/ },
-/* 56 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -49188,7 +49318,7 @@
 
 
 /***/ },
-/* 57 */
+/* 61 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -49203,7 +49333,7 @@
 	};
 
 /***/ },
-/* 58 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49216,11 +49346,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Select = __webpack_require__(54);
+	var _Select = __webpack_require__(58);
 
 	var _Select2 = _interopRequireDefault(_Select);
 
-	var _utilsStripDiacritics = __webpack_require__(57);
+	var _utilsStripDiacritics = __webpack_require__(61);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
@@ -49376,7 +49506,7 @@
 	module.exports = Async;
 
 /***/ },
-/* 59 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49387,7 +49517,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(56);
+	var _classnames = __webpack_require__(60);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49485,7 +49615,7 @@
 	module.exports = Option;
 
 /***/ },
-/* 60 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49496,7 +49626,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(56);
+	var _classnames = __webpack_require__(60);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49594,7 +49724,7 @@
 	module.exports = Value;
 
 /***/ },
-/* 61 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerFeedback.jsx
@@ -49609,16 +49739,16 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var $s = __webpack_require__(29);
+	var $s = __webpack_require__(33);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CKEditorModalHack = __webpack_require__(30);
-	var ConfigureCKEditor = __webpack_require__(33);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(34);
+	var CKEditorModalHack = __webpack_require__(34);
+	var ConfigureCKEditor = __webpack_require__(37);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(38);
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-	var WrapHTML = __webpack_require__(62);
+	var WrapHTML = __webpack_require__(66);
 
 	var AnswerFeedback = React.createClass({
 	    displayName: 'AnswerFeedback',
@@ -49734,7 +49864,7 @@
 	module.exports = AnswerFeedback;
 
 /***/ },
-/* 62 */
+/* 66 */
 /***/ function(module, exports) {
 
 	// WrapHTML.js
@@ -49765,20 +49895,20 @@
 	module.exports = WrapHTML;
 
 /***/ },
-/* 63 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerFeedbackPreviewBtn.jsx
 	'use strict';
 
-	__webpack_require__(64);
+	__webpack_require__(68);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Button = ReactBS.Button;
 
-	var SetIFrameHeight = __webpack_require__(66);
-	var WrapHTML = __webpack_require__(62);
+	var SetIFrameHeight = __webpack_require__(70);
+	var WrapHTML = __webpack_require__(66);
 
 	var AnswerFeedbackPreviewBtn = React.createClass({
 	  displayName: 'AnswerFeedbackPreviewBtn',
@@ -49807,13 +49937,13 @@
 	module.exports = AnswerFeedbackPreviewBtn;
 
 /***/ },
-/* 64 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(65);
+	var content = __webpack_require__(69);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -49833,7 +49963,7 @@
 	}
 
 /***/ },
-/* 65 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -49847,7 +49977,7 @@
 
 
 /***/ },
-/* 66 */
+/* 70 */
 /***/ function(module, exports) {
 
 	// SetIFrameHeight.js
@@ -49889,7 +50019,7 @@
 	module.exports = SetIFrameHeight;
 
 /***/ },
-/* 67 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemControls.js
@@ -49898,10 +50028,10 @@
 
 	var React = __webpack_require__(1);
 
-	var CopyItem = __webpack_require__(68);
-	var DeleteItem = __webpack_require__(69);
-	var EditItem = __webpack_require__(70);
-	var TransferItem = __webpack_require__(74);
+	var CopyItem = __webpack_require__(72);
+	var DeleteItem = __webpack_require__(73);
+	var EditItem = __webpack_require__(74);
+	var TransferItem = __webpack_require__(78);
 
 	var ItemControls = React.createClass({
 	  displayName: 'ItemControls',
@@ -49931,7 +50061,7 @@
 	module.exports = ItemControls;
 
 /***/ },
-/* 68 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// CopyItem.jsx
@@ -49942,10 +50072,10 @@
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 
-	var $s = __webpack_require__(29);
+	var $s = __webpack_require__(33);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(48);
+	var AnswerExtraction = __webpack_require__(52);
 	var Dispatcher = __webpack_require__(9);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var LibraryItemsStore = __webpack_require__(8);
@@ -50026,7 +50156,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 69 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// DeleteItem.jsx
@@ -50136,13 +50266,13 @@
 	module.exports = DeleteItem;
 
 /***/ },
-/* 70 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// EditItem.jsx
 	'use strict';
 
-	__webpack_require__(71);
+	__webpack_require__(75);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -50150,7 +50280,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var EditMultipleChoice = __webpack_require__(73);
+	var EditMultipleChoice = __webpack_require__(77);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 
 	var EditItem = React.createClass({
@@ -50198,13 +50328,13 @@
 	module.exports = EditItem;
 
 /***/ },
-/* 71 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(72);
+	var content = __webpack_require__(76);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -50224,7 +50354,7 @@
 	}
 
 /***/ },
-/* 72 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -50238,7 +50368,7 @@
 
 
 /***/ },
-/* 73 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// EditMultipleChoice.jsx
@@ -50255,18 +50385,18 @@
 	var ListGroup = ReactBS.ListGroup;
 	var Modal = ReactBS.Modal;
 
-	var $s = __webpack_require__(29);
+	var $s = __webpack_require__(33);
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(48);
-	var CKEditorModalHack = __webpack_require__(30);
-	var ConfigureCKEditor = __webpack_require__(33);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(34);
+	var AnswerExtraction = __webpack_require__(52);
+	var CKEditorModalHack = __webpack_require__(34);
+	var ConfigureCKEditor = __webpack_require__(37);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(38);
 	var Dispatcher = __webpack_require__(9);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(35);
+	var WrongAnswerEditor = __webpack_require__(39);
 
 	var EditMultipleChoice = React.createClass({
 	    displayName: 'EditMultipleChoice',
@@ -50902,7 +51032,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 74 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// TransferItem.jsx
@@ -50913,7 +51043,7 @@
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 
-	var AssignableBanks = __webpack_require__(75);
+	var AssignableBanks = __webpack_require__(79);
 
 	var TransferItem = React.createClass({
 	    displayName: 'TransferItem',
@@ -50955,7 +51085,7 @@
 	module.exports = TransferItem;
 
 /***/ },
-/* 75 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AssignableBanks.jsx
@@ -51151,14 +51281,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 76 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemRow.js
 
 	'use strict';
 
-	__webpack_require__(77);
+	__webpack_require__(81);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -51171,14 +51301,14 @@
 	var ChoiceLabels = AuthoringConstants.ChoiceLabels;
 	var GenusTypes = AuthoringConstants.GenusTypes;
 
-	var AnswerExtraction = __webpack_require__(48);
-	var AnswerText = __webpack_require__(49);
-	var ItemControls = __webpack_require__(67);
-	var LOText = __webpack_require__(79);
-	var OutcomesStore = __webpack_require__(86);
-	var QuestionText = __webpack_require__(88);
-	var SetIFrameHeight = __webpack_require__(66);
-	var WrapHTML = __webpack_require__(62);
+	var AnswerExtraction = __webpack_require__(52);
+	var AnswerText = __webpack_require__(53);
+	var ItemControls = __webpack_require__(71);
+	var LOText = __webpack_require__(83);
+	var OutcomesStore = __webpack_require__(26);
+	var QuestionText = __webpack_require__(90);
+	var SetIFrameHeight = __webpack_require__(70);
+	var WrapHTML = __webpack_require__(66);
 
 	var ItemRow = React.createClass({
 	  displayName: 'ItemRow',
@@ -51488,13 +51618,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 77 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(78);
+	var content = __webpack_require__(82);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51514,7 +51644,7 @@
 	}
 
 /***/ },
-/* 78 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51528,19 +51658,19 @@
 
 
 /***/ },
-/* 79 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LOText.js
 
 	'use strict';
 
-	__webpack_require__(80);
+	__webpack_require__(84);
 
 	var React = __webpack_require__(1);
 
-	var LinkLO = __webpack_require__(82);
-	var LORelatedItemsBadge = __webpack_require__(83);
+	var LinkLO = __webpack_require__(86);
+	var LORelatedItemsBadge = __webpack_require__(87);
 
 	var LOText = React.createClass({
 	    displayName: 'LOText',
@@ -51595,13 +51725,13 @@
 	module.exports = LOText;
 
 /***/ },
-/* 80 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(81);
+	var content = __webpack_require__(85);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51621,7 +51751,7 @@
 	}
 
 /***/ },
-/* 81 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51635,18 +51765,18 @@
 
 
 /***/ },
-/* 82 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
 
 	'use strict';
 
-	__webpack_require__(52);
+	__webpack_require__(56);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(54);
+	var Select = __webpack_require__(58);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -51798,13 +51928,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 83 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItemsBadge.jsx
 	'use strict';
 
-	__webpack_require__(84);
+	__webpack_require__(88);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -51817,7 +51947,7 @@
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
-	var OutcomesStore = __webpack_require__(86);
+	var OutcomesStore = __webpack_require__(26);
 
 	var LORelatedItemsBadge = React.createClass({
 	    displayName: 'LORelatedItemsBadge',
@@ -51834,7 +51964,7 @@
 	        this.setState({ showModal: true });
 	    },
 	    render: function render() {
-	        var ItemsList = __webpack_require__(45);
+	        var ItemsList = __webpack_require__(49);
 	        var items, lo;
 
 	        lo = OutcomesStore.get(this.props.outcomeId) == null ? '' : OutcomesStore.get(this.props.outcomeId).displayName.text;
@@ -51901,13 +52031,13 @@
 	module.exports = LORelatedItemsBadge;
 
 /***/ },
-/* 84 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(85);
+	var content = __webpack_require__(89);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51927,7 +52057,7 @@
 	}
 
 /***/ },
-/* 85 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51941,88 +52071,20 @@
 
 
 /***/ },
-/* 86 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// OutcomesStore.js
-
-	'use strict';
-
-	var OutcomesDispatcher = __webpack_require__(87);
-	var AuthoringConstants = __webpack_require__(14);
-	var MiddlewareService = __webpack_require__(17);
-
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-
-	var ActionTypes = AuthoringConstants.ActionTypes;
-	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
-
-	var _outcomes = [];
-
-	var OutcomesStore = _.assign({}, EventEmitter.prototype, {
-	    emitChange: function () {
-	        this.emit(CHANGE_EVENT, _outcomes);
-	    },
-	    addChangeListener: function (callback) {
-	        this.on(CHANGE_EVENT, callback);
-	    },
-	    removeChangeListener: function (callback) {
-	        this.removeListener(CHANGE_EVENT, callback);
-	    },
-	    get: function (id) {
-	        return _.find(_outcomes, function (outcome) {
-	            return outcome.id == id;
-	        });
-	    },
-	    getAll: function (libraryId) {
-	        var _this = this,
-	            url = this.url() + libraryId + '/objectives';
-	        fetch(url, {
-	            cache: "no-store",
-	            credentials: "same-origin"
-	        }).then(function (response) {
-	            response.json().then(function (data) {
-	                _outcomes = data;
-	                _this.emitChange();
-	            });
-	        })
-	        .catch(function (error) {
-	            console.log('Problem with getting objectives: ' + error.message);
-	        });
-	    },
-	    url: function () {
-	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
-
-	      return MiddlewareService.host() + '/learning/objectivebanks/';
-	    }
-	});
-
-	OutcomesStore.dispatchToken = OutcomesDispatcher.register(function (action) {
-	    switch(action.type) {
-	    }
-	});
-
-	module.exports = OutcomesStore;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 87 */
-9,
-/* 88 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
 
 	'use strict';
 
-	__webpack_require__(89);
-	__webpack_require__(52);
+	__webpack_require__(91);
+	__webpack_require__(56);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(54);
-	var ReactTooltip = __webpack_require__(91);
+	var Select = __webpack_require__(58);
+	var ReactTooltip = __webpack_require__(93);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -52032,7 +52094,7 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
-	var OsidId = __webpack_require__(94);
+	var OsidId = __webpack_require__(96);
 
 	var QuestionText = React.createClass({
 	    displayName: 'QuestionText',
@@ -52116,13 +52178,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 89 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(90);
+	var content = __webpack_require__(92);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -52142,7 +52204,7 @@
 	}
 
 /***/ },
-/* 90 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -52156,16 +52218,16 @@
 
 
 /***/ },
-/* 91 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	module.exports = __webpack_require__(92)
+	module.exports = __webpack_require__(94)
 
 
 /***/ },
-/* 92 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -52180,11 +52242,11 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _classnames = __webpack_require__(56);
+	var _classnames = __webpack_require__(60);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _style = __webpack_require__(93);
+	var _style = __webpack_require__(95);
 
 	var _style2 = _interopRequireDefault(_style);
 
@@ -52933,7 +52995,7 @@
 
 
 /***/ },
-/* 93 */
+/* 95 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -52945,7 +53007,7 @@
 
 
 /***/ },
-/* 94 */
+/* 96 */
 /***/ function(module, exports) {
 
 	// OsidId.js
@@ -52962,7 +53024,7 @@
 	module.exports = OsidId;
 
 /***/ },
-/* 95 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItems.js
@@ -52997,68 +53059,7 @@
 	module.exports = LORelatedItems;
 
 /***/ },
-/* 96 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// ModulesStore.js
-
-	'use strict';
-
-	var AuthoringConstants = __webpack_require__(14);
-	var MiddlewareService = __webpack_require__(17);
-
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-
-	var ActionTypes = AuthoringConstants.ActionTypes;
-	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
-
-	var _modules = [];
-
-	var ModulesStore = _.assign({}, EventEmitter.prototype, {
-	    emitChange: function () {
-	        this.emit(CHANGE_EVENT, _modules);
-	    },
-	    addChangeListener: function (callback) {
-	        this.on(CHANGE_EVENT, callback);
-	    },
-	    removeChangeListener: function (callback) {
-	        this.removeListener(CHANGE_EVENT, callback);
-	    },
-	    get: function (id) {
-	        return _.find(_modules, function (module) {
-	            return module.id == id;
-	        });
-	    },
-	    getAll: function (libraryId) {
-	        var _this = this,
-	            url = this.url() + libraryId + '/modules';
-	        fetch(url, {
-	            cache: "no-store",
-	            credentials: "same-origin"
-	        }).then(function (response) {
-	            response.json().then(function (data) {
-	                _modules = data;
-	                _this.emitChange();
-	            });
-	        })
-	        .catch(function (error) {
-	            console.log('Problem with getting modules: ' + error.message);
-	        });
-	    },
-	    url: function () {
-	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/objectives.json';
-
-	      return MiddlewareService.host() + '/learning/objectivebanks/';
-	    }
-	});
-
-
-	module.exports = ModulesStore;
-
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 97 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// SortItemsByModuleOutcomes.js
@@ -53104,20 +53105,20 @@
 	module.exports = SortItemsByModuleOutcomes;
 
 /***/ },
-/* 98 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
 
 	'use strict';
 
-	__webpack_require__(99);
+	__webpack_require__(100);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Glyphicon = ReactBS.Glyphicon;
 	var Label = ReactBS.Label;
-	var ReactTooltip = __webpack_require__(91);
+	var ReactTooltip = __webpack_require__(93);
 
 	var AuthoringConstants = __webpack_require__(14);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
@@ -53190,13 +53191,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 99 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(100);
+	var content = __webpack_require__(101);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -53216,7 +53217,7 @@
 	}
 
 /***/ },
-/* 100 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -53230,7 +53231,9 @@
 
 
 /***/ },
-/* 101 */
+/* 102 */,
+/* 103 */,
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
@@ -53303,7 +53306,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 102 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ShibSessionCheck.js
