@@ -1,6 +1,6 @@
 // ViewDashboard.jsx
 'use strict';
-
+require('./ViewDashboard.css');
 
 var React = require('react');
 var ReactBS = require('react-bootstrap');
@@ -38,7 +38,7 @@ var ViewDashboard = React.createClass({
             <Button onClick={this.openModal}>
                 View Outcome Dashboard
             </Button>
-            <Modal bsSize="lg"
+            <Modal dialogClassName="extra-wide-modal"
                    show={this.state.showModal}
                    onHide={this.closeModal}>
                 <Modal.Header closeButton>

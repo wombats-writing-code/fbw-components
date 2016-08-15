@@ -53331,6 +53331,8 @@
 	// ViewDashboard.jsx
 	'use strict';
 
+	__webpack_require__(111);
+
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Alert = ReactBS.Alert;
@@ -53372,7 +53374,7 @@
 	            ),
 	            React.createElement(
 	                Modal,
-	                { bsSize: 'lg',
+	                { dialogClassName: 'extra-wide-modal',
 	                    show: this.state.showModal,
 	                    onHide: this.closeModal },
 	                React.createElement(
@@ -101841,6 +101843,46 @@
 	/***/ }
 	/******/ ]);
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ },
+/* 111 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(112);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ViewDashboard.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ViewDashboard.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 112 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".extra-wide-modal {\n  width: 1500px;\n}", ""]);
+
+	// exports
+
 
 /***/ }
 /******/ ])));
