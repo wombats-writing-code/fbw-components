@@ -13,12 +13,14 @@
     "flux": "^2.0.0",
     "keymirror": "0.1.1",
     "lodash": "4.11.1",
+    "q": "^1.4.1",
     "react": "15.0.1",
     "react-bootstrap": "0.29.0",
     "react-dom": "15.0.1",
     "react-select": "^1.0.0-beta12",
     "react-tooltip": "^2.0.0",
-    "redux": "3.4.0"
+    "redux": "3.4.0",
+    "xoces": "^1.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.7.6",

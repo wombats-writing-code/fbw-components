@@ -13,6 +13,7 @@ var LibrariesStore = require('../stores/LibrariesStore');
 
 var ItemWrapper = require('./item-wrapper/ItemWrapper');
 var LibrarySelector = require('./LibrarySelector');
+var Dashboard = require('./dashboard/Dashboard')
 
 var ShibSessionCheck = require('../utilities/ShibSessionCheck');
 
@@ -56,16 +57,18 @@ var ItemAuthoring = React.createClass({
                                         libraryId={this.state.libraryId}
                                         libraryDescription={this.state.libraryDescription} />;
         }
-        return <Grid>
-            <Row>
-                <Col sm={6} md={3} lg={3}>
-                    <LibrarySelector libraries={this.state.libraries}
-                                     onSelect={this.librarySelected}
-                                     hideItems={this.hideItems} />
-                </Col>
-            </Row>
-            {itemsWrapper}
-        </Grid>
+
+        return (
+          <Grid>
+              <Row>
+                  <Col sm={6} md={3} lg={3}>
+                      <LibrarySelector libraries={this.state.libraries}
+                                       onSelect={this.librarySelected}
+                                       hideItems={this.hideItems} />
+                  </Col>
+              </Row>
+              {itemsWrapper}
+          </Grid>)
     }
 });
 

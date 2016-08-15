@@ -78,7 +78,11 @@ var ItemSearch = React.createClass({
             <ModulesList allItems={this.props.items}
                          items={this.state.filteredItems}
                          libraries={this.props.libraries}
-                         libraryId={this.props.libraryId} />
+                         libraryId={this.props.libraryId}
+                         modules={this.props.modules}
+                         outcomes={this.props.outcomes}
+                         refreshModulesAndOutcomes={this.props.refreshModulesAndOutcomes}
+                         relationships={this.props.relationships} />
         </div>
     },
     _onChange: function(event) {

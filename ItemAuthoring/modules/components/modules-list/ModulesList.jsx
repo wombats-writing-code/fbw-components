@@ -24,8 +24,6 @@ var ModulesList = React.createClass({
     getInitialState: function () {
         return {
             moduleExpandedState: {},
-            modules: [],
-            outcomes: [],
             sortedItemsByModule: {},  // moduleId => [itemsList]
             sortedItemsByOutcome: {}  // loId => [itemsList]
         };
@@ -33,33 +31,28 @@ var ModulesList = React.createClass({
     componentWillMount: function() {
         var _this = this;
         _this.initializeModulesAsClosed();
-        ModulesStore.addChangeListener(function(modules) {
-            _this.setState({ modules: modules });
-            _this.sortItemsByModule(_this.props.items);
-        });
-        OutcomesStore.addChangeListener(function(outcomes) {
-            _this.setState({ outcomes: outcomes });
-            _this.sortItemsByOutcome();
-        });
+        _this.sortItemsByModule(_this.props.items);
+        _this.sortItemsByOutcome();
         LibraryItemsStore.addChangeListener(function(items) {
             _this.sortItemsByModule(_this.props.items);
             _this.sortItemsByOutcome();
         });
     },
     componentDidMount: function () {
-        ModulesStore.getAll(this.props.libraryId);
-        OutcomesStore.getAll(this.props.libraryId);
     },
     componentWillReceiveProps: function (nextProps) {
-      if (nextProps.libraryId !== this.props.libraryId) {
-        ModulesStore.getAll(nextProps.libraryId);
-        OutcomesStore.getAll(nextProps.libraryId);
+      if (nextProps.modules !== this.props.modules) {
+        this.sortItemsByModule(this.props.items);
+      }
+
+      if (nextProps.outcomes !== this.props.outcomes) {
+        this.sortItemsByOutcome();
       }
     },
     filterOutcomes: function (item) {
         // return outcomes that are not currently being used somewhere
         // in a specific item
-        return _.filter(this.state.outcomes, function (outcome) {
+        return _.filter(this.props.outcomes, function (outcome) {
             return item.usedLOs.indexOf(outcome.id) < 0;
         })
     },
@@ -88,7 +81,7 @@ var ModulesList = React.createClass({
             items = [],
             sortedModuleNames = [];
 
-        _.each(this.state.modules, function (module) {
+        _.each(this.props.modules, function (module) {
             sortedModuleNames.push({
                 displayName: _this.getModuleDisplayName(module.id),
                 id: module.id
@@ -125,8 +118,8 @@ var ModulesList = React.createClass({
                     <ItemsList enableClickthrough={true}
                                libraries={_this.props.libraries}
                                libraryId={_this.props.libraryId}
-                               outcomes={_this.state.outcomes}
-                               refreshModulesAndOutcomes={_this._refreshModulesAndOutcomes}
+                               outcomes={_this.props.outcomes}
+                               refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
                                relatedItems={_this.state.sortedItemsByOutcome}
                                sortedItems={moduleItems} />
                 </Panel>
@@ -136,12 +129,12 @@ var ModulesList = React.createClass({
     sortItemsByModule: function (itemsList) {
         // get a pre-sorted list of all items, organized by module
         this.setState({ sortedItemsByModule: SortItemsByModuleOutcomes(itemsList,
-            this.state.modules) });
+            this.props.modules) });
     },
     sortItemsByOutcome: function () {
         // get a pre-sorted list of all items, organized by learning outcome
         this.setState({ sortedItemsByOutcome: LORelatedItems(this.props.allItems,
-            this.state.outcomes) });
+            this.props.outcomes) });
     },
     toggleModuleState: function (e) {
         var clickedElement = e.target,
@@ -161,10 +154,6 @@ var ModulesList = React.createClass({
             {this.renderModules()}
         </Grid>
     },
-    _refreshModulesAndOutcomes: function () {
-        ModulesStore.getAll(this.props.libraryId);
-        OutcomesStore.getAll(this.props.libraryId);
-    }
 });
 
 module.exports = ModulesList;
