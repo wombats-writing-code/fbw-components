@@ -106,10 +106,10 @@
 	var LibrariesStore = __webpack_require__(18);
 
 	var ItemWrapper = __webpack_require__(20);
-	var LibrarySelector = __webpack_require__(104);
-	var Dashboard = __webpack_require__(103);
+	var LibrarySelector = __webpack_require__(111);
+	var Dashboard = __webpack_require__(105);
 
-	var ShibSessionCheck = __webpack_require__(105);
+	var ShibSessionCheck = __webpack_require__(112);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
@@ -47787,19 +47787,19 @@
 	        });
 	    },
 	    componentDidMount: function componentDidMount() {},
-	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-	        if (nextProps.modules !== this.props.modules) {
+	    componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+	        if (prevProps.modules !== this.props.modules) {
 	            this.sortItemsByModule(this.props.items);
 	            this.sortItemsByOutcome();
 	        }
 
-	        if (nextProps.outcomes !== this.props.outcomes) {
+	        if (prevProps.outcomes !== this.props.outcomes) {
 	            this.sortItemsByModule(this.props.items);
 	            this.sortItemsByOutcome();
 	        }
 
-	        if (nextProps.items !== this.props.items) {
-	            this.sortItemsByModule(nextProps.items);
+	        if (prevProps.items !== this.props.items) {
+	            this.sortItemsByModule(this.props.items);
 	            this.sortItemsByOutcome();
 	        }
 	    },
@@ -53338,7 +53338,7 @@
 	// ViewDashboard.jsx
 	'use strict';
 
-	__webpack_require__(111);
+	__webpack_require__(103);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -53352,7 +53352,7 @@
 
 	var _ = __webpack_require__(5);
 
-	var Dashboard = __webpack_require__(103);
+	var Dashboard = __webpack_require__(105);
 
 	var ViewDashboard = React.createClass({
 	    displayName: 'ViewDashboard',
@@ -53419,6 +53419,46 @@
 
 /***/ },
 /* 103 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(104);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ViewDashboard.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ViewDashboard.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 104 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".extra-wide-modal {\n  width: 1500px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -53534,119 +53574,6 @@
 	});
 
 	module.exports = Dashboard;
-
-/***/ },
-/* 104 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
-	'use strict';
-
-	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var ControlLabel = ReactBS.ControlLabel;
-	var FormControl = ReactBS.FormControl;
-	var FormGroup = ReactBS.FormGroup;
-
-	var LibraryItemsStore = __webpack_require__(8);
-
-	var LibrarySelector = React.createClass({
-	    displayName: 'LibrarySelector',
-
-	    getInitialState: function getInitialState() {
-	        return {};
-	    },
-	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {},
-	    renderLibraries: function renderLibraries() {
-	        return _.map(this.props.libraries, function (library) {
-	            return React.createElement(
-	                'option',
-	                { value: library.id,
-	                    title: library.description.text,
-	                    key: library.id },
-	                library.displayName.text
-	            );
-	        });
-	    },
-	    showItems: function showItems(e) {
-	        var option = e.currentTarget.selectedOptions[0],
-	            id = option.value,
-	            description = option.title;
-	        if (id !== '-1') {
-	            LibraryItemsStore.getItems(id);
-	            this.props.onSelect(id, description);
-	        } else {
-	            this.props.hideItems();
-	        }
-	    },
-	    render: function render() {
-	        return React.createElement(
-	            FormGroup,
-	            { controlId: 'librarySelector' },
-	            React.createElement(
-	                ControlLabel,
-	                null,
-	                'Select class ...'
-	            ),
-	            React.createElement(
-	                FormControl,
-	                { componentClass: 'select',
-	                    placeholder: 'Select a class',
-	                    onChange: this.showItems },
-	                React.createElement(
-	                    'option',
-	                    { value: '-1' },
-	                    'Please select a content domain ... '
-	                ),
-	                this.renderLibraries()
-	            )
-	        );
-	    }
-	});
-
-	module.exports = LibrarySelector;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 105 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// ShibSessionCheck.js
-	'use strict';
-
-	var _ = __webpack_require__(5);
-
-	var ShibSessionCheck = function (item) {
-	  var hostLocation = window.location.host,
-	    path = window.location.pathname;
-
-	  if (path.indexOf('touchstone') >= 0) {
-	    setInterval(function () {
-	      // TODO: move this to the middleware service
-	      if (hostLocation.indexOf('localhost') >= 0 || hostLocation.indexOf('127.0.0.1') >= 0) {
-	        var testUrl = '/touchstone/api/v1/assessment/libraries';
-	      } else {
-	        var testUrl = '/fbw-author/touchstone/api/v1/assessment/libraries';
-	      }
-
-	      fetch(testUrl, {
-	          cache: "no-store",
-	          credentials: "same-origin",
-	          mode: "no-cors"
-	        })
-	      .then(function (response) {
-	        if (!response.ok) {
-	          alert('Your Touchstone session has expired. Please reload the page and sign back in.');
-	        }
-	      }).catch(function (error) {
-	        console.log('Server error: ' + error.message);
-	      });
-	    }, 10 * 60 * 1000);
-	  }
-	};
-
-	module.exports = ShibSessionCheck;
 
 /***/ },
 /* 106 */
@@ -101855,41 +101782,114 @@
 /* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// style-loader: Adds some css to the DOM by adding a <style> tag
+	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
+	'use strict';
 
-	// load the styles
-	var content = __webpack_require__(112);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ViewDashboard.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ViewDashboard.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
+	var React = __webpack_require__(1);
+	var ReactBS = __webpack_require__(4);
+	var ControlLabel = ReactBS.ControlLabel;
+	var FormControl = ReactBS.FormControl;
+	var FormGroup = ReactBS.FormGroup;
+
+	var LibraryItemsStore = __webpack_require__(8);
+
+	var LibrarySelector = React.createClass({
+	    displayName: 'LibrarySelector',
+
+	    getInitialState: function getInitialState() {
+	        return {};
+	    },
+	    componentWillMount: function componentWillMount() {},
+	    componentDidMount: function componentDidMount() {},
+	    renderLibraries: function renderLibraries() {
+	        return _.map(this.props.libraries, function (library) {
+	            return React.createElement(
+	                'option',
+	                { value: library.id,
+	                    title: library.description.text,
+	                    key: library.id },
+	                library.displayName.text
+	            );
+	        });
+	    },
+	    showItems: function showItems(e) {
+	        var option = e.currentTarget.selectedOptions[0],
+	            id = option.value,
+	            description = option.title;
+	        if (id !== '-1') {
+	            LibraryItemsStore.getItems(id);
+	            this.props.onSelect(id, description);
+	        } else {
+	            this.props.hideItems();
+	        }
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            FormGroup,
+	            { controlId: 'librarySelector' },
+	            React.createElement(
+	                ControlLabel,
+	                null,
+	                'Select class ...'
+	            ),
+	            React.createElement(
+	                FormControl,
+	                { componentClass: 'select',
+	                    placeholder: 'Select a class',
+	                    onChange: this.showItems },
+	                React.createElement(
+	                    'option',
+	                    { value: '-1' },
+	                    'Please select a content domain ... '
+	                ),
+	                this.renderLibraries()
+	            )
+	        );
+	    }
+	});
+
+	module.exports = LibrarySelector;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
 /* 112 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
-	// imports
+	// ShibSessionCheck.js
+	'use strict';
 
+	var _ = __webpack_require__(5);
 
-	// module
-	exports.push([module.id, ".extra-wide-modal {\n  width: 1500px;\n}", ""]);
+	var ShibSessionCheck = function (item) {
+	  var hostLocation = window.location.host,
+	    path = window.location.pathname;
 
-	// exports
+	  if (path.indexOf('touchstone') >= 0) {
+	    setInterval(function () {
+	      // TODO: move this to the middleware service
+	      if (hostLocation.indexOf('localhost') >= 0 || hostLocation.indexOf('127.0.0.1') >= 0) {
+	        var testUrl = '/touchstone/api/v1/assessment/libraries';
+	      } else {
+	        var testUrl = '/fbw-author/touchstone/api/v1/assessment/libraries';
+	      }
 
+	      fetch(testUrl, {
+	          cache: "no-store",
+	          credentials: "same-origin",
+	          mode: "no-cors"
+	        })
+	      .then(function (response) {
+	        if (!response.ok) {
+	          alert('Your Touchstone session has expired. Please reload the page and sign back in.');
+	        }
+	      }).catch(function (error) {
+	        console.log('Server error: ' + error.message);
+	      });
+	    }, 10 * 60 * 1000);
+	  }
+	};
+
+	module.exports = ShibSessionCheck;
 
 /***/ }
 /******/ ])));

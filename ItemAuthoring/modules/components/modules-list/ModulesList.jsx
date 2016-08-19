@@ -40,19 +40,19 @@ var ModulesList = React.createClass({
     },
     componentDidMount: function () {
     },
-    componentWillReceiveProps: function (nextProps) {
-      if (nextProps.modules !== this.props.modules) {
+    componentDidUpdate: function (prevProps, prevState) {
+      if (prevProps.modules !== this.props.modules) {
         this.sortItemsByModule(this.props.items);
         this.sortItemsByOutcome();
       }
 
-      if (nextProps.outcomes !== this.props.outcomes) {
+      if (prevProps.outcomes !== this.props.outcomes) {
         this.sortItemsByModule(this.props.items);
         this.sortItemsByOutcome();
       }
 
-      if (nextProps.items !== this.props.items) {
-        this.sortItemsByModule(nextProps.items);
+      if (prevProps.items !== this.props.items) {
+        this.sortItemsByModule(this.props.items);
         this.sortItemsByOutcome();
       }
     },
