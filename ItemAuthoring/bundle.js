@@ -50229,7 +50229,7 @@
 	        choiceId: wrongChoiceId,
 	        feedback: wrongChoiceFeedback,
 	        genusTypeId: GenusTypes.WRONG_ANSWER,
-	        learningObjectiveId: wrongChoiceLO
+	        confusedLearningObjectiveIds: [wrongChoiceLO]
 	      });
 	    });
 
