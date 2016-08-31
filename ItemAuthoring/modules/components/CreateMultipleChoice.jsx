@@ -77,8 +77,7 @@ var CreateMultipleChoice = React.createClass({
             correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
             correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
             questionString = CKEDITOR.instances.questionString.getData(),
-            wrongAnswers = this.getWrongAnswers(),
-            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks();
+            wrongAnswers = this.getWrongAnswers();
 
         if (this.state.itemDisplayName === '' ||
             correctAnswer === '' ||
@@ -113,22 +112,21 @@ var CreateMultipleChoice = React.createClass({
                 text: questionString,
                 choices: [correctAnswer]
             };
+            payload['solution'] = correctAnswerFeedback;
 
             _.each(wrongAnswers, function (wrongAnswer) {
                 payload['question']['choices'].push(wrongAnswer);
             });
             payload['answers'] = [{
                 genusTypeId: GenusTypes.CORRECT_ANSWER,
-                choiceId: 0,
-                feedback: correctAnswerFeedback
+                choiceId: 0
             }];
 
-            _.each(wrongAnswerFeedbacks, function (feedback, index) {
+            _.each(wrongAnswers, function (wrongAnswer, index) {
                 var choiceIndex = index + 1,
                     data = {
                         genusTypeId: GenusTypes.WRONG_ANSWER,
-                        choiceId: choiceIndex,
-                        feedback: feedback
+                        choiceId: choiceIndex
                     };
                 payload['answers'].push(data);
             });

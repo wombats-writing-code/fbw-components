@@ -37487,8 +37487,7 @@
 	            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
 	            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
 	            questionString = CKEDITOR.instances.questionString.getData(),
-	            wrongAnswers = this.getWrongAnswers(),
-	            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks();
+	            wrongAnswers = this.getWrongAnswers();
 
 	        if (this.state.itemDisplayName === '' || correctAnswer === '' || questionString === '' || wrongAnswers.indexOf('') >= 0) {
 
@@ -37520,22 +37519,21 @@
 	                text: questionString,
 	                choices: [correctAnswer]
 	            };
+	            payload['solution'] = correctAnswerFeedback;
 
 	            _.each(wrongAnswers, function (wrongAnswer) {
 	                payload['question']['choices'].push(wrongAnswer);
 	            });
 	            payload['answers'] = [{
 	                genusTypeId: GenusTypes.CORRECT_ANSWER,
-	                choiceId: 0,
-	                feedback: correctAnswerFeedback
+	                choiceId: 0
 	            }];
 
-	            _.each(wrongAnswerFeedbacks, function (feedback, index) {
+	            _.each(wrongAnswers, function (wrongAnswer, index) {
 	                var choiceIndex = index + 1,
 	                    data = {
 	                    genusTypeId: GenusTypes.WRONG_ANSWER,
-	                    choiceId: choiceIndex,
-	                    feedback: feedback
+	                    choiceId: choiceIndex
 	                };
 	                payload['answers'].push(data);
 	            });
@@ -47470,22 +47468,7 @@
 	        return React.createElement(
 	            'div',
 	            null,
-	            wrongAnswer,
-	            React.createElement(
-	                FormGroup,
-	                { controlId: feedbackId },
-	                React.createElement(
-	                    ControlLabel,
-	                    null,
-	                    'Wrong Answer ',
-	                    viewableIndex,
-	                    ' Feedback (recommended)'
-	                ),
-	                React.createElement(FormControl, { componentClass: 'textarea',
-	                    value: this.state.wrongAnswerFeedback,
-	                    onChange: this.onChange,
-	                    placeholder: feedbackPlaceholder })
-	            )
+	            wrongAnswer
 	        );
 	    }
 	});
@@ -50821,7 +50804,6 @@
 	            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
 	            questionString = CKEDITOR.instances.questionString.getData(),
 	            wrongAnswers = this.getWrongAnswers(),
-	            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks(),
 	            wrongAnswerIds = this.getWrongAnswerEditorIds(),
 	            wrongChoiceIds = this.getWrongAnswerChoiceIds(),
 	            _this = this;
@@ -50862,6 +50844,8 @@
 	                }]
 	            };
 
+	            payload['solution'] = correctAnswerFeedback;
+
 	            _.each(this.state.removedChoiceIds, function (choiceId) {
 	                payload.question.choices.push({
 	                    choiceId: choiceId,
@@ -50891,8 +50875,7 @@
 
 	            payload['answers'] = [{
 	                answerId: this.state.correctAnswerId,
-	                choiceId: choiceData.correctChoiceId,
-	                feedback: correctAnswerFeedback
+	                choiceId: choiceData.correctChoiceId
 	            }];
 
 	            _.each(this.state.removedAnswerIds, function (answerId) {
@@ -50902,7 +50885,7 @@
 	                });
 	            });
 
-	            _.each(wrongAnswerFeedbacks, function (feedback, index) {
+	            _.each(wrongAnswers, function (wrongAnswer, index) {
 	                var wrongAnswerId = wrongAnswerIds[index],
 	                    wrongChoiceId = wrongChoiceIds[index];
 
@@ -50912,14 +50895,12 @@
 	                    if (wrongAnswerId.indexOf('assessment.Answer') >= 0) {
 	                        payload.answers.push({
 	                            answerId: wrongAnswerId,
-	                            choiceId: wrongChoiceId,
-	                            feedback: feedback
+	                            choiceId: wrongChoiceId
 	                        });
 	                    } else {
 	                        // or create a new answer mapping here
 	                        payload.answers.push({
 	                            choiceId: index + 1,
-	                            feedback: feedback,
 	                            genusTypeId: GenusTypes.WRONG_ANSWER
 	                        });
 	                    }

@@ -346,7 +346,6 @@ var EditMultipleChoice = React.createClass({
             correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
             questionString = CKEDITOR.instances.questionString.getData(),
             wrongAnswers = this.getWrongAnswers(),
-            wrongAnswerFeedbacks = this.getWrongAnswerFeedbacks(),
             wrongAnswerIds = this.getWrongAnswerEditorIds(),
             wrongChoiceIds = this.getWrongAnswerChoiceIds(),
             _this = this;
@@ -390,6 +389,8 @@ var EditMultipleChoice = React.createClass({
                 }]
             };
 
+            payload['solution'] = correctAnswerFeedback;
+
             _.each(this.state.removedChoiceIds, function (choiceId) {
                 payload.question.choices.push({
                     choiceId: choiceId,
@@ -419,8 +420,7 @@ var EditMultipleChoice = React.createClass({
 
             payload['answers'] = [{
                 answerId: this.state.correctAnswerId,
-                choiceId: choiceData.correctChoiceId,
-                feedback: correctAnswerFeedback
+                choiceId: choiceData.correctChoiceId
             }];
 
             _.each(this.state.removedAnswerIds, function (answerId) {
@@ -430,7 +430,7 @@ var EditMultipleChoice = React.createClass({
                 });
             });
 
-            _.each(wrongAnswerFeedbacks, function (feedback, index) {
+            _.each(wrongAnswers, function (wrongAnswer, index) {
                 var wrongAnswerId = wrongAnswerIds[index],
                     wrongChoiceId = wrongChoiceIds[index];
 
@@ -440,14 +440,12 @@ var EditMultipleChoice = React.createClass({
                     if (wrongAnswerId.indexOf('assessment.Answer') >= 0) {
                         payload.answers.push({
                             answerId: wrongAnswerId,
-                            choiceId: wrongChoiceId,
-                            feedback: feedback
+                            choiceId: wrongChoiceId
                         });
                     } else {
                         // or create a new answer mapping here
                         payload.answers.push({
                             choiceId: index + 1,
-                            feedback: feedback,
                             genusTypeId: GenusTypes.WRONG_ANSWER
                         });
                     }

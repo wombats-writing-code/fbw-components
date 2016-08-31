@@ -93,13 +93,6 @@ var WrongAnswerEditor = React.createClass({
 
         return <div>
             {wrongAnswer}
-            <FormGroup controlId={feedbackId}>
-                <ControlLabel>Wrong Answer {viewableIndex} Feedback (recommended)</ControlLabel>
-                <FormControl componentClass="textarea"
-                             value={this.state.wrongAnswerFeedback}
-                             onChange={this.onChange}
-                             placeholder={feedbackPlaceholder} />
-            </FormGroup>
         </div>
     }
 });
