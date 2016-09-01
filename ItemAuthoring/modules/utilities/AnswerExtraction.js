@@ -9,12 +9,11 @@ var AnswerExtraction = function (item) {
             rightAnswer = _.find(answers, {genusTypeId: "answer-type%3Aright-answer%40ODL.MIT.EDU"}),
             correctChoiceId = rightAnswer.choiceIds[0],
             wrongAnswers = _.filter(answers, {genusTypeId: "answer-type%3Awrong-answer%40ODL.MIT.EDU"}),
-            wrongAnswerFeedbacks = [],
             wrongAnswerIds = [],
             wrongAnswerLOs = [],
             wrongChoiceIds = [],
             choices = item.question.choices,
-            correctAnswerFeedback = rightAnswer.feedback.text,
+            correctAnswerFeedback = item.solution.text,
             correctAnswerId = rightAnswer.id,
             correctAnswerText, wrongAnswerTexts;
 
@@ -35,7 +34,6 @@ var AnswerExtraction = function (item) {
             var wrongAnswer = _.find(wrongAnswers, function (wrongAnswer) {
                 return wrongAnswer.choiceIds[0] == wrongAnswerText.id;
             });
-            wrongAnswerFeedbacks.push(wrongAnswer.feedback.text);
             wrongAnswerIds.push(wrongAnswer.id);
             wrongChoiceIds.push(wrongAnswer.choiceIds[0]);
 
@@ -51,7 +49,6 @@ var AnswerExtraction = function (item) {
             correctAnswerId: correctAnswerId,
             correctAnswerText: correctAnswerText,
             correctChoiceId: correctChoiceId,
-            wrongAnswerFeedbacks: wrongAnswerFeedbacks,
             wrongAnswerIds: wrongAnswerIds,
             wrongAnswerLOs: wrongAnswerLOs,
             wrongAnswerTexts: wrongAnswerTexts,
@@ -63,7 +60,6 @@ var AnswerExtraction = function (item) {
             correctAnswerId: '',
             correctAnswerText: '',
             correctChoiceId: '',
-            wrongAnswerFeedbacks: [],
             wrongAnswerIds: [],
             wrongAnswerLOs: [],
             wrongAnswerTexts: [],

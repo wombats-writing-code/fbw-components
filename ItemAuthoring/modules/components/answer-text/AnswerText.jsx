@@ -62,13 +62,12 @@ var AnswerText = React.createClass({
               <Glyphicon className="right-answer-check"
                          glyph="ok" />
               <AnswerFeedback answerId={this.props.answerId}
-                              feedback={this.props.feedback}
+                              solution={this.props.solution}
                               feedbackSource={this.props.label}
                               itemId={this.props.itemId}
                               libraryId={this.props.libraryId} />
             </div>
-            <AnswerFeedbackPreviewBtn feedback={this.props.feedback}
-                                      togglePreview={this.props.togglePreview}/>
+            <AnswerFeedbackPreviewBtn togglePreview={this.props.togglePreview}/>
           </div>
         </div>
       }

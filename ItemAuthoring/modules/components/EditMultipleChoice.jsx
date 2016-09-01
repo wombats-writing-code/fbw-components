@@ -52,7 +52,6 @@ var EditMultipleChoice = React.createClass({
             wrongAnswers: answers.wrongAnswerTexts,
             wrongAnswerErrors: wrongAnswerErrors,
             wrongAnswerIds: answers.wrongAnswerIds,
-            wrongAnswerFeedbacks: answers.wrongAnswerFeedbacks,
             wrongChoiceIds: answers.wrongChoiceIds
         };
     },
@@ -68,7 +67,6 @@ var EditMultipleChoice = React.createClass({
         var newIndex = this.state.wrongAnswers.length + 1;
         this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
         this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.concat([false]) });
-        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
 
         this.setState({ newWrongAnswerIndices: [newIndex] });
     },
@@ -79,19 +77,10 @@ var EditMultipleChoice = React.createClass({
     },
     checkState: function (nextProps) {
       var me = nextProps.item,
-          answers = AnswerExtraction(me),
-          wrongAnswerFeedbacks = [];
+          answers = AnswerExtraction(me);
 
       if (answers.correctAnswerFeedback != this.state.correctAnswerFeedback) {
           this.setState({ correctAnswerFeedback: answers.correctAnswerFeedback });
-      }
-
-      _.each(answers.wrongAnswerFeedbacks, function (feedback) {
-          wrongAnswerFeedbacks.push(feedback)
-      });
-
-      if (wrongAnswerFeedbacks != this.state.wrongAnswerFeedbacks) {
-          this.setState({ wrongAnswerFeedbacks: wrongAnswerFeedbacks });
       }
 
       if (answers.correctAnswerText.text != this.state.correctAnswer) {
@@ -137,7 +126,6 @@ var EditMultipleChoice = React.createClass({
         var _this = this;
         return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
             var errorState = _this.state.wrongAnswerErrors[index],
-                feedback = _this.state.wrongAnswerFeedbacks[index],
                 answerId = _this.state.wrongAnswerIds[index],
                 choiceId = _this.state.wrongChoiceIds[index],
                 key = typeof answerId === 'undefined' ? index : answerId;
@@ -145,7 +133,6 @@ var EditMultipleChoice = React.createClass({
             return <WrongAnswerEditor answerId={answerId}
                                       choiceId={choiceId}
                                       error={errorState}
-                                      feedback={feedback}
                                       index={index}
                                       key={key}
                                       remove={_this.removeWrongAnswer}
@@ -172,18 +159,6 @@ var EditMultipleChoice = React.createClass({
             } else {
                 results.push(null);
             }
-        });
-
-        return results;
-    },
-    getWrongAnswerFeedbacks: function () {
-        var results = [];
-
-        _.each(this.refs.wrongAnswers.props.children, function (wrongAnswerEditor, index) {
-            var visibleIndex = index + 1,
-                editorInstance = 'wrongAnswer' + visibleIndex,
-                feedbackEditor = editorInstance + 'Feedback';
-            results.push(CKEDITOR.instances[feedbackEditor].getData());
         });
 
         return results;
@@ -219,11 +194,9 @@ var EditMultipleChoice = React.createClass({
 
             _.each(_this.state.wrongAnswers, function (wrongAnswer, index) {
                 var visibleIndex = index + 1,
-                    editorInstance = 'wrongAnswer' + visibleIndex,
-                    feedbackInstance = editorInstance + 'Feedback';
+                    editorInstance = 'wrongAnswer' + visibleIndex;
 
                 _this.initializeEditorInstance(editorInstance);
-                _this.initializeEditorInstance(feedbackInstance);
             });
         });
     },
@@ -231,11 +204,9 @@ var EditMultipleChoice = React.createClass({
         var _this = this;
         _.each(this.state.newWrongAnswerIndices, function (index) {
             var visibleIndex = index,
-                editorInstance = 'wrongAnswer' + visibleIndex,
-                feedbackInstance = editorInstance + 'Feedback';
+                editorInstance = 'wrongAnswer' + visibleIndex;
 
             _this.initializeEditorInstance(editorInstance);
-            _this.initializeEditorInstance(feedbackInstance);
         });
 
         this.setState({ newWrongAnswerIndices: [] });
@@ -253,13 +224,10 @@ var EditMultipleChoice = React.createClass({
         // will also have to remove this from the actual item...
         // so store the choiceId + answerId in the component
 
-        var editorInstance = 'wrongAnswer' + (index + 1),
-            feedbackEditor = editorInstance + 'Feedback',
-            wrongAnswerId = this.state.wrongAnswerIds[index],
+        var wrongAnswerId = this.state.wrongAnswerIds[index],
             wrongChoiceId = this.state.wrongChoiceIds[index],
             updatedWrongAnswers = this.state.wrongAnswers,
             updatedWrongAnswerErrors = this.state.wrongAnswerErrors,
-            updatedWrongAnswerFeedbacks = this.state.wrongAnswerFeedbacks,
             updatedWrongAnswerIds = this.state.wrongAnswerIds,
             updatedWrongChoiceIds = this.state.wrongChoiceIds,
             _this = this;
@@ -268,21 +236,17 @@ var EditMultipleChoice = React.createClass({
         // before React re-renders the DOM, otherwise the instance
         // values won't match, i.e. wrongAnswer1 will have CKEditor instance wrongAnswer2
         _.each(this.state.wrongAnswers, function (wrongAnswer, index) {
-            var remainingInstance = 'wrongAnswer' + (index + 1),
-                feedbackInstance = remainingInstance + 'Feedback';
+            var remainingInstance = 'wrongAnswer' + (index + 1);
                 CKEDITOR.instances[remainingInstance].destroy();
-                CKEDITOR.instances[feedbackInstance].destroy();
         });
 
         updatedWrongAnswers.splice(index, 1);
         updatedWrongAnswerErrors.splice(index, 1);
-        updatedWrongAnswerFeedbacks.splice(index, 1);
         updatedWrongAnswerIds.splice(index, 1);
         updatedWrongChoiceIds.splice(index, 1);
 
         this.setState({ wrongAnswers: updatedWrongAnswers });
         this.setState({ wrongAnswerErrors: updatedWrongAnswerErrors });
-        this.setState({ wrongAnswerFeedbacks: updatedWrongAnswerFeedbacks });
         this.setState({ wrongAnswerIds: updatedWrongAnswerIds });
         this.setState({ wrongChoiceIds: updatedWrongChoiceIds });
 
@@ -292,16 +256,13 @@ var EditMultipleChoice = React.createClass({
         if (this.state.wrongAnswers.length === 0) {
             this.setState({ wrongAnswers: [''] });
             this.setState({ wrongAnswerErrors: [false] });
-            this.setState({ wrongAnswerFeedbacks: [''] });
         }
 
         // can we re-add the CKEditors here? Is that enough time?
         setTimeout(function () {
             _.each(_this.state.wrongAnswers, function (wrongAnswer, index) {
-            var remainingInstance = 'wrongAnswer' + (index + 1),
-                feedbackInstance = remainingInstance + 'Feedback';
+            var remainingInstance = 'wrongAnswer' + (index + 1);
                 CKEDITOR.replace(remainingInstance);
-                CKEDITOR.replace(feedbackInstance);
         });
         }, 250);
     },
@@ -329,7 +290,6 @@ var EditMultipleChoice = React.createClass({
         this.setState({ wrongAnswers: answers.wrongAnswerTexts });
         this.setState({ wrongAnswerErrors: wrongAnswerErrors });
         this.setState({ wrongAnswerIds: answers.wrongAnswerIds });
-        this.setState({ wrongAnswerFeedbacks: answers.wrongAnswerFeedbacks });
         this.setState({ wrongChoiceIds: answers.wrongChoiceIds });
     },
     save: function (e) {

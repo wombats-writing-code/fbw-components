@@ -43,24 +43,23 @@ var CopyItem = React.createClass({
         text: originalItem.question.text.text,
         choices: [choiceData.correctAnswerText]
       };
+      payload['solution'] = choiceData.correctAnswerFeedback;
+
       payload['learningObjectiveId'] = originalItem.learningObjectiveIds[0];
 
       payload['answers'] = [{
         choiceId: 0,
-        feedback: choiceData.correctAnswerFeedback,
-        genusTypeId: GenusTypes.CORRECT_ANSWER,
+        genusTypeId: GenusTypes.CORRECT_ANSWER
       }];
 
       _.each(choiceData.wrongAnswerTexts, function (wrongAnswerText, index) {
         var wrongChoiceId = index + 1,  // because right answer is already there
-          wrongChoiceFeedback = choiceData.wrongAnswerFeedbacks[index],
           wrongChoiceLO = choiceData.wrongAnswerLOs[index];
 
         payload.question.choices.push(wrongAnswerText);
 
         payload.answers.push({
           choiceId: wrongChoiceId,
-          feedback: wrongChoiceFeedback,
           genusTypeId: GenusTypes.WRONG_ANSWER,
           confusedLearningObjectiveIds: [wrongChoiceLO]
         });

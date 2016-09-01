@@ -39,7 +39,7 @@ var AnswerFeedback = React.createClass({
         CKEditorModalHack();
         $s(MiddlewareService.ckEditor(), function () {
             ConfigureCKEditor(CKEDITOR, repositoryId);
-            _this.initializeEditorInstance('feedback');
+            _this.initializeEditorInstance('solution');
         });
     },
     initializeEditorInstance: function (instance) {
@@ -57,19 +57,14 @@ var AnswerFeedback = React.createClass({
       });
     },
     save: function () {
-        var feedback = CKEDITOR.instances.feedback.getData(),
+        var solution = CKEDITOR.instances.solution.getData(),
             payload = {
                 itemId: this.props.itemId,
                 libraryId: this.props.libraryId
             };
 
-        if (feedback != this.props.feedback) {
-            payload['answers'] = [
-                {
-                    answerId: this.props.answerId,
-                    feedback: feedback
-                }
-            ];
+        if (solution != this.props.solution) {
+            payload['solution'] = solution;
 
             Dispatcher.dispatch({
                 type: ActionTypes.UPDATE_ITEM,
@@ -82,7 +77,7 @@ var AnswerFeedback = React.createClass({
         var title = "Solution Explanation for: " + this.props.feedbackSource;
         return <div>
             <Button onClick={this.open}
-                    title="Edit Feedback">
+                    title="Edit Solution">
                 Solution Explanation
             </Button>
             <Modal backdrop="static"
@@ -93,9 +88,9 @@ var AnswerFeedback = React.createClass({
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <FormGroup controlId="feedback">
+                    <FormGroup controlId="solution">
                         <FormControl componentClass="textarea"
-                                     value={this.props.feedback}
+                                     value={this.props.solution}
                                      onChange={this.onChange}
                                      placeholder={title} />
                     </FormGroup>

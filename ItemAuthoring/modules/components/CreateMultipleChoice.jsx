@@ -41,8 +41,7 @@ var CreateMultipleChoice = React.createClass({
             showAlert: false,
             showModal: true,
             wrongAnswers: [''],
-            wrongAnswerErrors: [false],
-            wrongAnswerFeedbacks: ['']
+            wrongAnswerErrors: [false]
         };
     },
     componentWillMount: function() {
@@ -54,7 +53,6 @@ var CreateMultipleChoice = React.createClass({
         var newIndex = this.state.wrongAnswers.length + 1;
         this.setState({ wrongAnswers: this.state.wrongAnswers.concat(['']) });
         this.setState({ wrongAnswerErrors: this.state.wrongAnswerErrors.concat([false]) });
-        this.setState({ wrongAnswerFeedbacks: this.state.wrongAnswerFeedbacks.concat(['']) });
 
         this.setState({ newWrongAnswerIndices: [newIndex] });
     },
@@ -141,11 +139,9 @@ var CreateMultipleChoice = React.createClass({
     formatWrongAnswers: function () {
         var _this = this;
         return _.map(this.state.wrongAnswers, function (wrongAnswer, index) {
-            var errorState = _this.state.wrongAnswerErrors[index],
-                feedback = _this.state.wrongAnswerFeedbacks[index];
+            var errorState = _this.state.wrongAnswerErrors[index];
 
             return <WrongAnswerEditor error={errorState}
-                                      feedback={feedback}
                                       index={index}
                                       key={index}
                                       remove={_this.removeWrongAnswer}
@@ -199,11 +195,9 @@ var CreateMultipleChoice = React.createClass({
         var _this = this;
         _.each(this.state.newWrongAnswerIndices, function (index) {
             var visibleIndex = index,
-                editorInstance = 'wrongAnswer' + visibleIndex,
-                feedbackInstance = editorInstance + 'Feedback';
+                editorInstance = 'wrongAnswer' + visibleIndex;
 
             _this.initializeEditorInstance(editorInstance);
-            _this.initializeEditorInstance(feedbackInstance);
         });
 
         this.setState({ newWrongAnswerIndices: [] });
@@ -220,22 +214,18 @@ var CreateMultipleChoice = React.createClass({
         var editorInstance = 'wrongAnswer' + (index + 1),
             feedbackEditor = editorInstance + 'Feedback',
             updatedWrongAnswers = this.state.wrongAnswers,
-            updatedWrongAnswerErrors = this.state.wrongAnswerErrors,
-            updatedWrongAnswerFeedbacks = this.state.wrongAnswerFeedbacks;
+            updatedWrongAnswerErrors = this.state.wrongAnswerErrors;
 
         updatedWrongAnswers.splice(index, 1);
         updatedWrongAnswerErrors.splice(index, 1);
-        updatedWrongAnswerFeedbacks.splice(index, 1);
 
         // remove wrong answer & feedback & errors with the given index
         this.setState({ wrongAnswers: updatedWrongAnswers });
         this.setState({ wrongAnswerErrors: updatedWrongAnswerErrors });
-        this.setState({ wrongAnswerFeedbacks: updatedWrongAnswerFeedbacks });
 
         if (this.state.wrongAnswers.length === 0) {
             this.setState({ wrongAnswers: [''] });
             this.setState({ wrongAnswerErrors: [false] });
-            this.setState({ wrongAnswerFeedbacks: [''] });
         }
 
         this.resetEditorInstance(editorInstance);
@@ -255,7 +245,6 @@ var CreateMultipleChoice = React.createClass({
         this.setState({ showAlert: false });
         this.setState({ wrongAnswers: [''] });
         this.setState({ wrongAnswerErrors: [false] });
-        this.setState({ wrongAnswerFeedbacks: [''] });
     },
     resetEditorInstance: function (instance) {
         $s(MiddlewareService.ckEditor(), function () {

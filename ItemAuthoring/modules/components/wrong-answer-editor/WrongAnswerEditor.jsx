@@ -20,12 +20,10 @@ var SequenceNumberTexts = require('../../constants/AuthoringConstants').Sequence
 
 var WrongAnswerEditor = React.createClass({
     getInitialState: function () {
-        var wrongAnswerText = this.props.text === '' ? '' : this.props.text,
-            wrongAnswerFeedback = this.props.feedback === '' ? '' : this.props.feedback;
+        var wrongAnswerText = this.props.text === '' ? '' : this.props.text;
 
         return {
-            wrongAnswerText: wrongAnswerText,
-            wrongAnswerFeedback: wrongAnswerFeedback
+            wrongAnswerText: wrongAnswerText
         };
     },
     componentWillMount: function() {
@@ -37,7 +35,6 @@ var WrongAnswerEditor = React.createClass({
         // update via the parent
         var data = {
             index: this.props.index,
-            feedback: this.state.wrongAnswerFeedback,
             text: this.state.wrongAnswerText
         };
         this.props.update(data);
@@ -48,10 +45,8 @@ var WrongAnswerEditor = React.createClass({
     render: function () {
         var viewableIndex = this.props.index + 1,
             answerId = 'wrongAnswer' + viewableIndex,
-            feedbackId = answerId + 'Feedback',
             nthText = SequenceNumberTexts[this.props.index],
             placeholder = 'The ' + nthText + ' mis-direction answer',
-            feedbackPlaceholder = 'Feedback for the ' + nthText + ' mis-direction answer',
             wrongAnswer = '';
         if (this.props.error) {
             wrongAnswer = <FormGroup controlId={answerId}
