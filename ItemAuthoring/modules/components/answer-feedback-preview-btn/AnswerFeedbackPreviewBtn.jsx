@@ -6,9 +6,6 @@ var React = require('react');
 var ReactBS = require('react-bootstrap');
 var Button = ReactBS.Button;
 
-var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
-var WrapHTML = require('../../utilities/WrapHTML');
-
 var AnswerFeedbackPreviewBtn = React.createClass({
   getInitialState: function () {
     return {

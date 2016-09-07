@@ -49811,7 +49811,6 @@
 	var Dispatcher = __webpack_require__(9);
 	var LibraryItemsStore = __webpack_require__(8);
 	var MiddlewareService = __webpack_require__(17);
-	var WrapHTML = __webpack_require__(66);
 
 	var AnswerFeedback = React.createClass({
 	    displayName: 'AnswerFeedback',
@@ -49966,9 +49965,6 @@
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Button = ReactBS.Button;
-
-	var SetIFrameHeight = __webpack_require__(70);
-	var WrapHTML = __webpack_require__(66);
 
 	var AnswerFeedbackPreviewBtn = React.createClass({
 	  displayName: 'AnswerFeedbackPreviewBtn',

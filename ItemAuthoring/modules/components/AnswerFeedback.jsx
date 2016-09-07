@@ -19,7 +19,6 @@ var ConvertLibraryId2RepositoryId = require('../utilities/ConvertLibraryId2Repos
 var Dispatcher = require('../dispatcher/LibraryItemsDispatcher');
 var LibraryItemsStore = require('../stores/LibraryItemsStore');
 var MiddlewareService = require('../services/middleware.service.js');
-var WrapHTML = require('../utilities/WrapHTML');
 
 var AnswerFeedback = React.createClass({
     getInitialState: function () {
