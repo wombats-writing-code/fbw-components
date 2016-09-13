@@ -106,10 +106,10 @@
 	var LibrariesStore = __webpack_require__(18);
 
 	var ItemWrapper = __webpack_require__(20);
-	var LibrarySelector = __webpack_require__(111);
-	var Dashboard = __webpack_require__(105);
+	var LibrarySelector = __webpack_require__(107);
+	var Dashboard = __webpack_require__(101);
 
-	var ShibSessionCheck = __webpack_require__(112);
+	var ShibSessionCheck = __webpack_require__(108);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
@@ -36581,8 +36581,8 @@
 
 	var AddItem = __webpack_require__(29);
 	var ItemSearch = __webpack_require__(43);
-	var ItemStatus = __webpack_require__(99);
-	var ViewDashboard = __webpack_require__(102);
+	var ItemStatus = __webpack_require__(95);
+	var ViewDashboard = __webpack_require__(98);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -47728,10 +47728,10 @@
 
 	var ItemsList = __webpack_require__(49);
 	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(97);
+	var LORelatedItems = __webpack_require__(93);
 	var ModulesStore = __webpack_require__(25);
 	var OutcomesStore = __webpack_require__(26);
-	var SortItemsByModuleOutcomes = __webpack_require__(98);
+	var SortItemsByModuleOutcomes = __webpack_require__(94);
 
 	var ModulesList = React.createClass({
 	    displayName: 'ModulesList',
@@ -47954,11 +47954,11 @@
 
 	var AnswerExtraction = __webpack_require__(52);
 	var AnswerText = __webpack_require__(53);
-	var ItemControls = __webpack_require__(71);
-	var ItemRow = __webpack_require__(80);
-	var LOText = __webpack_require__(83);
+	var ItemControls = __webpack_require__(69);
+	var ItemRow = __webpack_require__(78);
+	var LOText = __webpack_require__(79);
 	var OutcomesStore = __webpack_require__(26);
-	var QuestionText = __webpack_require__(90);
+	var QuestionText = __webpack_require__(86);
 
 	var ItemsList = React.createClass({
 	    displayName: 'ItemsList',
@@ -48122,7 +48122,7 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var AnswerFeedback = __webpack_require__(65);
-	var AnswerFeedbackPreviewBtn = __webpack_require__(67);
+	var AnswerFeedbackPreviewBtn = __webpack_require__(66);
 	var Dispatcher = __webpack_require__(9);
 
 	var AnswerText = React.createClass({
@@ -49924,43 +49924,12 @@
 
 /***/ },
 /* 66 */
-/***/ function(module, exports) {
-
-	// WrapHTML.js
-	'use strict';
-
-	var WrapHTML = function (str) {
-	    var wrappedStr;
-	//    if (str.indexOf("math-tex") >= 0) {
-	    wrappedStr = '<html>' +
-	        '<head>' +
-	        '<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>' +
-	        '<style>body * {margin:0px;padding:4px;}</style>' +
-	        '</head>' +
-	        '<body style="margin:0px;">' + str + '</body>' +
-	        '</html>';
-	//    } else {
-	//        wrappedStr = '<html>' +
-	//            '<head>' +
-	//            '<style>body * {margin:0px;padding:4px;}</style>' +
-	//            '</head>' +
-	//            '<body style="margin:0px;">' + str + '</body>' +
-	//            '</html>';
-	//    }
-
-	    return wrappedStr;
-	};
-
-	module.exports = WrapHTML;
-
-/***/ },
-/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerFeedbackPreviewBtn.jsx
 	'use strict';
 
-	__webpack_require__(68);
+	__webpack_require__(67);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -49993,13 +49962,13 @@
 	module.exports = AnswerFeedbackPreviewBtn;
 
 /***/ },
-/* 68 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(69);
+	var content = __webpack_require__(68);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -50019,7 +49988,7 @@
 	}
 
 /***/ },
-/* 69 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -50033,49 +50002,7 @@
 
 
 /***/ },
-/* 70 */
-/***/ function(module, exports) {
-
-	// SetIFrameHeight.js
-	'use strict';
-
-	var SetIFrameHeight = function (frame) {
-	    // fix iFrame height
-	    // per http://www.dyn-web.com/tutorials/iframes/height/
-	    function getDocHeight(doc) {
-	        doc = doc || document;
-	        // stackoverflow.com/questions/1145850/
-	        var body = doc.body, html = doc.documentElement;
-	        var height = Math.max( body.scrollHeight, body.offsetHeight,
-	            html.clientHeight, html.scrollHeight, html.offsetHeight );
-	        return height;
-	    }
-	    function setIframeHeight(ifrm) {
-	        var doc = ifrm.contentDocument? ifrm.contentDocument:
-	            ifrm.contentWindow.document;
-	        ifrm.style.visibility = 'hidden';
-	        ifrm.style.height = "10px"; // reset to minimal height ...
-	        // IE opt. for bing/msn needs a bit added or scrollbar appears
-	        ifrm.style.height = getDocHeight( doc ) + 4 + "px";
-	        ifrm.style.visibility = 'visible';
-	    }
-
-	    // this seems hacky...but without the timeout
-	    // it sets the height before the iframe content
-	    // has fully rendered, making the height 10px;
-	    window.setTimeout(function () {
-	        try {
-	            setIframeHeight(frame);
-	        } catch (e) {
-	            //console.log('iFrame disappeared before it could be re-sized.');
-	        }
-	    }, 1000);
-	};
-
-	module.exports = SetIFrameHeight;
-
-/***/ },
-/* 71 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemControls.js
@@ -50084,10 +50011,10 @@
 
 	var React = __webpack_require__(1);
 
-	var CopyItem = __webpack_require__(72);
-	var DeleteItem = __webpack_require__(73);
-	var EditItem = __webpack_require__(74);
-	var TransferItem = __webpack_require__(78);
+	var CopyItem = __webpack_require__(70);
+	var DeleteItem = __webpack_require__(71);
+	var EditItem = __webpack_require__(72);
+	var TransferItem = __webpack_require__(76);
 
 	var ItemControls = React.createClass({
 	  displayName: 'ItemControls',
@@ -50117,7 +50044,7 @@
 	module.exports = ItemControls;
 
 /***/ },
-/* 72 */
+/* 70 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// CopyItem.jsx
@@ -50211,7 +50138,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 73 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// DeleteItem.jsx
@@ -50321,13 +50248,13 @@
 	module.exports = DeleteItem;
 
 /***/ },
-/* 74 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// EditItem.jsx
 	'use strict';
 
-	__webpack_require__(75);
+	__webpack_require__(73);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -50335,7 +50262,7 @@
 	var Glyphicon = ReactBS.Glyphicon;
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var EditMultipleChoice = __webpack_require__(77);
+	var EditMultipleChoice = __webpack_require__(75);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
 
 	var EditItem = React.createClass({
@@ -50383,13 +50310,13 @@
 	module.exports = EditItem;
 
 /***/ },
-/* 75 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(76);
+	var content = __webpack_require__(74);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -50409,7 +50336,7 @@
 	}
 
 /***/ },
-/* 76 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -50423,7 +50350,7 @@
 
 
 /***/ },
-/* 77 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// EditMultipleChoice.jsx
@@ -51045,7 +50972,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 78 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// TransferItem.jsx
@@ -51056,7 +50983,7 @@
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 
-	var AssignableBanks = __webpack_require__(79);
+	var AssignableBanks = __webpack_require__(77);
 
 	var TransferItem = React.createClass({
 	    displayName: 'TransferItem',
@@ -51098,7 +51025,7 @@
 	module.exports = TransferItem;
 
 /***/ },
-/* 79 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AssignableBanks.jsx
@@ -51294,14 +51221,14 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 80 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemRow.js
 
 	'use strict';
 
-	__webpack_require__(81);
+	__webpack_require__(109);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -51316,12 +51243,12 @@
 
 	var AnswerExtraction = __webpack_require__(52);
 	var AnswerText = __webpack_require__(53);
-	var ItemControls = __webpack_require__(71);
-	var LOText = __webpack_require__(83);
+	var ItemControls = __webpack_require__(69);
+	var LOText = __webpack_require__(79);
 	var OutcomesStore = __webpack_require__(26);
-	var QuestionText = __webpack_require__(90);
-	var SetIFrameHeight = __webpack_require__(70);
-	var WrapHTML = __webpack_require__(66);
+	var QuestionText = __webpack_require__(86);
+	var SetIFrameHeight = __webpack_require__(111);
+	var WrapHTML = __webpack_require__(112);
 
 	var ItemRow = React.createClass({
 	  displayName: 'ItemRow',
@@ -51476,7 +51403,8 @@
 	    updatedItem = this.props.item;
 
 	    var answers = AnswerExtraction(updatedItem),
-	        previewHTML = WrapHTML(answers.correctAnswerFeedback);
+	        previewHTML = { __html: answers.correctAnswerFeedback };
+	    //      previewHTML = WrapHTML(answers.correctAnswerFeedback);
 
 	    updatedItem['correctAnswer'] = answers.correctAnswerText.text;
 	    updatedItem['correctAnswerId'] = answers.correctAnswerId;
@@ -51561,12 +51489,7 @@
 	              Panel,
 	              { collapsible: true,
 	                expanded: _this.state.showPreview },
-	              React.createElement('iframe', { ref: 'myPreviewFrame',
-	                srcDoc: previewHTML,
-	                frameBorder: 0,
-	                width: '100%',
-	                sandbox: 'allow-scripts allow-same-origin'
-	              })
+	              React.createElement('div', { dangerouslySetInnerHTML: previewHTML })
 	            )
 	          ),
 	          _this.renderItemAnswerTexts(updatedItem),
@@ -51628,59 +51551,19 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 81 */
-/***/ function(module, exports, __webpack_require__) {
-
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-
-	// load the styles
-	var content = __webpack_require__(82);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemRow.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemRow.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 82 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(23)();
-	// imports
-
-
-	// module
-	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n\n.panel-body {\n  padding-left: 0;\n}\n\n.right-answer-feedback-preview {\n  margin-left: 15px;\n  padding: 5px;\n}", ""]);
-
-	// exports
-
-
-/***/ },
-/* 83 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LOText.js
 
 	'use strict';
 
-	__webpack_require__(84);
+	__webpack_require__(80);
 
 	var React = __webpack_require__(1);
 
-	var LinkLO = __webpack_require__(86);
-	var LORelatedItemsBadge = __webpack_require__(87);
+	var LinkLO = __webpack_require__(82);
+	var LORelatedItemsBadge = __webpack_require__(83);
 
 	var LOText = React.createClass({
 	    displayName: 'LOText',
@@ -51735,13 +51618,13 @@
 	module.exports = LOText;
 
 /***/ },
-/* 84 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(85);
+	var content = __webpack_require__(81);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -51761,7 +51644,7 @@
 	}
 
 /***/ },
-/* 85 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -51775,7 +51658,7 @@
 
 
 /***/ },
-/* 86 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
@@ -51938,13 +51821,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 87 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItemsBadge.jsx
 	'use strict';
 
-	__webpack_require__(88);
+	__webpack_require__(84);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -52041,13 +51924,13 @@
 	module.exports = LORelatedItemsBadge;
 
 /***/ },
-/* 88 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(89);
+	var content = __webpack_require__(85);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -52067,7 +51950,7 @@
 	}
 
 /***/ },
-/* 89 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -52081,20 +51964,20 @@
 
 
 /***/ },
-/* 90 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
 
 	'use strict';
 
-	__webpack_require__(91);
+	__webpack_require__(87);
 	__webpack_require__(56);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Select = __webpack_require__(58);
-	var ReactTooltip = __webpack_require__(93);
+	var ReactTooltip = __webpack_require__(89);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -52104,7 +51987,7 @@
 
 	var ActionTypes = __webpack_require__(14).ActionTypes;
 	var Dispatcher = __webpack_require__(9);
-	var OsidId = __webpack_require__(96);
+	var OsidId = __webpack_require__(92);
 
 	var QuestionText = React.createClass({
 	    displayName: 'QuestionText',
@@ -52188,13 +52071,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 91 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(92);
+	var content = __webpack_require__(88);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -52214,7 +52097,7 @@
 	}
 
 /***/ },
-/* 92 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -52228,16 +52111,16 @@
 
 
 /***/ },
-/* 93 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	module.exports = __webpack_require__(94)
+	module.exports = __webpack_require__(90)
 
 
 /***/ },
-/* 94 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -52256,7 +52139,7 @@
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _style = __webpack_require__(95);
+	var _style = __webpack_require__(91);
 
 	var _style2 = _interopRequireDefault(_style);
 
@@ -53005,7 +52888,7 @@
 
 
 /***/ },
-/* 95 */
+/* 91 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -53017,7 +52900,7 @@
 
 
 /***/ },
-/* 96 */
+/* 92 */
 /***/ function(module, exports) {
 
 	// OsidId.js
@@ -53034,7 +52917,7 @@
 	module.exports = OsidId;
 
 /***/ },
-/* 97 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItems.js
@@ -53069,7 +52952,7 @@
 	module.exports = LORelatedItems;
 
 /***/ },
-/* 98 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// SortItemsByModuleOutcomes.js
@@ -53115,20 +52998,20 @@
 	module.exports = SortItemsByModuleOutcomes;
 
 /***/ },
-/* 99 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
 
 	'use strict';
 
-	__webpack_require__(100);
+	__webpack_require__(96);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
 	var Glyphicon = ReactBS.Glyphicon;
 	var Label = ReactBS.Label;
-	var ReactTooltip = __webpack_require__(93);
+	var ReactTooltip = __webpack_require__(89);
 
 	var AuthoringConstants = __webpack_require__(14);
 	var GenusTypes = __webpack_require__(14).GenusTypes;
@@ -53201,13 +53084,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 100 */
+/* 96 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(101);
+	var content = __webpack_require__(97);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -53227,7 +53110,7 @@
 	}
 
 /***/ },
-/* 101 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -53241,13 +53124,13 @@
 
 
 /***/ },
-/* 102 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ViewDashboard.jsx
 	'use strict';
 
-	__webpack_require__(103);
+	__webpack_require__(99);
 
 	var React = __webpack_require__(1);
 	var ReactBS = __webpack_require__(4);
@@ -53261,7 +53144,7 @@
 
 	var _ = __webpack_require__(5);
 
-	var Dashboard = __webpack_require__(105);
+	var Dashboard = __webpack_require__(101);
 
 	var ViewDashboard = React.createClass({
 	    displayName: 'ViewDashboard',
@@ -53327,13 +53210,13 @@
 	module.exports = ViewDashboard;
 
 /***/ },
-/* 103 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(104);
+	var content = __webpack_require__(100);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -53353,7 +53236,7 @@
 	}
 
 /***/ },
-/* 104 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -53367,7 +53250,7 @@
 
 
 /***/ },
-/* 105 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -53376,11 +53259,11 @@
 
 	var React = __webpack_require__(1);
 	var Select = __webpack_require__(58);
-	__webpack_require__(106);
+	__webpack_require__(102);
 
 	var _ = __webpack_require__(5);
 
-	var OutcomeTree = __webpack_require__(108);
+	var OutcomeTree = __webpack_require__(104);
 
 	var Dashboard = React.createClass({
 	  displayName: 'Dashboard',
@@ -53485,13 +53368,13 @@
 	module.exports = Dashboard;
 
 /***/ },
-/* 106 */
+/* 102 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(107);
+	var content = __webpack_require__(103);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
 	var update = __webpack_require__(24)(content, {});
@@ -53511,7 +53394,7 @@
 	}
 
 /***/ },
-/* 107 */
+/* 103 */
 /***/ function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(23)();
@@ -53525,15 +53408,15 @@
 
 
 /***/ },
-/* 108 */
+/* 104 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
 
 	var React = __webpack_require__(1);
 
-	__webpack_require__(109);
-	__webpack_require__(110);
+	__webpack_require__(105);
+	__webpack_require__(106);
 	var xoces = window.xoces;
 	var dao = window.dao;
 
@@ -53654,7 +53537,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 109 */
+/* 105 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {/******/ (function(modules) { // webpackBootstrap
@@ -86754,7 +86637,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 110 */
+/* 106 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {/******/ (function(modules) { // webpackBootstrap
@@ -101688,7 +101571,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 111 */
+/* 107 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
@@ -101761,7 +101644,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 112 */
+/* 108 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ShibSessionCheck.js
@@ -101799,6 +101682,119 @@
 	};
 
 	module.exports = ShibSessionCheck;
+
+/***/ },
+/* 109 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(110);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(24)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemRow.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemRow.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 110 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(23)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n\n.panel-body {\n  padding-left: 0;\n}\n\n.right-answer-feedback-preview {\n  margin-left: 15px;\n  padding: 5px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 111 */
+/***/ function(module, exports) {
+
+	// SetIFrameHeight.js
+	'use strict';
+
+	var SetIFrameHeight = function (frame) {
+	    // fix iFrame height
+	    // per http://www.dyn-web.com/tutorials/iframes/height/
+	    function getDocHeight(doc) {
+	        doc = doc || document;
+	        // stackoverflow.com/questions/1145850/
+	        var body = doc.body, html = doc.documentElement;
+	        var height = Math.max( body.scrollHeight, body.offsetHeight,
+	            html.clientHeight, html.scrollHeight, html.offsetHeight );
+	        return height;
+	    }
+	    function setIframeHeight(ifrm) {
+	        var doc = ifrm.contentDocument? ifrm.contentDocument:
+	            ifrm.contentWindow.document;
+	        ifrm.style.visibility = 'hidden';
+	        ifrm.style.height = "10px"; // reset to minimal height ...
+	        // IE opt. for bing/msn needs a bit added or scrollbar appears
+	        ifrm.style.height = getDocHeight( doc ) + 4 + "px";
+	        ifrm.style.visibility = 'visible';
+	    }
+
+	    // this seems hacky...but without the timeout
+	    // it sets the height before the iframe content
+	    // has fully rendered, making the height 10px;
+	    window.setTimeout(function () {
+	        try {
+	            setIframeHeight(frame);
+	        } catch (e) {
+	            //console.log('iFrame disappeared before it could be re-sized.');
+	        }
+	    }, 1000);
+	};
+
+	module.exports = SetIFrameHeight;
+
+/***/ },
+/* 112 */
+/***/ function(module, exports) {
+
+	// WrapHTML.js
+	'use strict';
+
+	var WrapHTML = function (str) {
+	    var wrappedStr;
+	//    if (str.indexOf("math-tex") >= 0) {
+	    wrappedStr = '<html>' +
+	        '<head>' +
+	        '<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>' +
+	        '<style>body * {margin:0px;padding:4px;}</style>' +
+	        '</head>' +
+	        '<body style="margin:0px;">' + str + '</body>' +
+	        '</html>';
+	//    } else {
+	//        wrappedStr = '<html>' +
+	//            '<head>' +
+	//            '<style>body * {margin:0px;padding:4px;}</style>' +
+	//            '</head>' +
+	//            '<body style="margin:0px;">' + str + '</body>' +
+	//            '</html>';
+	//    }
+
+	    return wrappedStr;
+	};
+
+	module.exports = WrapHTML;
 
 /***/ }
 /******/ ])));

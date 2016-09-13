@@ -166,7 +166,8 @@ var ItemRow = React.createClass({
       updatedItem = this.props.item;
 
     var answers = AnswerExtraction(updatedItem),
-      previewHTML = WrapHTML(answers.correctAnswerFeedback);
+      previewHTML = {__html: answers.correctAnswerFeedback};
+//      previewHTML = WrapHTML(answers.correctAnswerFeedback);
 
     updatedItem['correctAnswer'] = answers.correctAnswerText.text;
     updatedItem['correctAnswerId'] = answers.correctAnswerId;
@@ -227,12 +228,8 @@ var ItemRow = React.createClass({
           <div className="right-answer-feedback-preview">
             <Panel collapsible
                    expanded={_this.state.showPreview}>
-              <iframe ref="myPreviewFrame"
-                      srcDoc={previewHTML}
-                      frameBorder={0}
-                      width="100%"
-                      sandbox="allow-scripts allow-same-origin"
-                      ></iframe>
+              <div dangerouslySetInnerHTML={previewHTML}>
+              </div>
             </Panel>
           </div>
           {_this.renderItemAnswerTexts(updatedItem)}
