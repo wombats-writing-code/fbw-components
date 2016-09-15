@@ -32,6 +32,7 @@ var ItemsList = React.createClass({
     componentWillMount: function() {
     },
     componentDidMount: function () {
+      renderMathInElement(document.body);
     },
     componentDidUpdate: function () {
     },

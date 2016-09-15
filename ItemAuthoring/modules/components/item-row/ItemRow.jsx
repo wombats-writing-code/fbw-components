@@ -37,6 +37,7 @@ var ItemRow = React.createClass({
   componentDidMount: function () {
   },
   componentDidUpdate: function () {
+    renderMathInElement(this.refs.textContainer);
   },
   componentWillUpdate: function (nextProps, nextState) {
     if (nextState.showPreview) {
@@ -228,7 +229,8 @@ var ItemRow = React.createClass({
           <div className="right-answer-feedback-preview">
             <Panel collapsible
                    expanded={_this.state.showPreview}>
-              <div dangerouslySetInnerHTML={previewHTML}>
+              <div dangerouslySetInnerHTML={previewHTML}
+                   ref="textContainer">
               </div>
             </Panel>
           </div>

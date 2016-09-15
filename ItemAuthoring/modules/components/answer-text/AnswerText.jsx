@@ -32,12 +32,13 @@ var AnswerText = React.createClass({
   componentWillMount: function() {
   },
   componentDidMount: function () {
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+//    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
   },
   componentWillReceiveProps: function (nextProps) {
   },
   componentDidUpdate: function (nextProps, nextState) {
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+//    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+    renderMathInElement(this.refs.textContainer);
   },
   getAnswerText: function () {
     return {__html: this.props.answerText};
@@ -75,7 +76,8 @@ var AnswerText = React.createClass({
 
     return <div className="taggable-text">
       <div className="text-blob">
-        <div dangerouslySetInnerHTML={this.getAnswerText()}>
+        <div dangerouslySetInnerHTML={this.getAnswerText()}
+             ref="textContainer">
         </div>
       </div>
       {linkButton}
