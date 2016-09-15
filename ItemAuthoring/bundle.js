@@ -48043,11 +48043,12 @@
 	            wrongAnswerLOs = [],
 	            wrongChoiceIds = [],
 	            choices = item.question.choices,
-	            correctAnswerFeedback = item.solution.text,
+	            correctAnswerFeedback = item.solution.text.replace(/&nbsp;/g, ' '),
 	            correctAnswerId = rightAnswer.id,
 	            correctAnswerText, wrongAnswerTexts;
 
 	        correctAnswerText = _.find(choices, {"id": correctChoiceId});
+	        correctAnswerText.text = correctAnswerText.text.replace(/&nbsp;/g, ' ');
 
 	        _.each(wrongAnswers, function (wrongAnswer) {
 	            wrongAnswerIds.push(wrongAnswer.choiceIds[0]);
@@ -48055,6 +48056,10 @@
 
 	        wrongAnswerTexts = _.filter(choices, function (choice) {
 	            return wrongAnswerIds.indexOf(choice.id) >= 0;
+	        });
+
+	        _.each(wrongAnswerTexts, function (wrongAnswer) {
+	          wrongAnswer.text = wrongAnswer.text.replace(/&nbsp;/g, ' ');
 	        });
 
 	        // need to get these in the same order as wrongAnswerTexts
@@ -52060,7 +52065,7 @@
 	        this.reset();
 	    },
 	    getQuestionText: function getQuestionText() {
-	        return { __html: this.props.questionText };
+	        return { __html: this.props.questionText.replace(/&nbsp;/g, ' ') };
 	    },
 	    onChange: function onChange(e) {
 	        if (e == null) {

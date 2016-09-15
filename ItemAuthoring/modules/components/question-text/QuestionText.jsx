@@ -44,7 +44,7 @@ var QuestionText = React.createClass({
         this.reset();
     },
     getQuestionText: function () {
-      return {__html: this.props.questionText};
+      return {__html: this.props.questionText.replace(/&nbsp;/g, ' ')};
     },
     onChange: function (e) {
         if (e == null) {
