@@ -32,8 +32,7 @@ var LOText = React.createClass({
                         libraryId={this.props.libraryId}
                         outcomeId={this.props.outcomeId}
                         outcomes={this.props.outcomes}
-                        refreshModulesAndOutcomes={this.props.refreshModulesAndOutcomes}
-                        updateAnswerLO={this.props.updateAnswerLO} />
+                        refreshModulesAndOutcomes={this.props.refreshModulesAndOutcomes} />
             </div>
         }
 

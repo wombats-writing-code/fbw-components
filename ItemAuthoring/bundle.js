@@ -95,21 +95,24 @@
 	// ItemAuthoring.js
 	'use strict';
 
+	__webpack_require__(4);
+
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Grid = ReactBS.Grid;
 	var Row = ReactBS.Row;
 	var Col = ReactBS.Col;
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
+	var Spinner = __webpack_require__(12);
 
-	var LibraryItemsStore = __webpack_require__(8);
-	var LibrariesStore = __webpack_require__(18);
+	var LibraryItemsStore = __webpack_require__(19);
+	var LibrariesStore = __webpack_require__(29);
 
-	var ItemWrapper = __webpack_require__(20);
-	var LibrarySelector = __webpack_require__(111);
-	var Dashboard = __webpack_require__(105);
+	var ItemWrapper = __webpack_require__(31);
+	var LibrarySelector = __webpack_require__(120);
+	var Dashboard = __webpack_require__(114);
 
-	var ShibSessionCheck = __webpack_require__(112);
+	var ShibSessionCheck = __webpack_require__(121);
 
 	var ItemAuthoring = React.createClass({
 	    displayName: 'ItemAuthoring',
@@ -119,6 +122,7 @@
 	            libraries: [],
 	            libraryDescription: '',
 	            libraryId: '',
+	            loadingItems: false,
 	            items: [],
 	            outcomes: [],
 	            showItems: false
@@ -129,6 +133,7 @@
 	        LibraryItemsStore.addChangeListener(function (items) {
 	            _this.setState({ items: items });
 	            _this.setState({ showItems: true });
+	            _this.setState({ loadingItems: false });
 	        });
 	        LibrariesStore.addChangeListener(function (libraries) {
 	            _this.setState({ libraries: libraries });
@@ -144,14 +149,33 @@
 	    librarySelected: function librarySelected(id, libraryDescription) {
 	        this.setState({ libraryId: id });
 	        this.setState({ libraryDescription: libraryDescription });
+	        this.setState({ loadingItems: true });
 	    },
 	    render: function render() {
 	        var itemsWrapper = '';
+	        var loadingItems = React.createElement('div', null);
 	        if (this.state.showItems) {
 	            itemsWrapper = React.createElement(ItemWrapper, { items: this.state.items,
 	                libraries: this.state.libraries,
 	                libraryId: this.state.libraryId,
 	                libraryDescription: this.state.libraryDescription });
+	        }
+
+	        if (this.state.loadingItems) {
+	            loadingItems = React.createElement(
+	                'div',
+	                null,
+	                React.createElement(
+	                    'div',
+	                    null,
+	                    'Loading the items ...'
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { className: 'spinner-container' },
+	                    React.createElement(Spinner, { color: '#26A65B', size: '16px', margin: '75px' })
+	                )
+	            );
 	        }
 
 	        return React.createElement(
@@ -168,7 +192,8 @@
 	                        hideItems: this.hideItems })
 	                )
 	            ),
-	            itemsWrapper
+	            itemsWrapper,
+	            loadingItems
 	        );
 	    }
 	});
@@ -177,6 +202,354 @@
 
 /***/ },
 /* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(5);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(7)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./ItemAuthoring.css", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./ItemAuthoring.css");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(6)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".spinner-container {\n  margin-top: 100px;\n}", ""]);
+
+	// exports
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	// css base code, injected by the css-loader
+	module.exports = function() {
+		var list = [];
+
+		// return the list of modules as css string
+		list.toString = function toString() {
+			var result = [];
+			for(var i = 0; i < this.length; i++) {
+				var item = this[i];
+				if(item[2]) {
+					result.push("@media " + item[2] + "{" + item[1] + "}");
+				} else {
+					result.push(item[1]);
+				}
+			}
+			return result.join("");
+		};
+
+		// import a list of modules into the list
+		list.i = function(modules, mediaQuery) {
+			if(typeof modules === "string")
+				modules = [[null, modules, ""]];
+			var alreadyImportedModules = {};
+			for(var i = 0; i < this.length; i++) {
+				var id = this[i][0];
+				if(typeof id === "number")
+					alreadyImportedModules[id] = true;
+			}
+			for(i = 0; i < modules.length; i++) {
+				var item = modules[i];
+				// skip already imported module
+				// this implementation is not 100% perfect for weird media query combinations
+				//  when a module is imported multiple times with different media queries.
+				//  I hope this will never occur (Hey this way we have smaller bundles)
+				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+					if(mediaQuery && !item[2]) {
+						item[2] = mediaQuery;
+					} else if(mediaQuery) {
+						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+					}
+					list.push(item);
+				}
+			}
+		};
+		return list;
+	};
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	var stylesInDom = {},
+		memoize = function(fn) {
+			var memo;
+			return function () {
+				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+				return memo;
+			};
+		},
+		isOldIE = memoize(function() {
+			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+		}),
+		getHeadElement = memoize(function () {
+			return document.head || document.getElementsByTagName("head")[0];
+		}),
+		singletonElement = null,
+		singletonCounter = 0,
+		styleElementsInsertedAtTop = [];
+
+	module.exports = function(list, options) {
+		if(false) {
+			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+		}
+
+		options = options || {};
+		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+		// tags it will allow on a page
+		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+
+		// By default, add <style> tags to the bottom of <head>.
+		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+
+		var styles = listToStyles(list);
+		addStylesToDom(styles, options);
+
+		return function update(newList) {
+			var mayRemove = [];
+			for(var i = 0; i < styles.length; i++) {
+				var item = styles[i];
+				var domStyle = stylesInDom[item.id];
+				domStyle.refs--;
+				mayRemove.push(domStyle);
+			}
+			if(newList) {
+				var newStyles = listToStyles(newList);
+				addStylesToDom(newStyles, options);
+			}
+			for(var i = 0; i < mayRemove.length; i++) {
+				var domStyle = mayRemove[i];
+				if(domStyle.refs === 0) {
+					for(var j = 0; j < domStyle.parts.length; j++)
+						domStyle.parts[j]();
+					delete stylesInDom[domStyle.id];
+				}
+			}
+		};
+	}
+
+	function addStylesToDom(styles, options) {
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			if(domStyle) {
+				domStyle.refs++;
+				for(var j = 0; j < domStyle.parts.length; j++) {
+					domStyle.parts[j](item.parts[j]);
+				}
+				for(; j < item.parts.length; j++) {
+					domStyle.parts.push(addStyle(item.parts[j], options));
+				}
+			} else {
+				var parts = [];
+				for(var j = 0; j < item.parts.length; j++) {
+					parts.push(addStyle(item.parts[j], options));
+				}
+				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+			}
+		}
+	}
+
+	function listToStyles(list) {
+		var styles = [];
+		var newStyles = {};
+		for(var i = 0; i < list.length; i++) {
+			var item = list[i];
+			var id = item[0];
+			var css = item[1];
+			var media = item[2];
+			var sourceMap = item[3];
+			var part = {css: css, media: media, sourceMap: sourceMap};
+			if(!newStyles[id])
+				styles.push(newStyles[id] = {id: id, parts: [part]});
+			else
+				newStyles[id].parts.push(part);
+		}
+		return styles;
+	}
+
+	function insertStyleElement(options, styleElement) {
+		var head = getHeadElement();
+		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+		if (options.insertAt === "top") {
+			if(!lastStyleElementInsertedAtTop) {
+				head.insertBefore(styleElement, head.firstChild);
+			} else if(lastStyleElementInsertedAtTop.nextSibling) {
+				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+			} else {
+				head.appendChild(styleElement);
+			}
+			styleElementsInsertedAtTop.push(styleElement);
+		} else if (options.insertAt === "bottom") {
+			head.appendChild(styleElement);
+		} else {
+			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+		}
+	}
+
+	function removeStyleElement(styleElement) {
+		styleElement.parentNode.removeChild(styleElement);
+		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+		if(idx >= 0) {
+			styleElementsInsertedAtTop.splice(idx, 1);
+		}
+	}
+
+	function createStyleElement(options) {
+		var styleElement = document.createElement("style");
+		styleElement.type = "text/css";
+		insertStyleElement(options, styleElement);
+		return styleElement;
+	}
+
+	function createLinkElement(options) {
+		var linkElement = document.createElement("link");
+		linkElement.rel = "stylesheet";
+		insertStyleElement(options, linkElement);
+		return linkElement;
+	}
+
+	function addStyle(obj, options) {
+		var styleElement, update, remove;
+
+		if (options.singleton) {
+			var styleIndex = singletonCounter++;
+			styleElement = singletonElement || (singletonElement = createStyleElement(options));
+			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+		} else if(obj.sourceMap &&
+			typeof URL === "function" &&
+			typeof URL.createObjectURL === "function" &&
+			typeof URL.revokeObjectURL === "function" &&
+			typeof Blob === "function" &&
+			typeof btoa === "function") {
+			styleElement = createLinkElement(options);
+			update = updateLink.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+				if(styleElement.href)
+					URL.revokeObjectURL(styleElement.href);
+			};
+		} else {
+			styleElement = createStyleElement(options);
+			update = applyToTag.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+			};
+		}
+
+		update(obj);
+
+		return function updateStyle(newObj) {
+			if(newObj) {
+				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+					return;
+				update(obj = newObj);
+			} else {
+				remove();
+			}
+		};
+	}
+
+	var replaceText = (function () {
+		var textStore = [];
+
+		return function (index, replacement) {
+			textStore[index] = replacement;
+			return textStore.filter(Boolean).join('\n');
+		};
+	})();
+
+	function applyToSingletonTag(styleElement, index, remove, obj) {
+		var css = remove ? "" : obj.css;
+
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = replaceText(index, css);
+		} else {
+			var cssNode = document.createTextNode(css);
+			var childNodes = styleElement.childNodes;
+			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+			if (childNodes.length) {
+				styleElement.insertBefore(cssNode, childNodes[index]);
+			} else {
+				styleElement.appendChild(cssNode);
+			}
+		}
+	}
+
+	function applyToTag(styleElement, obj) {
+		var css = obj.css;
+		var media = obj.media;
+
+		if(media) {
+			styleElement.setAttribute("media", media)
+		}
+
+		if(styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+			while(styleElement.firstChild) {
+				styleElement.removeChild(styleElement.firstChild);
+			}
+			styleElement.appendChild(document.createTextNode(css));
+		}
+	}
+
+	function updateLink(linkElement, obj) {
+		var css = obj.css;
+		var sourceMap = obj.sourceMap;
+
+		if(sourceMap) {
+			// http://stackoverflow.com/a/26603875
+			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+		}
+
+		var blob = new Blob([css], { type: "text/css" });
+
+		var oldSrc = linkElement.href;
+
+		linkElement.href = URL.createObjectURL(blob);
+
+		if(oldSrc)
+			URL.revokeObjectURL(oldSrc);
+	}
+
+
+/***/ },
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -19370,13 +19743,13 @@
 	;
 
 /***/ },
-/* 5 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(6);
+	module.exports = __webpack_require__(10);
 
 /***/ },
-/* 6 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(module, global, _) {/**
@@ -35407,10 +35780,10 @@
 	  }
 	}.call(this));
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)(module), (function() { return this; }()), __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)(module), (function() { return this; }()), __webpack_require__(9)))
 
 /***/ },
-/* 7 */
+/* 11 */
 /***/ function(module, exports) {
 
 	module.exports = function(module) {
@@ -35426,17 +35799,316 @@
 
 
 /***/ },
-/* 8 */
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var React = __webpack_require__(1);
+	var assign = __webpack_require__(13);
+	var insertKeyframesRule = __webpack_require__(16);
+
+	/**
+	 * @type {Object}
+	 */
+	var keyframes = {
+	    '0%': {
+	        transform: 'rotate(0deg)'
+	    },
+	    '50%': {
+	        transform: 'rotate(180deg)'
+	    },
+	    '100%': {
+	        transform: 'rotate(360deg)'
+	    }
+	};
+
+	/**
+	 * @type {String}
+	 */
+	var animationName = insertKeyframesRule(keyframes);
+
+	var Loader = React.createClass({
+	    displayName: 'Loader',
+
+	    /**
+	     * @type {Object}
+	     */
+	    propTypes: {
+	        loading: React.PropTypes.bool,
+	        color: React.PropTypes.string,
+	        size: React.PropTypes.string,
+	        margin: React.PropTypes.string
+	    },
+
+	    /**
+	     * @return {Object}
+	     */
+	    getDefaultProps: function getDefaultProps() {
+	        return {
+	            loading: true,
+	            color: '#ffffff',
+	            size: '15px',
+	            margin: '2px'
+	        };
+	    },
+
+	    /**
+	     * @return {Object}
+	     */
+	    getBallStyle: function getBallStyle() {
+	        return {
+	            backgroundColor: this.props.color,
+	            width: this.props.size,
+	            height: this.props.size,
+	            margin: this.props.margin,
+	            borderRadius: '100%',
+	            verticalAlign: this.props.verticalAlign
+	        };
+	    },
+
+	    /**
+	     * @param  {Number} i
+	     * @return {Object}
+	     */
+	    getAnimationStyle: function getAnimationStyle(i) {
+	        var animation = [animationName, '1s', '0s', 'infinite', 'cubic-bezier(.7,-.13,.22,.86)'].join(' ');
+	        var animationFillMode = 'both';
+
+	        return {
+	            animation: animation,
+	            animationFillMode: animationFillMode
+	        };
+	    },
+
+	    /**
+	     * @param  {Number} i
+	     * @return {Object}
+	     */
+	    getStyle: function getStyle(i) {
+	        if (i) {
+	            return assign(this.getBallStyle(i), {
+	                opacity: '0.8',
+	                position: 'absolute',
+	                top: 0,
+	                left: i % 2 ? -28 : 25
+	            });
+	        }
+
+	        return assign(this.getBallStyle(i), this.getAnimationStyle(i), {
+	            display: 'inline-block',
+	            position: 'relative'
+	        });
+	    },
+
+	    /**
+	     * @param  {Boolean} loading
+	     * @return {ReactComponent || null}
+	     */
+	    renderLoader: function renderLoader(loading) {
+	        if (loading) {
+	            return React.createElement(
+	                'div',
+	                { id: this.props.id, className: this.props.className },
+	                React.createElement(
+	                    'div',
+	                    { style: this.getStyle() },
+	                    React.createElement('div', { style: this.getStyle(1) }),
+	                    React.createElement('div', { style: this.getStyle(2) })
+	                )
+	            );
+	        }
+
+	        return null;
+	    },
+
+	    render: function render() {
+	        return this.renderLoader(this.props.loading);
+	    }
+	});
+
+	module.exports = Loader;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var getVendorPropertyName = __webpack_require__(14);
+
+	module.exports = function(target, sources) {
+	  var to = Object(target);
+	  var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+	  for (var nextIndex = 1; nextIndex < arguments.length; nextIndex++) {
+	    var nextSource = arguments[nextIndex];
+	    if (nextSource == null) {
+	      continue;
+	    }
+
+	    var from = Object(nextSource);
+
+	    for (var key in from) {
+	      if (hasOwnProperty.call(from, key)) {
+	        to[key] = from[key];
+	      }
+	    }
+	  }
+
+	  var prefixed = {};
+	  for (var key in to) {
+	    prefixed[getVendorPropertyName(key)] = to[key]
+	  }
+
+	  return prefixed
+	}
+
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var builtinStyle = __webpack_require__(15);
+	var prefixes = ['Moz', 'Webkit', 'O', 'ms'];
+	var domVendorPrefix;
+
+	// Helper function to get the proper vendor property name. (transition => WebkitTransition)
+	module.exports = function(prop, isSupportTest) {
+
+	  var vendorProp;
+	  if (prop in builtinStyle) return prop;
+
+	  var UpperProp = prop.charAt(0).toUpperCase() + prop.substr(1);
+
+	  if (domVendorPrefix) {
+
+	    vendorProp = domVendorPrefix + UpperProp;
+	    if (vendorProp in builtinStyle) {
+	      return vendorProp;
+	    }
+	  } else {
+
+	    for (var i = 0; i < prefixes.length; ++i) {
+	      vendorProp = prefixes[i] + UpperProp;
+	      if (vendorProp in builtinStyle) {
+	        domVendorPrefix = prefixes[i];
+	        return vendorProp;
+	      }
+	    }
+	  }
+
+	  // if support test, not fallback to origin prop name
+	  if (!isSupportTest) {
+	    return prop;
+	  }
+
+	}
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	module.exports = document.createElement('div').style;
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var insertRule = __webpack_require__(17);
+	var vendorPrefix = __webpack_require__(18)();
+	var index = 0;
+
+	module.exports = function(keyframes) {
+	  // random name
+	  var name = 'anim_' + (++index) + (+new Date);
+	  var css = "@" + vendorPrefix + "keyframes " + name + " {";
+
+	  for (var key in keyframes) {
+	    css += key + " {";
+
+	    for (var property in keyframes[key]) {
+	      var part = ":" + keyframes[key][property] + ";";
+	      // We do vendor prefix for every property
+	      css += vendorPrefix + property + part;
+	      css += property + part;
+	    }
+
+	    css += "}";
+	  }
+
+	  css += "}";
+
+	  insertRule(css);
+
+	  return name
+	}
+
+
+/***/ },
+/* 17 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var extraSheet;
+
+	module.exports = function(css) {
+
+	  if (!extraSheet) {
+	    // First time, create an extra stylesheet for adding rules
+	    extraSheet = document.createElement('style');
+	    document.getElementsByTagName('head')[0].appendChild(extraSheet);
+	    // Keep reference to actual StyleSheet object (`styleSheet` for IE < 9)
+	    extraSheet = extraSheet.sheet || extraSheet.styleSheet;
+	  }
+
+	  var index = (extraSheet.cssRules || extraSheet.rules).length;
+	  extraSheet.insertRule(css, index);
+
+	  return extraSheet;
+	}
+
+
+/***/ },
+/* 18 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var cssVendorPrefix;
+
+	module.exports = function() {
+
+	  if (cssVendorPrefix) return cssVendorPrefix;
+
+	  var styles = window.getComputedStyle(document.documentElement, '');
+	  var pre = (Array.prototype.slice.call(styles).join('').match(/-(moz|webkit|ms)-/) || (styles.OLink === '' && ['', 'o']))[1];
+
+	  return cssVendorPrefix = '-' + pre + '-';
+	}
+
+
+/***/ },
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LibraryItemsStore.js
 	'use strict';
 
-	var LibraryItemsDispatcher = __webpack_require__(9);
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-	var MiddlewareService = __webpack_require__(17);
-	var _ = __webpack_require__(5);
+	var LibraryItemsDispatcher = __webpack_require__(20);
+	var AuthoringConstants = __webpack_require__(25);
+	var EventEmitter = __webpack_require__(27).EventEmitter;
+	var MiddlewareService = __webpack_require__(28);
+	var _ = __webpack_require__(9);
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -35586,7 +36258,10 @@
 	                      updatedItems.push(item);
 	                    }
 	                  });
-
+	                  console.log('new lo id');
+	                  console.log(payload.confusedLearningObjectiveId);
+	                  console.log(payload.answerId);
+	                  console.log(_.find(updatedItems, {id: 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU'}));
 	                  _items = updatedItems;
 	                  _this.emitChange();
 	//                    _this.getItems(payload.libraryId);
@@ -35730,15 +36405,15 @@
 
 
 /***/ },
-/* 9 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Dispatcher = __webpack_require__(10).Dispatcher;
+	var Dispatcher = __webpack_require__(21).Dispatcher;
 
 	module.exports = new Dispatcher();
 
 /***/ },
-/* 10 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -35750,11 +36425,11 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 */
 
-	module.exports.Dispatcher = __webpack_require__(11);
+	module.exports.Dispatcher = __webpack_require__(22);
 
 
 /***/ },
-/* 11 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -35776,7 +36451,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var invariant = __webpack_require__(13);
+	var invariant = __webpack_require__(24);
 
 	var _prefix = 'ID_';
 
@@ -35988,10 +36663,10 @@
 	})();
 
 	module.exports = Dispatcher;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23)))
 
 /***/ },
-/* 12 */
+/* 23 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -36055,7 +36730,7 @@
 
 
 /***/ },
-/* 13 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -36107,13 +36782,13 @@
 	};
 
 	module.exports = invariant;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(23)))
 
 /***/ },
-/* 14 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var keyMirror = __webpack_require__(15);
+	var keyMirror = __webpack_require__(26);
 
 	module.exports = {
 	    ActionTypes: keyMirror({
@@ -36137,7 +36812,7 @@
 	};
 
 /***/ },
-/* 15 */
+/* 26 */
 /***/ function(module, exports) {
 
 	/**
@@ -36196,7 +36871,7 @@
 
 
 /***/ },
-/* 16 */
+/* 27 */
 /***/ function(module, exports) {
 
 	// Copyright Joyent, Inc. and other Node contributors.
@@ -36500,7 +37175,7 @@
 
 
 /***/ },
-/* 17 */
+/* 28 */
 /***/ function(module, exports) {
 
 	// MiddlewareService
@@ -36549,16 +37224,16 @@
 
 
 /***/ },
-/* 18 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var LibrariesDispatcher = __webpack_require__(19);
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-	var _ = __webpack_require__(5);
-	var MiddlewareService = __webpack_require__(17);
+	var LibrariesDispatcher = __webpack_require__(30);
+	var AuthoringConstants = __webpack_require__(25);
+	var EventEmitter = __webpack_require__(27).EventEmitter;
+	var _ = __webpack_require__(9);
+	var MiddlewareService = __webpack_require__(28);
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -36606,9 +37281,9 @@
 
 
 /***/ },
-/* 19 */
-9,
-/* 20 */
+/* 30 */
+20,
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemWrapper.js
@@ -36616,23 +37291,23 @@
 
 	'use strict';
 
-	__webpack_require__(21);
+	__webpack_require__(32);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Badge = ReactBS.Badge;
 	var Col = ReactBS.Col;
 	var Row = ReactBS.Row;
 
-	var LibraryItemsStore = __webpack_require__(8);
-	var ModulesStore = __webpack_require__(25);
-	var OutcomesStore = __webpack_require__(26);
-	var RelationshipsStore = __webpack_require__(28);
+	var LibraryItemsStore = __webpack_require__(19);
+	var ModulesStore = __webpack_require__(34);
+	var OutcomesStore = __webpack_require__(35);
+	var RelationshipsStore = __webpack_require__(37);
 
-	var AddItem = __webpack_require__(29);
-	var ItemSearch = __webpack_require__(43);
-	var ItemStatus = __webpack_require__(99);
-	var ViewDashboard = __webpack_require__(102);
+	var AddItem = __webpack_require__(38);
+	var ItemSearch = __webpack_require__(52);
+	var ItemStatus = __webpack_require__(108);
+	var ViewDashboard = __webpack_require__(111);
 
 	var ItemWrapper = React.createClass({
 	    displayName: 'ItemWrapper',
@@ -36722,16 +37397,16 @@
 	module.exports = ItemWrapper;
 
 /***/ },
-/* 21 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(22);
+	var content = __webpack_require__(33);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -36748,10 +37423,10 @@
 	}
 
 /***/ },
-/* 22 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -36762,325 +37437,17 @@
 
 
 /***/ },
-/* 23 */
-/***/ function(module, exports) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	// css base code, injected by the css-loader
-	module.exports = function() {
-		var list = [];
-
-		// return the list of modules as css string
-		list.toString = function toString() {
-			var result = [];
-			for(var i = 0; i < this.length; i++) {
-				var item = this[i];
-				if(item[2]) {
-					result.push("@media " + item[2] + "{" + item[1] + "}");
-				} else {
-					result.push(item[1]);
-				}
-			}
-			return result.join("");
-		};
-
-		// import a list of modules into the list
-		list.i = function(modules, mediaQuery) {
-			if(typeof modules === "string")
-				modules = [[null, modules, ""]];
-			var alreadyImportedModules = {};
-			for(var i = 0; i < this.length; i++) {
-				var id = this[i][0];
-				if(typeof id === "number")
-					alreadyImportedModules[id] = true;
-			}
-			for(i = 0; i < modules.length; i++) {
-				var item = modules[i];
-				// skip already imported module
-				// this implementation is not 100% perfect for weird media query combinations
-				//  when a module is imported multiple times with different media queries.
-				//  I hope this will never occur (Hey this way we have smaller bundles)
-				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-					if(mediaQuery && !item[2]) {
-						item[2] = mediaQuery;
-					} else if(mediaQuery) {
-						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-					}
-					list.push(item);
-				}
-			}
-		};
-		return list;
-	};
-
-
-/***/ },
-/* 24 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	var stylesInDom = {},
-		memoize = function(fn) {
-			var memo;
-			return function () {
-				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
-				return memo;
-			};
-		},
-		isOldIE = memoize(function() {
-			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
-		}),
-		getHeadElement = memoize(function () {
-			return document.head || document.getElementsByTagName("head")[0];
-		}),
-		singletonElement = null,
-		singletonCounter = 0,
-		styleElementsInsertedAtTop = [];
-
-	module.exports = function(list, options) {
-		if(false) {
-			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
-		}
-
-		options = options || {};
-		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-		// tags it will allow on a page
-		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
-
-		// By default, add <style> tags to the bottom of <head>.
-		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
-
-		var styles = listToStyles(list);
-		addStylesToDom(styles, options);
-
-		return function update(newList) {
-			var mayRemove = [];
-			for(var i = 0; i < styles.length; i++) {
-				var item = styles[i];
-				var domStyle = stylesInDom[item.id];
-				domStyle.refs--;
-				mayRemove.push(domStyle);
-			}
-			if(newList) {
-				var newStyles = listToStyles(newList);
-				addStylesToDom(newStyles, options);
-			}
-			for(var i = 0; i < mayRemove.length; i++) {
-				var domStyle = mayRemove[i];
-				if(domStyle.refs === 0) {
-					for(var j = 0; j < domStyle.parts.length; j++)
-						domStyle.parts[j]();
-					delete stylesInDom[domStyle.id];
-				}
-			}
-		};
-	}
-
-	function addStylesToDom(styles, options) {
-		for(var i = 0; i < styles.length; i++) {
-			var item = styles[i];
-			var domStyle = stylesInDom[item.id];
-			if(domStyle) {
-				domStyle.refs++;
-				for(var j = 0; j < domStyle.parts.length; j++) {
-					domStyle.parts[j](item.parts[j]);
-				}
-				for(; j < item.parts.length; j++) {
-					domStyle.parts.push(addStyle(item.parts[j], options));
-				}
-			} else {
-				var parts = [];
-				for(var j = 0; j < item.parts.length; j++) {
-					parts.push(addStyle(item.parts[j], options));
-				}
-				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
-			}
-		}
-	}
-
-	function listToStyles(list) {
-		var styles = [];
-		var newStyles = {};
-		for(var i = 0; i < list.length; i++) {
-			var item = list[i];
-			var id = item[0];
-			var css = item[1];
-			var media = item[2];
-			var sourceMap = item[3];
-			var part = {css: css, media: media, sourceMap: sourceMap};
-			if(!newStyles[id])
-				styles.push(newStyles[id] = {id: id, parts: [part]});
-			else
-				newStyles[id].parts.push(part);
-		}
-		return styles;
-	}
-
-	function insertStyleElement(options, styleElement) {
-		var head = getHeadElement();
-		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
-		if (options.insertAt === "top") {
-			if(!lastStyleElementInsertedAtTop) {
-				head.insertBefore(styleElement, head.firstChild);
-			} else if(lastStyleElementInsertedAtTop.nextSibling) {
-				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
-			} else {
-				head.appendChild(styleElement);
-			}
-			styleElementsInsertedAtTop.push(styleElement);
-		} else if (options.insertAt === "bottom") {
-			head.appendChild(styleElement);
-		} else {
-			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
-		}
-	}
-
-	function removeStyleElement(styleElement) {
-		styleElement.parentNode.removeChild(styleElement);
-		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
-		if(idx >= 0) {
-			styleElementsInsertedAtTop.splice(idx, 1);
-		}
-	}
-
-	function createStyleElement(options) {
-		var styleElement = document.createElement("style");
-		styleElement.type = "text/css";
-		insertStyleElement(options, styleElement);
-		return styleElement;
-	}
-
-	function createLinkElement(options) {
-		var linkElement = document.createElement("link");
-		linkElement.rel = "stylesheet";
-		insertStyleElement(options, linkElement);
-		return linkElement;
-	}
-
-	function addStyle(obj, options) {
-		var styleElement, update, remove;
-
-		if (options.singleton) {
-			var styleIndex = singletonCounter++;
-			styleElement = singletonElement || (singletonElement = createStyleElement(options));
-			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
-			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
-		} else if(obj.sourceMap &&
-			typeof URL === "function" &&
-			typeof URL.createObjectURL === "function" &&
-			typeof URL.revokeObjectURL === "function" &&
-			typeof Blob === "function" &&
-			typeof btoa === "function") {
-			styleElement = createLinkElement(options);
-			update = updateLink.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-				if(styleElement.href)
-					URL.revokeObjectURL(styleElement.href);
-			};
-		} else {
-			styleElement = createStyleElement(options);
-			update = applyToTag.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-			};
-		}
-
-		update(obj);
-
-		return function updateStyle(newObj) {
-			if(newObj) {
-				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
-					return;
-				update(obj = newObj);
-			} else {
-				remove();
-			}
-		};
-	}
-
-	var replaceText = (function () {
-		var textStore = [];
-
-		return function (index, replacement) {
-			textStore[index] = replacement;
-			return textStore.filter(Boolean).join('\n');
-		};
-	})();
-
-	function applyToSingletonTag(styleElement, index, remove, obj) {
-		var css = remove ? "" : obj.css;
-
-		if (styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = replaceText(index, css);
-		} else {
-			var cssNode = document.createTextNode(css);
-			var childNodes = styleElement.childNodes;
-			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
-			if (childNodes.length) {
-				styleElement.insertBefore(cssNode, childNodes[index]);
-			} else {
-				styleElement.appendChild(cssNode);
-			}
-		}
-	}
-
-	function applyToTag(styleElement, obj) {
-		var css = obj.css;
-		var media = obj.media;
-
-		if(media) {
-			styleElement.setAttribute("media", media)
-		}
-
-		if(styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = css;
-		} else {
-			while(styleElement.firstChild) {
-				styleElement.removeChild(styleElement.firstChild);
-			}
-			styleElement.appendChild(document.createTextNode(css));
-		}
-	}
-
-	function updateLink(linkElement, obj) {
-		var css = obj.css;
-		var sourceMap = obj.sourceMap;
-
-		if(sourceMap) {
-			// http://stackoverflow.com/a/26603875
-			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
-		}
-
-		var blob = new Blob([css], { type: "text/css" });
-
-		var oldSrc = linkElement.href;
-
-		linkElement.href = URL.createObjectURL(blob);
-
-		if(oldSrc)
-			URL.revokeObjectURL(oldSrc);
-	}
-
-
-/***/ },
-/* 25 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ModulesStore.js
 
 	'use strict';
 
-	var AuthoringConstants = __webpack_require__(14);
-	var MiddlewareService = __webpack_require__(17);
+	var AuthoringConstants = __webpack_require__(25);
+	var MiddlewareService = __webpack_require__(28);
 
-	var EventEmitter = __webpack_require__(16).EventEmitter;
+	var EventEmitter = __webpack_require__(27).EventEmitter;
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -37128,21 +37495,21 @@
 
 	module.exports = ModulesStore;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 26 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// OutcomesStore.js
 
 	'use strict';
 
-	var OutcomesDispatcher = __webpack_require__(27);
-	var AuthoringConstants = __webpack_require__(14);
-	var MiddlewareService = __webpack_require__(17);
+	var OutcomesDispatcher = __webpack_require__(36);
+	var AuthoringConstants = __webpack_require__(25);
+	var MiddlewareService = __webpack_require__(28);
 
-	var EventEmitter = __webpack_require__(16).EventEmitter;
+	var EventEmitter = __webpack_require__(27).EventEmitter;
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -37194,22 +37561,22 @@
 
 	module.exports = OutcomesStore;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 27 */
-9,
-/* 28 */
+/* 36 */
+20,
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// RelationshipsStore.js
 
 	'use strict';
 
-	var AuthoringConstants = __webpack_require__(14);
-	var MiddlewareService = __webpack_require__(17);
+	var AuthoringConstants = __webpack_require__(25);
+	var MiddlewareService = __webpack_require__(28);
 
-	var EventEmitter = __webpack_require__(16).EventEmitter;
+	var EventEmitter = __webpack_require__(27).EventEmitter;
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -37252,19 +37619,19 @@
 
 	module.exports = RelationshipsStore;
 
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 29 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AddItem.js
 	'use strict';
 
-	__webpack_require__(30);
+	__webpack_require__(39);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -37273,12 +37640,12 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CreateMultipleChoice = __webpack_require__(32);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var ItemTypesStore = __webpack_require__(42);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var CreateMultipleChoice = __webpack_require__(41);
+	var GenusTypes = __webpack_require__(25).GenusTypes;
+	var ItemTypesStore = __webpack_require__(51);
 
 	var AddItem = React.createClass({
 	    displayName: 'AddItem',
@@ -37414,16 +37781,16 @@
 	module.exports = AddItem;
 
 /***/ },
-/* 30 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(31);
+	var content = __webpack_require__(40);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -37440,10 +37807,10 @@
 	}
 
 /***/ },
-/* 31 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -37454,14 +37821,14 @@
 
 
 /***/ },
-/* 32 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CreateMultipleChoice.jsx
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -37470,19 +37837,19 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
-	var $s = __webpack_require__(33);
+	var $s = __webpack_require__(42);
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CKEditorModalHack = __webpack_require__(34);
-	var ConfigureCKEditor = __webpack_require__(37);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(38);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var Dispatcher = __webpack_require__(9);
-	var LibraryItemsStore = __webpack_require__(8);
-	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(39);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var CKEditorModalHack = __webpack_require__(43);
+	var ConfigureCKEditor = __webpack_require__(46);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(47);
+	var GenusTypes = __webpack_require__(25).GenusTypes;
+	var Dispatcher = __webpack_require__(20);
+	var LibraryItemsStore = __webpack_require__(19);
+	var MiddlewareService = __webpack_require__(28);
+	var WrongAnswerEditor = __webpack_require__(48);
 
 	var CreateMultipleChoice = React.createClass({
 	    displayName: 'CreateMultipleChoice',
@@ -37904,7 +38271,7 @@
 	module.exports = CreateMultipleChoice;
 
 /***/ },
-/* 33 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -38033,7 +38400,7 @@
 
 
 /***/ },
-/* 34 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// CKEditorModalHack.js
@@ -38045,8 +38412,8 @@
 
 	'use strict';
 
-	var $ = __webpack_require__(35);
-	var _ = __webpack_require__(5);
+	var $ = __webpack_require__(44);
+	var _ = __webpack_require__(9);
 
 
 	var CKEditorModalHack = function () {
@@ -38056,7 +38423,7 @@
 	module.exports = CKEditorModalHack;
 
 /***/ },
-/* 35 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function() {
@@ -47322,7 +47689,7 @@
 	    // file names, and jQuery is normally delivered in a lowercase file name.
 	    // Do this after creating the global so that if an AMD module wants to call
 	    // noConflict to hide this version of jQuery, it will work.
-	    if ( "function" === "function" && __webpack_require__(36) && __webpack_require__(36).jQuery ) {
+	    if ( "function" === "function" && __webpack_require__(45) && __webpack_require__(45).jQuery ) {
 	    	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () { return jQuery; }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	    }
 	    
@@ -47349,7 +47716,7 @@
 
 
 /***/ },
-/* 36 */
+/* 45 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
@@ -47357,17 +47724,17 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ },
-/* 37 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ConfigureCKEditor.js
 
 	'use strict';
 
-	var $ = __webpack_require__(35);
+	var $ = __webpack_require__(44);
 
 	var ConfigureCKEditor = function (editor, repositoryId) {
-	    var MiddlewareService = __webpack_require__(17);
+	    var MiddlewareService = __webpack_require__(28);
 
 	    editor.config.allowedContent = true;
 	    editor.config.extraPlugins = 'uploadimage';
@@ -47378,7 +47745,7 @@
 	module.exports = ConfigureCKEditor;
 
 /***/ },
-/* 38 */
+/* 47 */
 /***/ function(module, exports) {
 
 	// ConvertLibraryId2RepositoryId.js
@@ -47391,16 +47758,16 @@
 	module.exports = ConvertLibraryId2RepositoryId;
 
 /***/ },
-/* 39 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// WrongAnswerEditor.js
 	'use strict';
 
-	__webpack_require__(40);
+	__webpack_require__(49);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -47409,10 +47776,10 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-	var LibraryItemsStore = __webpack_require__(8);
-	var SequenceNumberTexts = __webpack_require__(14).SequenceNumberTexts;
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var Dispatcher = __webpack_require__(20);
+	var LibraryItemsStore = __webpack_require__(19);
+	var SequenceNumberTexts = __webpack_require__(25).SequenceNumberTexts;
 
 	var WrongAnswerEditor = React.createClass({
 	    displayName: 'WrongAnswerEditor',
@@ -47510,16 +47877,16 @@
 	module.exports = WrongAnswerEditor;
 
 /***/ },
-/* 40 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(41);
+	var content = __webpack_require__(50);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -47536,10 +47903,10 @@
 	}
 
 /***/ },
-/* 41 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -47550,16 +47917,16 @@
 
 
 /***/ },
-/* 42 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemTypesStore.js
 	'use strict';
 
-	var AuthoringConstants = __webpack_require__(14);
-	var EventEmitter = __webpack_require__(16).EventEmitter;
-	var MiddlewareService = __webpack_require__(17);
-	var _ = __webpack_require__(5);
+	var AuthoringConstants = __webpack_require__(25);
+	var EventEmitter = __webpack_require__(27).EventEmitter;
+	var MiddlewareService = __webpack_require__(28);
+	var _ = __webpack_require__(9);
 
 	var ActionTypes = AuthoringConstants.ActionTypes;
 	var CHANGE_EVENT = ActionTypes.CHANGE_EVENT;
@@ -47609,25 +47976,25 @@
 
 
 /***/ },
-/* 43 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemSearch.js
 
 	'use strict';
 
-	__webpack_require__(44);
+	__webpack_require__(53);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Badge = ReactBS.Badge;
 	var FormControl = ReactBS.FormControl;
 	var FormGroup = ReactBS.FormGroup;
 	var Glyphicon = ReactBS.Glyphicon;
 	var InputGroup = ReactBS.InputGroup;
 
-	var ModulesList = __webpack_require__(46);
-	var LibraryItemsStore = __webpack_require__(8);
+	var ModulesList = __webpack_require__(55);
+	var LibraryItemsStore = __webpack_require__(19);
 
 	var ItemSearch = React.createClass({
 	    displayName: 'ItemSearch',
@@ -47716,19 +48083,19 @@
 	});
 
 	module.exports = ItemSearch;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 44 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(45);
+	var content = __webpack_require__(54);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -47745,10 +48112,10 @@
 	}
 
 /***/ },
-/* 45 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -47759,29 +48126,29 @@
 
 
 /***/ },
-/* 46 */
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ModulesList.js
 
 	'use strict';
 
-	__webpack_require__(47);
+	__webpack_require__(56);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Badge = ReactBS.Badge;
 	var Col = ReactBS.Col;
 	var Grid = ReactBS.Grid;
 	var Panel = ReactBS.Panel;
 	var Row = ReactBS.Row;
 
-	var ItemsList = __webpack_require__(49);
-	var LibraryItemsStore = __webpack_require__(8);
-	var LORelatedItems = __webpack_require__(97);
-	var ModulesStore = __webpack_require__(25);
-	var OutcomesStore = __webpack_require__(26);
-	var SortItemsByModuleOutcomes = __webpack_require__(98);
+	var ItemsList = __webpack_require__(58);
+	var LibraryItemsStore = __webpack_require__(19);
+	var LORelatedItems = __webpack_require__(106);
+	var ModulesStore = __webpack_require__(34);
+	var OutcomesStore = __webpack_require__(35);
+	var SortItemsByModuleOutcomes = __webpack_require__(107);
 
 	var ModulesList = React.createClass({
 	    displayName: 'ModulesList',
@@ -47939,19 +48306,19 @@
 	});
 
 	module.exports = ModulesList;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 47 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(48);
+	var content = __webpack_require__(57);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -47968,10 +48335,10 @@
 	}
 
 /***/ },
-/* 48 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -47982,33 +48349,33 @@
 
 
 /***/ },
-/* 49 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemsList.js
 
 	'use strict';
 
-	__webpack_require__(50);
+	__webpack_require__(59);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Col = ReactBS.Col;
 	var Grid = ReactBS.Grid;
 	var Panel = ReactBS.Panel;
 	var Row = ReactBS.Row;
 
-	var AuthoringConstants = __webpack_require__(14);
+	var AuthoringConstants = __webpack_require__(25);
 	var ChoiceLabels = AuthoringConstants.ChoiceLabels;
 	var GenusTypes = AuthoringConstants.GenusTypes;
 
-	var AnswerExtraction = __webpack_require__(52);
-	var AnswerText = __webpack_require__(53);
-	var ItemControls = __webpack_require__(69);
-	var ItemRow = __webpack_require__(78);
-	var LOText = __webpack_require__(81);
-	var OutcomesStore = __webpack_require__(26);
-	var QuestionText = __webpack_require__(88);
+	var AnswerExtraction = __webpack_require__(61);
+	var AnswerText = __webpack_require__(62);
+	var ItemControls = __webpack_require__(78);
+	var ItemRow = __webpack_require__(87);
+	var LOText = __webpack_require__(90);
+	var OutcomesStore = __webpack_require__(35);
+	var QuestionText = __webpack_require__(97);
 
 	var ItemsList = React.createClass({
 	    displayName: 'ItemsList',
@@ -48042,19 +48409,19 @@
 	});
 
 	module.exports = ItemsList;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 50 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(51);
+	var content = __webpack_require__(60);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -48071,15 +48438,15 @@
 	}
 
 /***/ },
-/* 51 */
-22,
-/* 52 */
+/* 60 */
+33,
+/* 61 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerExtraction.js
 	'use strict';
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
 	var AnswerExtraction = function (item) {
 	    if (item.hasOwnProperty('answers')) {
@@ -48154,19 +48521,19 @@
 	module.exports = AnswerExtraction;
 
 /***/ },
-/* 53 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AnswerText.js
 
 	'use strict';
 
-	__webpack_require__(54);
-	__webpack_require__(56);
+	__webpack_require__(63);
+	__webpack_require__(65);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(58);
+	var ReactBS = __webpack_require__(8);
+	var Select = __webpack_require__(67);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -48175,10 +48542,10 @@
 	var Modal = ReactBS.Modal;
 	var Panel = ReactBS.Panel;
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerFeedback = __webpack_require__(65);
-	var AnswerFeedbackPreviewBtn = __webpack_require__(66);
-	var Dispatcher = __webpack_require__(9);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var AnswerFeedback = __webpack_require__(74);
+	var AnswerFeedbackPreviewBtn = __webpack_require__(75);
+	var Dispatcher = __webpack_require__(20);
 
 	var AnswerText = React.createClass({
 	  displayName: 'AnswerText',
@@ -48253,19 +48620,19 @@
 	});
 
 	module.exports = AnswerText;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 54 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(55);
+	var content = __webpack_require__(64);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -48282,10 +48649,10 @@
 	}
 
 /***/ },
-/* 55 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -48296,16 +48663,16 @@
 
 
 /***/ },
-/* 56 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(57);
+	var content = __webpack_require__(66);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -48322,10 +48689,10 @@
 	}
 
 /***/ },
-/* 57 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -48336,7 +48703,7 @@
 
 
 /***/ },
-/* 58 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48357,27 +48724,27 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _reactInputAutosize = __webpack_require__(59);
+	var _reactInputAutosize = __webpack_require__(68);
 
 	var _reactInputAutosize2 = _interopRequireDefault(_reactInputAutosize);
 
-	var _classnames = __webpack_require__(60);
+	var _classnames = __webpack_require__(69);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _utilsStripDiacritics = __webpack_require__(61);
+	var _utilsStripDiacritics = __webpack_require__(70);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
-	var _Async = __webpack_require__(62);
+	var _Async = __webpack_require__(71);
 
 	var _Async2 = _interopRequireDefault(_Async);
 
-	var _Option = __webpack_require__(63);
+	var _Option = __webpack_require__(72);
 
 	var _Option2 = _interopRequireDefault(_Option);
 
-	var _Value = __webpack_require__(64);
+	var _Value = __webpack_require__(73);
 
 	var _Value2 = _interopRequireDefault(_Value);
 
@@ -49253,7 +49620,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 59 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49384,7 +49751,7 @@
 	module.exports = AutosizeInput;
 
 /***/ },
-/* 60 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -49438,7 +49805,7 @@
 
 
 /***/ },
-/* 61 */
+/* 70 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -49453,7 +49820,7 @@
 	};
 
 /***/ },
-/* 62 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49466,11 +49833,11 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Select = __webpack_require__(58);
+	var _Select = __webpack_require__(67);
 
 	var _Select2 = _interopRequireDefault(_Select);
 
-	var _utilsStripDiacritics = __webpack_require__(61);
+	var _utilsStripDiacritics = __webpack_require__(70);
 
 	var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 
@@ -49626,7 +49993,7 @@
 	module.exports = Async;
 
 /***/ },
-/* 63 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49637,7 +50004,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(60);
+	var _classnames = __webpack_require__(69);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49735,7 +50102,7 @@
 	module.exports = Option;
 
 /***/ },
-/* 64 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49746,7 +50113,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(60);
+	var _classnames = __webpack_require__(69);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
@@ -49844,14 +50211,14 @@
 	module.exports = Value;
 
 /***/ },
-/* 65 */
+/* 74 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerFeedback.jsx
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
 	var FormControl = ReactBS.FormControl;
@@ -49859,15 +50226,15 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var $s = __webpack_require__(33);
+	var $s = __webpack_require__(42);
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var CKEditorModalHack = __webpack_require__(34);
-	var ConfigureCKEditor = __webpack_require__(37);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(38);
-	var Dispatcher = __webpack_require__(9);
-	var LibraryItemsStore = __webpack_require__(8);
-	var MiddlewareService = __webpack_require__(17);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var CKEditorModalHack = __webpack_require__(43);
+	var ConfigureCKEditor = __webpack_require__(46);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(47);
+	var Dispatcher = __webpack_require__(20);
+	var LibraryItemsStore = __webpack_require__(19);
+	var MiddlewareService = __webpack_require__(28);
 
 	var AnswerFeedback = React.createClass({
 	    displayName: 'AnswerFeedback',
@@ -49980,16 +50347,16 @@
 	module.exports = AnswerFeedback;
 
 /***/ },
-/* 66 */
+/* 75 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// AnswerFeedbackPreviewBtn.jsx
 	'use strict';
 
-	__webpack_require__(67);
+	__webpack_require__(76);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Button = ReactBS.Button;
 
 	var AnswerFeedbackPreviewBtn = React.createClass({
@@ -50019,16 +50386,16 @@
 	module.exports = AnswerFeedbackPreviewBtn;
 
 /***/ },
-/* 67 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(68);
+	var content = __webpack_require__(77);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -50045,10 +50412,10 @@
 	}
 
 /***/ },
-/* 68 */
+/* 77 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -50059,7 +50426,7 @@
 
 
 /***/ },
-/* 69 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ItemControls.js
@@ -50068,10 +50435,10 @@
 
 	var React = __webpack_require__(1);
 
-	var CopyItem = __webpack_require__(70);
-	var DeleteItem = __webpack_require__(71);
-	var EditItem = __webpack_require__(72);
-	var TransferItem = __webpack_require__(76);
+	var CopyItem = __webpack_require__(79);
+	var DeleteItem = __webpack_require__(80);
+	var EditItem = __webpack_require__(81);
+	var TransferItem = __webpack_require__(85);
 
 	var ItemControls = React.createClass({
 	  displayName: 'ItemControls',
@@ -50101,25 +50468,25 @@
 	module.exports = ItemControls;
 
 /***/ },
-/* 70 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// CopyItem.jsx
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 
-	var $s = __webpack_require__(33);
+	var $s = __webpack_require__(42);
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(52);
-	var Dispatcher = __webpack_require__(9);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var LibraryItemsStore = __webpack_require__(8);
-	var MiddlewareService = __webpack_require__(17);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var AnswerExtraction = __webpack_require__(61);
+	var Dispatcher = __webpack_require__(20);
+	var GenusTypes = __webpack_require__(25).GenusTypes;
+	var LibraryItemsStore = __webpack_require__(19);
+	var MiddlewareService = __webpack_require__(28);
 
 	var CopyItem = React.createClass({
 	  displayName: 'CopyItem',
@@ -50192,22 +50559,22 @@
 	});
 
 	module.exports = CopyItem;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 71 */
+/* 80 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// DeleteItem.jsx
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var dispatcher = __webpack_require__(9);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var dispatcher = __webpack_require__(20);
 
 	var DeleteItem = React.createClass({
 	    displayName: 'DeleteItem',
@@ -50305,22 +50672,22 @@
 	module.exports = DeleteItem;
 
 /***/ },
-/* 72 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// EditItem.jsx
 	'use strict';
 
-	__webpack_require__(73);
+	__webpack_require__(82);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var EditMultipleChoice = __webpack_require__(75);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var EditMultipleChoice = __webpack_require__(84);
+	var GenusTypes = __webpack_require__(25).GenusTypes;
 
 	var EditItem = React.createClass({
 	    displayName: 'EditItem',
@@ -50367,16 +50734,16 @@
 	module.exports = EditItem;
 
 /***/ },
-/* 73 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(74);
+	var content = __webpack_require__(83);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -50393,10 +50760,10 @@
 	}
 
 /***/ },
-/* 74 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -50407,14 +50774,14 @@
 
 
 /***/ },
-/* 75 */
+/* 84 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// EditMultipleChoice.jsx
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -50424,18 +50791,18 @@
 	var ListGroup = ReactBS.ListGroup;
 	var Modal = ReactBS.Modal;
 
-	var $s = __webpack_require__(33);
+	var $s = __webpack_require__(42);
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var AnswerExtraction = __webpack_require__(52);
-	var CKEditorModalHack = __webpack_require__(34);
-	var ConfigureCKEditor = __webpack_require__(37);
-	var ConvertLibraryId2RepositoryId = __webpack_require__(38);
-	var Dispatcher = __webpack_require__(9);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var LibraryItemsStore = __webpack_require__(8);
-	var MiddlewareService = __webpack_require__(17);
-	var WrongAnswerEditor = __webpack_require__(39);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var AnswerExtraction = __webpack_require__(61);
+	var CKEditorModalHack = __webpack_require__(43);
+	var ConfigureCKEditor = __webpack_require__(46);
+	var ConvertLibraryId2RepositoryId = __webpack_require__(47);
+	var Dispatcher = __webpack_require__(20);
+	var GenusTypes = __webpack_require__(25).GenusTypes;
+	var LibraryItemsStore = __webpack_require__(19);
+	var MiddlewareService = __webpack_require__(28);
+	var WrongAnswerEditor = __webpack_require__(48);
 
 	var EditMultipleChoice = React.createClass({
 	    displayName: 'EditMultipleChoice',
@@ -51026,21 +51393,21 @@
 	});
 
 	module.exports = EditMultipleChoice;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 76 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// TransferItem.jsx
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 
-	var AssignableBanks = __webpack_require__(77);
+	var AssignableBanks = __webpack_require__(86);
 
 	var TransferItem = React.createClass({
 	    displayName: 'TransferItem',
@@ -51082,14 +51449,14 @@
 	module.exports = TransferItem;
 
 /***/ },
-/* 77 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// AssignableBanks.jsx
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
 	var Checkbox = ReactBS.Checkbox;
@@ -51097,10 +51464,10 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-	var LibraryItemsStore = __webpack_require__(8);
-	var MiddlewareService = __webpack_require__(17);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var Dispatcher = __webpack_require__(20);
+	var LibraryItemsStore = __webpack_require__(19);
+	var MiddlewareService = __webpack_require__(28);
 
 	var AssignableBanks = React.createClass({
 	    displayName: 'AssignableBanks',
@@ -51275,37 +51642,39 @@
 	});
 
 	module.exports = AssignableBanks;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 78 */
+/* 87 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemRow.js
 
 	'use strict';
 
-	__webpack_require__(79);
+	__webpack_require__(88);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Col = ReactBS.Col;
 	var Grid = ReactBS.Grid;
 	var Panel = ReactBS.Panel;
 	var Row = ReactBS.Row;
 
-	var AuthoringConstants = __webpack_require__(14);
+	var AuthoringConstants = __webpack_require__(25);
 	var ChoiceLabels = AuthoringConstants.ChoiceLabels;
 	var GenusTypes = AuthoringConstants.GenusTypes;
 
-	var AnswerExtraction = __webpack_require__(52);
-	var AnswerText = __webpack_require__(53);
-	var ItemControls = __webpack_require__(69);
-	var LOText = __webpack_require__(81);
-	var OutcomesStore = __webpack_require__(26);
-	var QuestionText = __webpack_require__(88);
-	var SetIFrameHeight = __webpack_require__(95);
-	var WrapHTML = __webpack_require__(96);
+	var AnswerExtraction = __webpack_require__(61);
+	var AnswerText = __webpack_require__(62);
+	var ItemControls = __webpack_require__(78);
+	var LOText = __webpack_require__(90);
+	var OutcomesStore = __webpack_require__(35);
+	var QuestionText = __webpack_require__(97);
+	var SetIFrameHeight = __webpack_require__(104);
+	var WrapHTML = __webpack_require__(105);
+
+	var answerLOchanged = false; // horrible hack ..
 
 	var ItemRow = React.createClass({
 	  displayName: 'ItemRow',
@@ -51313,37 +51682,59 @@
 	  getInitialState: function getInitialState() {
 	    return {
 	      itemExpanded: false,
-	      showPreview: false,
-	      updateableItem: JSON.parse(JSON.stringify(this.props.item)) };
+	      showPreview: false
+	    };
 	  },
-	  // make a clone so that this changes when item updated
 	  componentWillMount: function componentWillMount() {},
 	  componentDidMount: function componentDidMount() {},
-	  componentDidUpdate: function componentDidUpdate() {
+	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
 	    renderMathInElement(this.refs.textContainer);
+	    answerLOchanged = false;
 	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    var _this = this;
+	    _.each(nextProps.item['answers'], function (answer, index) {
+	      if (answer['confusedLearningObjectiveIds'][0] != _this.props.item['answers'][index]['confusedLearningObjectiveIds'][0]) {
+	        answerLOchanged = true;
+	        console.log("an answer LO changed!");
+	      }
+	    });
+	  },
 	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
 	    if (nextState.showPreview) {
 	      SetIFrameHeight(this.refs.myPreviewFrame);
 	    }
 	  },
 	  shouldComponentUpdate: function shouldComponentUpdate(nextProps, nextState) {
-	    var equalityKeys = ["minStringLength", "displayName", "description", "license", "texts", "bankId", "question", "answers", "id", "recordTypeIds", "providerId", "brandingIds", "assignedBankIds", "genusTypeId", "type", "maxStringLength", "learningObjectiveIds"],
+	    var equalityKeys = ["minStringLength", "displayName", "description", "license", "texts", "bankId", "question", "answers", "id", "recordTypeIds", "providerId", "brandingIds", "solution", "assignedBankIds", "genusTypeId", "type", "maxStringLength", "learningObjectiveIds"],
 	        _this = this,
 	        unequalPropsItem;
 
 	    unequalPropsItem = _.some(equalityKeys, function (key) {
 	      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
-	      if (key == 'answers') {
-	        _.each(nextProps.item[key], function (answer, index) {
-	          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.state.updateableItem[key][index]['confusedLearningObjectiveIds'][0];
-	        });
-	      }
+	      //      if (key == 'answers') {
+	      //        _.each(nextProps.item[key], function (answer, index) {
+	      //          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.props.item[key][index]['confusedLearningObjectiveIds'][0];
+	      //          if (answer.id == 'assessment.Answer%3A57bd9b2471e482b4e5522159%40bazzim.MIT.EDU') {
+	      //            console.log(answer['confusedLearningObjectiveIds'][0]);
+	      //            console.log(_this.props.item[key][index]['confusedLearningObjectiveIds'][0]);
+	      //          }
+	      //        });
+	      //      }
+	      //      } else if (key == 'question') {
+	      //        unequalProp = unequalProp || nextProps.item['question']['text']['text'] != _this.state.updateableItem['question']['text']['text'];
+	      //        _.each(nextProps.item[key]['choices'], function (choice, index) {
+	      //          unequalProp = unequalProp || choice['text'] != _this.state.updateableItem[key]['choices'][index]['text'];
+	      //        });
+	      //      }
 	      return unequalProp;
 	    });
 
-	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded || this.state.showPreview !== nextState.showPreview;
+	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded || this.state.showPreview !== nextState.showPreview || answerLOchanged;
+
+	    if (answerLOchanged) {
+	      console.log('yes, should update');
+	    }
 
 	    return shouldUpdate;
 	  },
@@ -51402,6 +51793,12 @@
 	          relatedItems = _this.getRelatedItems(outcomeId),
 	          choiceLetter = ChoiceLabels[visibleIndex];
 
+	      if (_this.props.item.id == 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU') {
+	        console.log('answer LOs');
+	        console.log(answerId);
+	        console.log(outcomeId);
+	      }
+
 	      return React.createElement(
 	        'div',
 	        { className: 'text-row-wrapper',
@@ -51422,8 +51819,7 @@
 	          outcomeId: _this.getQuestionLO(item),
 	          outcomes: _this.filterOutcomes(item),
 	          refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
-	          relatedItems: relatedItems,
-	          updateAnswerLO: _this.updateAnswerLO })
+	          relatedItems: relatedItems })
 	      );
 	    });
 	  },
@@ -51463,38 +51859,30 @@
 	    this.setState({ itemExpanded: !this.state.itemExpanded });
 	    //}
 	  },
-	  updateAnswerLO: function updateAnswerLO(answerId, confusedLearningObjectiveId) {
-	    var updatedItem = this.state.updateableItem,
-	        updatedWrongAnswerLOs = [];
-	    _.each(updatedItem.answers, function (answer) {
-	      if (answer.id == answerId) {
-	        answer.confusedLearningObjectiveIds = [confusedLearningObjectiveId];
-	        updatedWrongAnswerLOs.push(confusedLearningObjectiveId);
-	      } else {
-	        updatedWrongAnswerLOs.push(answer.confusedLearningObjectiveIds[0]);
-	      }
-	    });
-	    updatedItem.wrongAnswerLOs = updatedWrongAnswerLOs;
-	    this.setState({ updateableItem: updatedItem });
-	  },
 	  render: function render() {
-	    var _this = this;
+	    var _this = this,
+	        updateItem = JSON.parse(JSON.stringify(this.props.item));
 	    // map the choiceIds, etc., in answers back to choices in questions
 
-	    var answers = AnswerExtraction(_this.state.updateableItem),
+	    if (this.props.item.id == 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU') {
+	      console.log('rendering');
+	      console.log(updateItem);
+	    }
+
+	    var answers = AnswerExtraction(updateItem),
 	        previewHTML = { __html: answers.correctAnswerFeedback };
 	    //      previewHTML = WrapHTML(answers.correctAnswerFeedback);
 
-	    _this.state.updateableItem['correctAnswer'] = answers.correctAnswerText.text;
-	    _this.state.updateableItem['correctAnswerId'] = answers.correctAnswerId;
-	    _this.state.updateableItem['correctAnswerFeedback'] = answers.correctAnswerFeedback;
-	    _this.state.updateableItem['questionRelatedItems'] = _this.getRelatedItems(_this.state.updateableItem.learningObjectiveIds[0]);
-	    _this.state.updateableItem['usedLOs'] = this.state.updateableItem.learningObjectiveIds;
-	    _this.state.updateableItem['wrongAnswers'] = answers.wrongAnswerTexts;
-	    _this.state.updateableItem['wrongAnswerIds'] = answers.wrongAnswerIds;
-	    _this.state.updateableItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
+	    updateItem['correctAnswer'] = answers.correctAnswerText.text;
+	    updateItem['correctAnswerId'] = answers.correctAnswerId;
+	    updateItem['correctAnswerFeedback'] = answers.correctAnswerFeedback;
+	    updateItem['questionRelatedItems'] = _this.getRelatedItems(updateItem.learningObjectiveIds[0]);
+	    updateItem['usedLOs'] = updateItem.learningObjectiveIds;
+	    updateItem['wrongAnswers'] = answers.wrongAnswerTexts;
+	    updateItem['wrongAnswerIds'] = answers.wrongAnswerIds;
+	    updateItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
 
-	    var questionLO = _this.getQuestionLO(_this.state.updateableItem),
+	    var questionLO = _this.getQuestionLO(updateItem),
 	        itemCreator = 'Unknown',
 	        itemControls;
 
@@ -51502,7 +51890,7 @@
 	      itemControls = React.createElement(
 	        'div',
 	        { className: 'item-controls' },
-	        React.createElement(ItemControls, { item: _this.state.updateableItem,
+	        React.createElement(ItemControls, { item: updateItem,
 	          libraries: _this.props.libraries,
 	          libraryId: _this.props.libraryId })
 	      );
@@ -51510,9 +51898,9 @@
 	      itemControls = '';
 	    }
 
-	    if (_this.state.updateableItem.hasOwnProperty('providerId')) {
-	      if (_this.state.updateableItem.providerId != '') {
-	        itemCreator = _this.state.updateableItem.providerId;
+	    if (updateItem.hasOwnProperty('providerId')) {
+	      if (updateItem.providerId != '') {
+	        itemCreator = updateItem.providerId;
 	      }
 	    }
 
@@ -51524,9 +51912,9 @@
 	        { sm: 8, md: 8, lg: 8 },
 	        React.createElement(
 	          Panel,
-	          { header: _this.state.updateableItem.displayName.text,
+	          { header: updateItem.displayName.text,
 	            collapsible: true,
-	            'data-id': _this.state.updateableItem.id,
+	            'data-id': updateItem.id,
 	            'data-type': 'item',
 	            expanded: _this.state.itemExpanded,
 	            onClick: _this.toggleItemState },
@@ -51539,7 +51927,7 @@
 	              'Q:'
 	            ),
 	            React.createElement(QuestionText, { expanded: _this.state.itemExpanded,
-	              questionText: _this.state.updateableItem.question.text.text,
+	              questionText: updateItem.question.text.text,
 	              itemCreator: itemCreator })
 	          ),
 	          React.createElement(
@@ -51550,13 +51938,13 @@
 	              { className: 'answer-label' },
 	              'a)'
 	            ),
-	            React.createElement(AnswerText, { answerId: _this.state.updateableItem.correctAnswerId,
-	              answerText: _this.state.updateableItem.correctAnswer,
+	            React.createElement(AnswerText, { answerId: updateItem.correctAnswerId,
+	              answerText: updateItem.correctAnswer,
 	              correctAnswer: 'true',
 	              enableClickthrough: _this.props.enableClickthrough,
 	              expanded: _this.state.itemExpanded,
-	              solution: _this.state.updateableItem.correctAnswerFeedback,
-	              itemId: _this.state.updateableItem.id,
+	              solution: updateItem.correctAnswerFeedback,
+	              itemId: updateItem.id,
 	              label: 'Correct Answer',
 	              libraryId: _this.props.libraryId,
 	              togglePreview: _this._togglePreview })
@@ -51572,7 +51960,7 @@
 	                ref: 'textContainer' })
 	            )
 	          ),
-	          _this.renderItemAnswerTexts(_this.state.updateableItem),
+	          _this.renderItemAnswerTexts(updateItem),
 	          itemControls
 	        )
 	      ),
@@ -51594,14 +51982,14 @@
 	            ),
 	            React.createElement(LOText, { component: 'question',
 	              enableClickthrough: _this.props.enableClickthrough,
-	              itemId: _this.state.updateableItem.id,
+	              itemId: updateItem.id,
 	              libraryId: _this.props.libraryId,
 	              outcomeDescription: _this.getOutcomeDescription(questionLO),
 	              outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
 	              outcomeId: questionLO,
-	              outcomes: _this.filterOutcomes(_this.state.updateableItem),
+	              outcomes: _this.filterOutcomes(updateItem),
 	              refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
-	              relatedItems: _this.state.updateableItem.questionRelatedItems })
+	              relatedItems: updateItem.questionRelatedItems })
 	          ),
 	          React.createElement(
 	            'div',
@@ -51617,7 +52005,7 @@
 	              'Correct answer -- no confused LO'
 	            )
 	          ),
-	          _this.renderItemAnswerLOs(_this.state.updateableItem)
+	          _this.renderItemAnswerLOs(updateItem)
 	        )
 	      )
 	    );
@@ -51628,19 +52016,19 @@
 	});
 
 	module.exports = ItemRow;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 79 */
+/* 88 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(80);
+	var content = __webpack_require__(89);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -51657,10 +52045,10 @@
 	}
 
 /***/ },
-/* 80 */
+/* 89 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -51671,19 +52059,19 @@
 
 
 /***/ },
-/* 81 */
+/* 90 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LOText.js
 
 	'use strict';
 
-	__webpack_require__(82);
+	__webpack_require__(91);
 
 	var React = __webpack_require__(1);
 
-	var LinkLO = __webpack_require__(84);
-	var LORelatedItemsBadge = __webpack_require__(85);
+	var LinkLO = __webpack_require__(93);
+	var LORelatedItemsBadge = __webpack_require__(94);
 
 	var LOText = React.createClass({
 	    displayName: 'LOText',
@@ -51709,8 +52097,7 @@
 	                    libraryId: this.props.libraryId,
 	                    outcomeId: this.props.outcomeId,
 	                    outcomes: this.props.outcomes,
-	                    refreshModulesAndOutcomes: this.props.refreshModulesAndOutcomes,
-	                    updateAnswerLO: this.props.updateAnswerLO })
+	                    refreshModulesAndOutcomes: this.props.refreshModulesAndOutcomes })
 	            );
 	        }
 
@@ -51739,16 +52126,16 @@
 	module.exports = LOText;
 
 /***/ },
-/* 82 */
+/* 91 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(83);
+	var content = __webpack_require__(92);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -51765,10 +52152,10 @@
 	}
 
 /***/ },
-/* 83 */
+/* 92 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -51779,18 +52166,18 @@
 
 
 /***/ },
-/* 84 */
+/* 93 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LinkLO.js
 
 	'use strict';
 
-	__webpack_require__(56);
+	__webpack_require__(65);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(58);
+	var ReactBS = __webpack_require__(8);
+	var Select = __webpack_require__(67);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -51798,8 +52185,8 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var Dispatcher = __webpack_require__(20);
 
 	var LinkLO = React.createClass({
 	    displayName: 'LinkLO',
@@ -51849,7 +52236,6 @@
 	                itemId: this.props.itemId,
 	                libraryId: this.props.libraryId
 	            };
-	            this.props.updateAnswerLO(this.props.answerId, this.state.outcomeId);
 	            Dispatcher.dispatch({
 	                type: ActionTypes.LINK_ANSWER_LO,
 	                content: payload
@@ -51939,29 +52325,29 @@
 	});
 
 	module.exports = LinkLO;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 85 */
+/* 94 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItemsBadge.jsx
 	'use strict';
 
-	__webpack_require__(86);
+	__webpack_require__(95);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Alert = ReactBS.Alert;
 	var Badge = ReactBS.Badge;
 	var Button = ReactBS.Button;
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-	var LibraryItemsStore = __webpack_require__(8);
-	var OutcomesStore = __webpack_require__(26);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var Dispatcher = __webpack_require__(20);
+	var LibraryItemsStore = __webpack_require__(19);
+	var OutcomesStore = __webpack_require__(35);
 
 	var LORelatedItemsBadge = React.createClass({
 	    displayName: 'LORelatedItemsBadge',
@@ -51978,7 +52364,7 @@
 	        this.setState({ showModal: true });
 	    },
 	    render: function render() {
-	        var ItemsList = __webpack_require__(49);
+	        var ItemsList = __webpack_require__(58);
 	        var items, lo;
 
 	        lo = OutcomesStore.get(this.props.outcomeId) == null ? '' : OutcomesStore.get(this.props.outcomeId).displayName.text;
@@ -52045,16 +52431,16 @@
 	module.exports = LORelatedItemsBadge;
 
 /***/ },
-/* 86 */
+/* 95 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(87);
+	var content = __webpack_require__(96);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -52071,10 +52457,10 @@
 	}
 
 /***/ },
-/* 87 */
+/* 96 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -52085,20 +52471,20 @@
 
 
 /***/ },
-/* 88 */
+/* 97 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// QuestionText.js
 
 	'use strict';
 
-	__webpack_require__(89);
-	__webpack_require__(56);
+	__webpack_require__(98);
+	__webpack_require__(65);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
-	var Select = __webpack_require__(58);
-	var ReactTooltip = __webpack_require__(91);
+	var ReactBS = __webpack_require__(8);
+	var Select = __webpack_require__(67);
+	var ReactTooltip = __webpack_require__(100);
 
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -52106,9 +52492,9 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var ActionTypes = __webpack_require__(14).ActionTypes;
-	var Dispatcher = __webpack_require__(9);
-	var OsidId = __webpack_require__(94);
+	var ActionTypes = __webpack_require__(25).ActionTypes;
+	var Dispatcher = __webpack_require__(20);
+	var OsidId = __webpack_require__(103);
 
 	var QuestionText = React.createClass({
 	    displayName: 'QuestionText',
@@ -52191,19 +52577,19 @@
 	});
 
 	module.exports = QuestionText;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 89 */
+/* 98 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(90);
+	var content = __webpack_require__(99);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -52220,10 +52606,10 @@
 	}
 
 /***/ },
-/* 90 */
+/* 99 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -52234,16 +52620,16 @@
 
 
 /***/ },
-/* 91 */
+/* 100 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict'
 
-	module.exports = __webpack_require__(92)
+	module.exports = __webpack_require__(101)
 
 
 /***/ },
-/* 92 */
+/* 101 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -52258,11 +52644,11 @@
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _classnames = __webpack_require__(60);
+	var _classnames = __webpack_require__(69);
 
 	var _classnames2 = _interopRequireDefault(_classnames);
 
-	var _style = __webpack_require__(93);
+	var _style = __webpack_require__(102);
 
 	var _style2 = _interopRequireDefault(_style);
 
@@ -53011,7 +53397,7 @@
 
 
 /***/ },
-/* 93 */
+/* 102 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -53023,7 +53409,7 @@
 
 
 /***/ },
-/* 94 */
+/* 103 */
 /***/ function(module, exports) {
 
 	// OsidId.js
@@ -53040,7 +53426,7 @@
 	module.exports = OsidId;
 
 /***/ },
-/* 95 */
+/* 104 */
 /***/ function(module, exports) {
 
 	// SetIFrameHeight.js
@@ -53082,7 +53468,7 @@
 	module.exports = SetIFrameHeight;
 
 /***/ },
-/* 96 */
+/* 105 */
 /***/ function(module, exports) {
 
 	// WrapHTML.js
@@ -53113,13 +53499,13 @@
 	module.exports = WrapHTML;
 
 /***/ },
-/* 97 */
+/* 106 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// LORelatedItems.js
 	'use strict';
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
 
 	var LORelatedItems = function (items, outcomes) {
@@ -53148,13 +53534,13 @@
 	module.exports = LORelatedItems;
 
 /***/ },
-/* 98 */
+/* 107 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// SortItemsByModuleOutcomes.js
 	'use strict';
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
 
 	var SortItemsByModuleOutcomes = function (items, modules) {
@@ -53194,24 +53580,24 @@
 	module.exports = SortItemsByModuleOutcomes;
 
 /***/ },
-/* 99 */
+/* 108 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// ItemStatus.js
 
 	'use strict';
 
-	__webpack_require__(100);
+	__webpack_require__(109);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Glyphicon = ReactBS.Glyphicon;
 	var Label = ReactBS.Label;
-	var ReactTooltip = __webpack_require__(91);
+	var ReactTooltip = __webpack_require__(100);
 
-	var AuthoringConstants = __webpack_require__(14);
-	var GenusTypes = __webpack_require__(14).GenusTypes;
-	var LibraryItemsStore = __webpack_require__(8);
+	var AuthoringConstants = __webpack_require__(25);
+	var GenusTypes = __webpack_require__(25).GenusTypes;
+	var LibraryItemsStore = __webpack_require__(19);
 
 	var ItemStatus = React.createClass({
 	    displayName: 'ItemStatus',
@@ -53277,19 +53663,19 @@
 	});
 
 	module.exports = ItemStatus;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 100 */
+/* 109 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(101);
+	var content = __webpack_require__(110);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -53306,10 +53692,10 @@
 	}
 
 /***/ },
-/* 101 */
+/* 110 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -53320,16 +53706,16 @@
 
 
 /***/ },
-/* 102 */
+/* 111 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ViewDashboard.jsx
 	'use strict';
 
-	__webpack_require__(103);
+	__webpack_require__(112);
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var Alert = ReactBS.Alert;
 	var Button = ReactBS.Button;
 	var ControlLabel = ReactBS.ControlLabel;
@@ -53338,9 +53724,9 @@
 	var Glyphicon = ReactBS.Glyphicon;
 	var Modal = ReactBS.Modal;
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
-	var Dashboard = __webpack_require__(105);
+	var Dashboard = __webpack_require__(114);
 
 	var ViewDashboard = React.createClass({
 	    displayName: 'ViewDashboard',
@@ -53406,16 +53792,16 @@
 	module.exports = ViewDashboard;
 
 /***/ },
-/* 103 */
+/* 112 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(104);
+	var content = __webpack_require__(113);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -53432,10 +53818,10 @@
 	}
 
 /***/ },
-/* 104 */
+/* 113 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -53446,7 +53832,7 @@
 
 
 /***/ },
-/* 105 */
+/* 114 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -53454,12 +53840,12 @@
 	// Dashboard.jsx
 
 	var React = __webpack_require__(1);
-	var Select = __webpack_require__(58);
-	__webpack_require__(106);
+	var Select = __webpack_require__(67);
+	__webpack_require__(115);
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
-	var OutcomeTree = __webpack_require__(108);
+	var OutcomeTree = __webpack_require__(117);
 
 	var Dashboard = React.createClass({
 	  displayName: 'Dashboard',
@@ -53564,16 +53950,16 @@
 	module.exports = Dashboard;
 
 /***/ },
-/* 106 */
+/* 115 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(107);
+	var content = __webpack_require__(116);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(24)(content, {});
+	var update = __webpack_require__(7)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -53590,10 +53976,10 @@
 	}
 
 /***/ },
-/* 107 */
+/* 116 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(23)();
+	exports = module.exports = __webpack_require__(6)();
 	// imports
 
 
@@ -53604,15 +53990,15 @@
 
 
 /***/ },
-/* 108 */
+/* 117 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {'use strict';
 
 	var React = __webpack_require__(1);
 
-	__webpack_require__(109);
-	__webpack_require__(110);
+	__webpack_require__(118);
+	__webpack_require__(119);
 	var xoces = window.xoces;
 	var dao = window.dao;
 
@@ -53730,10 +54116,10 @@
 	});
 
 	module.exports = OutcomeTree;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 109 */
+/* 118 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {/******/ (function(modules) { // webpackBootstrap
@@ -86830,10 +87216,10 @@
 
 	/***/ }
 	/******/ ])
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 110 */
+/* 119 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {/******/ (function(modules) { // webpackBootstrap
@@ -101764,22 +102150,22 @@
 
 	/***/ }
 	/******/ ]);
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 111 */
+/* 120 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(_) {// LibrarySelector.js
 	'use strict';
 
 	var React = __webpack_require__(1);
-	var ReactBS = __webpack_require__(4);
+	var ReactBS = __webpack_require__(8);
 	var ControlLabel = ReactBS.ControlLabel;
 	var FormControl = ReactBS.FormControl;
 	var FormGroup = ReactBS.FormGroup;
 
-	var LibraryItemsStore = __webpack_require__(8);
+	var LibraryItemsStore = __webpack_require__(19);
 
 	var LibrarySelector = React.createClass({
 	    displayName: 'LibrarySelector',
@@ -101837,16 +102223,16 @@
 	});
 
 	module.exports = LibrarySelector;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ },
-/* 112 */
+/* 121 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// ShibSessionCheck.js
 	'use strict';
 
-	var _ = __webpack_require__(5);
+	var _ = __webpack_require__(9);
 
 	var ShibSessionCheck = function (item) {
 	  var hostLocation = window.location.host,

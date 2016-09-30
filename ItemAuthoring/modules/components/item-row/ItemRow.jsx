@@ -25,22 +25,31 @@ var SetIFrameHeight = require('../../utilities/SetIFrameHeight');
 var WrapHTML = require('../../utilities/WrapHTML');
 
 
+var answerLOchanged = false; // horrible hack ..
+
 var ItemRow = React.createClass({
   getInitialState: function () {
     return {
       itemExpanded: false,
       showPreview: false,
-      updateableItem: JSON.parse(JSON.stringify(this.props.item)), // make a clone so that this changes when item updated
     };
   },
   componentWillMount: function() {
   },
   componentDidMount: function () {
   },
-  componentDidUpdate: function () {
+  componentDidUpdate: function (prevProps, prevState) {
     renderMathInElement(this.refs.textContainer);
+    answerLOchanged = false;
   },
   componentWillReceiveProps: function (nextProps) {
+    var _this = this;
+    _.each(nextProps.item['answers'], function (answer, index) {
+      if (answer['confusedLearningObjectiveIds'][0] != _this.props.item['answers'][index]['confusedLearningObjectiveIds'][0]) {
+        answerLOchanged = true;
+        console.log("an answer LO changed!");
+      }
+    });
   },
   componentWillUpdate: function (nextProps, nextState) {
     if (nextState.showPreview) {
@@ -51,6 +60,7 @@ var ItemRow = React.createClass({
     var equalityKeys = ["minStringLength", "displayName", "description",
                         "license", "texts", "bankId", "question", "answers",
                         "id", "recordTypeIds", "providerId", "brandingIds",
+                        "solution",
                         "assignedBankIds", "genusTypeId", "type",
                         "maxStringLength", "learningObjectiveIds"],
       _this = this,
@@ -58,17 +68,32 @@ var ItemRow = React.createClass({
 
     unequalPropsItem = _.some(equalityKeys, function (key) {
       var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
-      if (key == 'answers') {
-        _.each(nextProps.item[key], function (answer, index) {
-          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.state.updateableItem[key][index]['confusedLearningObjectiveIds'][0];
-        });
-      }
+//      if (key == 'answers') {
+//        _.each(nextProps.item[key], function (answer, index) {
+//          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.props.item[key][index]['confusedLearningObjectiveIds'][0];
+//          if (answer.id == 'assessment.Answer%3A57bd9b2471e482b4e5522159%40bazzim.MIT.EDU') {
+//            console.log(answer['confusedLearningObjectiveIds'][0]);
+//            console.log(_this.props.item[key][index]['confusedLearningObjectiveIds'][0]);
+//          }
+//        });
+//      }
+//      } else if (key == 'question') {
+//        unequalProp = unequalProp || nextProps.item['question']['text']['text'] != _this.state.updateableItem['question']['text']['text'];
+//        _.each(nextProps.item[key]['choices'], function (choice, index) {
+//          unequalProp = unequalProp || choice['text'] != _this.state.updateableItem[key]['choices'][index]['text'];
+//        });
+//      }
       return unequalProp;
     });
 
     var shouldUpdate = unequalPropsItem ||
       this.state.itemExpanded !== nextState.itemExpanded ||
-      this.state.showPreview !== nextState.showPreview;
+      this.state.showPreview !== nextState.showPreview ||
+      answerLOchanged;
+
+    if (answerLOchanged) {
+      console.log('yes, should update');
+    }
 
     return shouldUpdate;
   },
@@ -123,6 +148,12 @@ var ItemRow = React.createClass({
           relatedItems = _this.getRelatedItems(outcomeId),
           choiceLetter = ChoiceLabels[visibleIndex];
 
+      if (_this.props.item.id == 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU') {
+        console.log('answer LOs');
+        console.log(answerId);
+        console.log(outcomeId);
+      }
+
       return <div className="text-row-wrapper"
                   key={index}>
         <p className="answer-label">{choiceLetter})</p>
@@ -136,8 +167,7 @@ var ItemRow = React.createClass({
                 outcomeId={_this.getQuestionLO(item)}
                 outcomes={_this.filterOutcomes(item)}
                 refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
-                relatedItems={relatedItems}
-                updateAnswerLO={_this.updateAnswerLO} />
+                relatedItems={relatedItems} />
       </div>
     });
   },
@@ -170,120 +200,112 @@ var ItemRow = React.createClass({
     this.setState({ itemExpanded: !this.state.itemExpanded });
     //}
   },
-  updateAnswerLO: function (answerId, confusedLearningObjectiveId) {
-    var updatedItem = this.state.updateableItem,
-      updatedWrongAnswerLOs = [];
-    _.each(updatedItem.answers, function (answer) {
-        if (answer.id == answerId) {
-          answer.confusedLearningObjectiveIds = [confusedLearningObjectiveId];
-          updatedWrongAnswerLOs.push(confusedLearningObjectiveId);
-        } else {
-          updatedWrongAnswerLOs.push(answer.confusedLearningObjectiveIds[0]);
-        }
-      });
-    updatedItem.wrongAnswerLOs = updatedWrongAnswerLOs;
-    this.setState({ updateableItem: updatedItem });
-  },
   render: function () {
-    var _this = this;
+    var _this = this,
+      updateItem = JSON.parse(JSON.stringify(this.props.item));
       // map the choiceIds, etc., in answers back to choices in questions
 
-    var answers = AnswerExtraction(_this.state.updateableItem),
+    if (this.props.item.id == 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU') {
+      console.log('rendering');
+      console.log(updateItem);
+    }
+
+    var answers = AnswerExtraction(updateItem),
       previewHTML = {__html: answers.correctAnswerFeedback};
-//      previewHTML = WrapHTML(answers.correctAnswerFeedback);
+    //      previewHTML = WrapHTML(answers.correctAnswerFeedback);
 
-    _this.state.updateableItem['correctAnswer'] = answers.correctAnswerText.text;
-    _this.state.updateableItem['correctAnswerId'] = answers.correctAnswerId;
-    _this.state.updateableItem['correctAnswerFeedback'] = answers.correctAnswerFeedback;
-    _this.state.updateableItem['questionRelatedItems'] = _this.getRelatedItems(_this.state.updateableItem.learningObjectiveIds[0]);
-    _this.state.updateableItem['usedLOs'] = this.state.updateableItem.learningObjectiveIds;
-    _this.state.updateableItem['wrongAnswers'] = answers.wrongAnswerTexts;
-    _this.state.updateableItem['wrongAnswerIds'] = answers.wrongAnswerIds;
-    _this.state.updateableItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
+    updateItem['correctAnswer'] = answers.correctAnswerText.text;
+    updateItem['correctAnswerId'] = answers.correctAnswerId;
+    updateItem['correctAnswerFeedback'] = answers.correctAnswerFeedback;
+    updateItem['questionRelatedItems'] = _this.getRelatedItems(updateItem.learningObjectiveIds[0]);
+    updateItem['usedLOs'] = updateItem.learningObjectiveIds;
+    updateItem['wrongAnswers'] = answers.wrongAnswerTexts;
+    updateItem['wrongAnswerIds'] = answers.wrongAnswerIds;
+    updateItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
 
-    var questionLO = _this.getQuestionLO(_this.state.updateableItem),
+    var questionLO = _this.getQuestionLO(updateItem),
       itemCreator = 'Unknown',
       itemControls;
 
     if (_this.props.enableClickthrough) {
       itemControls = <div className="item-controls">
-        <ItemControls item={_this.state.updateableItem}
-                      libraries={_this.props.libraries}
-                      libraryId={_this.props.libraryId} />
+        <ItemControls item={updateItem}
+        libraries={_this.props.libraries}
+        libraryId={_this.props.libraryId} />
       </div>
     } else {
       itemControls = '';
     }
 
-    if (_this.state.updateableItem.hasOwnProperty('providerId')) {
-      if (_this.state.updateableItem.providerId != '') {
-        itemCreator = _this.state.updateableItem.providerId;
+    if (updateItem.hasOwnProperty('providerId')) {
+      if (updateItem.providerId != '') {
+        itemCreator = updateItem.providerId;
       }
     }
 
     return <Row>
       <Col sm={8} md={8} lg={8}>
-        <Panel header={_this.state.updateableItem.displayName.text}
-               collapsible
-               data-id={_this.state.updateableItem.id}
-               data-type="item"
-               expanded={_this.state.itemExpanded}
-               onClick={_this.toggleItemState} >
+        <Panel header={updateItem.displayName.text}
+        collapsible
+        data-id={updateItem.id}
+        data-type="item"
+        expanded={_this.state.itemExpanded}
+        onClick={_this.toggleItemState} >
           <div className="text-row-wrapper">
             <p className="question-label">Q:</p>
             <QuestionText expanded={_this.state.itemExpanded}
-                          questionText={_this.state.updateableItem.question.text.text}
-                          itemCreator={itemCreator} />
+            questionText={updateItem.question.text.text}
+            itemCreator={itemCreator} />
           </div>
           <div className="text-row-wrapper">
             <p className="answer-label">a)</p>
-            <AnswerText answerId={_this.state.updateableItem.correctAnswerId}
-                        answerText={_this.state.updateableItem.correctAnswer}
+            <AnswerText answerId={updateItem.correctAnswerId}
+                        answerText={updateItem.correctAnswer}
                         correctAnswer="true"
                         enableClickthrough={_this.props.enableClickthrough}
                         expanded={_this.state.itemExpanded}
-                        solution={_this.state.updateableItem.correctAnswerFeedback}
-                        itemId={_this.state.updateableItem.id}
+                        solution={updateItem.correctAnswerFeedback}
+                        itemId={updateItem.id}
                         label="Correct Answer"
                         libraryId={_this.props.libraryId}
                         togglePreview={_this._togglePreview} />
           </div>
           <div className="right-answer-feedback-preview">
             <Panel collapsible
-                   expanded={_this.state.showPreview}>
+            expanded={_this.state.showPreview}>
               <div dangerouslySetInnerHTML={previewHTML}
-                   ref="textContainer">
+              ref="textContainer">
               </div>
             </Panel>
           </div>
-          {_this.renderItemAnswerTexts(_this.state.updateableItem)}
+          {_this.renderItemAnswerTexts(updateItem)}
           {itemControls}
         </Panel>
       </Col>
       <Col sm={4} md={4} lg={4}>
         <Panel header="Learning Outcomes"
-               collapsible
-               expanded={_this.state.itemExpanded}>
+        collapsible
+        expanded={_this.state.itemExpanded}>
           <div className="text-row-wrapper">
             <p className="question-label">Q:</p>
             <LOText component="question"
                     enableClickthrough={_this.props.enableClickthrough}
-                    itemId={_this.state.updateableItem.id}
+                    itemId={updateItem.id}
                     libraryId={_this.props.libraryId}
                     outcomeDescription={_this.getOutcomeDescription(questionLO)}
                     outcomeDisplayName={_this.getOutcomeDisplayName(questionLO)}
                     outcomeId={questionLO}
-                    outcomes={_this.filterOutcomes(_this.state.updateableItem)}
+                    outcomes={_this.filterOutcomes(updateItem)}
                     refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
-                    relatedItems={_this.state.updateableItem.questionRelatedItems} />
+                    relatedItems={updateItem.questionRelatedItems} />
           </div>
-            <div className="text-row-wrapper">
-              <p className="answer-label">a)</p>
-              <p className="correct-answer-lo">
-                Correct answer -- no confused LO
-              </p>
-            </div>
-            {_this.renderItemAnswerLOs(_this.state.updateableItem)}
+          <div className="text-row-wrapper">
+            <p className="answer-label">a)</p>
+            <p className="correct-answer-lo">
+            Correct answer -- no confused LO
+            </p>
+          </div>
+            {_this.renderItemAnswerLOs(updateItem)}
         </Panel>
       </Col>
     </Row>

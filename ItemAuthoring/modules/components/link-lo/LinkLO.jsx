@@ -66,7 +66,6 @@ var LinkLO = React.createClass({
                 itemId: this.props.itemId,
                 libraryId: this.props.libraryId
             };
-            this.props.updateAnswerLO(this.props.answerId, this.state.outcomeId);
             Dispatcher.dispatch({
                 type: ActionTypes.LINK_ANSWER_LO,
                 content: payload

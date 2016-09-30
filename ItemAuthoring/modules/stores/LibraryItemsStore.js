@@ -155,7 +155,10 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
                       updatedItems.push(item);
                     }
                   });
-
+                  console.log('new lo id');
+                  console.log(payload.confusedLearningObjectiveId);
+                  console.log(payload.answerId);
+                  console.log(_.find(updatedItems, {id: 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU'}));
                   _items = updatedItems;
                   _this.emitChange();
 //                    _this.getItems(payload.libraryId);
