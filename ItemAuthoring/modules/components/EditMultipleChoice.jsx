@@ -412,11 +412,11 @@ var EditMultipleChoice = React.createClass({
                 }
             });
 
+            this.close();
             Dispatcher.dispatch({
                 type: ActionTypes.UPDATE_ITEM,
                 content: payload
             });
-            this.close();
 //            setTimeout(this.reset, 1000);
         }
     },

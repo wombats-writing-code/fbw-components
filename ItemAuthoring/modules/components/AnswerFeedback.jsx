@@ -65,11 +65,11 @@ var AnswerFeedback = React.createClass({
         if (solution != this.props.solution) {
             payload['solution'] = solution;
 
+            this.close();
             Dispatcher.dispatch({
                 type: ActionTypes.UPDATE_ITEM,
                 content: payload
             });
-            this.close();
         }
     },
     render: function () {

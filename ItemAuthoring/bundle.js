@@ -35573,8 +35573,24 @@
 	        }).then(function (response) {
 	            if (response.ok) {
 	                response.json().then(function (data) {
-	                    _this.getItems(payload.libraryId);
-	                    console.log(data);
+	                  var updatedItems = [];
+	                  _.each(_items, function (item) {
+	                    if (item.id == data.id) {
+	                      _.each(item.answers, function (answer) {
+	                        if (answer.id == payload.answerId) {
+	                          answer.confusedLearningObjectiveIds = [payload.confusedLearningObjectiveId];
+	                        }
+	                      });
+	                      updatedItems.push(item);
+	                    } else {
+	                      updatedItems.push(item);
+	                    }
+	                  });
+
+	                  _items = updatedItems;
+	                  _this.emitChange();
+	//                    _this.getItems(payload.libraryId);
+	//                    console.log(data);
 	                });
 	            } else {
 	                response.text().then(function (data) {
@@ -35602,8 +35618,21 @@
 	        }).then(function (response) {
 	            if (response.ok) {
 	                response.json().then(function (data) {
-	                    _this.getItems(payload.libraryId);
-	                    console.log(data);
+	                  var updatedItems = [];
+	                  _.each(_items, function (item) {
+	                    if (item.id == data.id) {
+	                      item.learningObjectiveIds = [payload.learningObjectiveId];
+	                      item.question.learningObjectiveIds = [payload.learningObjectiveId];
+	                      updatedItems.push(item);
+	                    } else {
+	                      updatedItems.push(item);
+	                    }
+	                  });
+
+	                  _items = updatedItems;
+	                  _this.emitChange();
+	//                    _this.getItems(payload.libraryId);
+	//                    console.log(data);
 	                });
 	            } else {
 	                response.text().then(function (data) {
@@ -35636,18 +35665,39 @@
 	            body: data
 	        }).then(function (response) {
 	            if (response.ok) {
-	                response.json().then(function (data) {
-	                    _this.getItems(payload.libraryId);
-	                    console.log(data);
-	                });
+	                return response.json();
 	            } else {
 	                response.text().then(function (data) {
 	                    alert(response.statusText + ': ' + data);
 	                });
 	            }
+	        }).then(function (data) {
+	          // call this again to get the wrong answers
+	          var url = `${_this.url()}${payload.libraryId}/items/${payload.itemId}?wronganswers&unrandomized`;
+
+	          return fetch(url, {
+	              method: 'GET',
+	              credentials: "same-origin"
+	          });
+	        }).then(function (res) {
+	          return res.json();
+	        }).then(function (data) {
+	            var updatedItems = [];
+	            _.each(_items, function (item) {
+	              if (item.id == data.id) {
+	                updatedItems.push(data);
+	              } else {
+	                updatedItems.push(item);
+	              }
+	            });
+
+	            _items = updatedItems;
+	            _this.emitChange();
+	//                    _this.getItems(payload.libraryId);
+	//                    console.log(data);
 	        }).catch(function (error) {
 	            console.log('Problem with updating item ' + payload.itemId + ': ' + error.message);
-	        });
+	        }).done();
 	    },
 	    url: function () {
 	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
@@ -47967,9 +48017,7 @@
 	        return {};
 	    },
 	    componentWillMount: function componentWillMount() {},
-	    componentDidMount: function componentDidMount() {
-	        renderMathInElement(document.body);
-	    },
+	    componentDidMount: function componentDidMount() {},
 	    componentDidUpdate: function componentDidUpdate() {},
 	    renderItems: function renderItems() {
 	        var _this = this;
@@ -49865,11 +49913,11 @@
 	        if (solution != this.props.solution) {
 	            payload['solution'] = solution;
 
+	            this.close();
 	            Dispatcher.dispatch({
 	                type: ActionTypes.UPDATE_ITEM,
 	                content: payload
 	            });
-	            this.close();
 	        }
 	    },
 	    render: function render() {
@@ -50774,11 +50822,11 @@
 	                }
 	            });
 
+	            this.close();
 	            Dispatcher.dispatch({
 	                type: ActionTypes.UPDATE_ITEM,
 	                content: payload
 	            });
-	            this.close();
 	            //            setTimeout(this.reset, 1000);
 	        }
 	    },
@@ -51265,14 +51313,16 @@
 	  getInitialState: function getInitialState() {
 	    return {
 	      itemExpanded: false,
-	      showPreview: false
-	    };
+	      showPreview: false,
+	      updateableItem: JSON.parse(JSON.stringify(this.props.item)) };
 	  },
+	  // make a clone so that this changes when item updated
 	  componentWillMount: function componentWillMount() {},
 	  componentDidMount: function componentDidMount() {},
 	  componentDidUpdate: function componentDidUpdate() {
 	    renderMathInElement(this.refs.textContainer);
 	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
 	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
 	    if (nextState.showPreview) {
 	      SetIFrameHeight(this.refs.myPreviewFrame);
@@ -51285,6 +51335,11 @@
 
 	    unequalPropsItem = _.some(equalityKeys, function (key) {
 	      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
+	      if (key == 'answers') {
+	        _.each(nextProps.item[key], function (answer, index) {
+	          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.state.updateableItem[key][index]['confusedLearningObjectiveIds'][0];
+	        });
+	      }
 	      return unequalProp;
 	    });
 
@@ -51367,7 +51422,8 @@
 	          outcomeId: _this.getQuestionLO(item),
 	          outcomes: _this.filterOutcomes(item),
 	          refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
-	          relatedItems: relatedItems })
+	          relatedItems: relatedItems,
+	          updateAnswerLO: _this.updateAnswerLO })
 	      );
 	    });
 	  },
@@ -51407,26 +51463,38 @@
 	    this.setState({ itemExpanded: !this.state.itemExpanded });
 	    //}
 	  },
+	  updateAnswerLO: function updateAnswerLO(answerId, confusedLearningObjectiveId) {
+	    var updatedItem = this.state.updateableItem,
+	        updatedWrongAnswerLOs = [];
+	    _.each(updatedItem.answers, function (answer) {
+	      if (answer.id == answerId) {
+	        answer.confusedLearningObjectiveIds = [confusedLearningObjectiveId];
+	        updatedWrongAnswerLOs.push(confusedLearningObjectiveId);
+	      } else {
+	        updatedWrongAnswerLOs.push(answer.confusedLearningObjectiveIds[0]);
+	      }
+	    });
+	    updatedItem.wrongAnswerLOs = updatedWrongAnswerLOs;
+	    this.setState({ updateableItem: updatedItem });
+	  },
 	  render: function render() {
-	    var _this = this,
-
+	    var _this = this;
 	    // map the choiceIds, etc., in answers back to choices in questions
-	    updatedItem = this.props.item;
 
-	    var answers = AnswerExtraction(updatedItem),
+	    var answers = AnswerExtraction(_this.state.updateableItem),
 	        previewHTML = { __html: answers.correctAnswerFeedback };
 	    //      previewHTML = WrapHTML(answers.correctAnswerFeedback);
 
-	    updatedItem['correctAnswer'] = answers.correctAnswerText.text;
-	    updatedItem['correctAnswerId'] = answers.correctAnswerId;
-	    updatedItem['correctAnswerFeedback'] = answers.correctAnswerFeedback;
-	    updatedItem['questionRelatedItems'] = _this.getRelatedItems(updatedItem.learningObjectiveIds[0]);
-	    updatedItem['usedLOs'] = updatedItem.learningObjectiveIds;
-	    updatedItem['wrongAnswers'] = answers.wrongAnswerTexts;
-	    updatedItem['wrongAnswerIds'] = answers.wrongAnswerIds;
-	    updatedItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
+	    _this.state.updateableItem['correctAnswer'] = answers.correctAnswerText.text;
+	    _this.state.updateableItem['correctAnswerId'] = answers.correctAnswerId;
+	    _this.state.updateableItem['correctAnswerFeedback'] = answers.correctAnswerFeedback;
+	    _this.state.updateableItem['questionRelatedItems'] = _this.getRelatedItems(_this.state.updateableItem.learningObjectiveIds[0]);
+	    _this.state.updateableItem['usedLOs'] = this.state.updateableItem.learningObjectiveIds;
+	    _this.state.updateableItem['wrongAnswers'] = answers.wrongAnswerTexts;
+	    _this.state.updateableItem['wrongAnswerIds'] = answers.wrongAnswerIds;
+	    _this.state.updateableItem['wrongAnswerLOs'] = answers.wrongAnswerLOs;
 
-	    var questionLO = _this.getQuestionLO(updatedItem),
+	    var questionLO = _this.getQuestionLO(_this.state.updateableItem),
 	        itemCreator = 'Unknown',
 	        itemControls;
 
@@ -51434,7 +51502,7 @@
 	      itemControls = React.createElement(
 	        'div',
 	        { className: 'item-controls' },
-	        React.createElement(ItemControls, { item: updatedItem,
+	        React.createElement(ItemControls, { item: _this.state.updateableItem,
 	          libraries: _this.props.libraries,
 	          libraryId: _this.props.libraryId })
 	      );
@@ -51442,9 +51510,9 @@
 	      itemControls = '';
 	    }
 
-	    if (updatedItem.hasOwnProperty('providerId')) {
-	      if (updatedItem.providerId != '') {
-	        itemCreator = updatedItem.providerId;
+	    if (_this.state.updateableItem.hasOwnProperty('providerId')) {
+	      if (_this.state.updateableItem.providerId != '') {
+	        itemCreator = _this.state.updateableItem.providerId;
 	      }
 	    }
 
@@ -51456,9 +51524,9 @@
 	        { sm: 8, md: 8, lg: 8 },
 	        React.createElement(
 	          Panel,
-	          { header: updatedItem.displayName.text,
+	          { header: _this.state.updateableItem.displayName.text,
 	            collapsible: true,
-	            'data-id': updatedItem.id,
+	            'data-id': _this.state.updateableItem.id,
 	            'data-type': 'item',
 	            expanded: _this.state.itemExpanded,
 	            onClick: _this.toggleItemState },
@@ -51471,7 +51539,7 @@
 	              'Q:'
 	            ),
 	            React.createElement(QuestionText, { expanded: _this.state.itemExpanded,
-	              questionText: updatedItem.question.text.text,
+	              questionText: _this.state.updateableItem.question.text.text,
 	              itemCreator: itemCreator })
 	          ),
 	          React.createElement(
@@ -51482,13 +51550,13 @@
 	              { className: 'answer-label' },
 	              'a)'
 	            ),
-	            React.createElement(AnswerText, { answerId: updatedItem.correctAnswerId,
-	              answerText: updatedItem.correctAnswer,
+	            React.createElement(AnswerText, { answerId: _this.state.updateableItem.correctAnswerId,
+	              answerText: _this.state.updateableItem.correctAnswer,
 	              correctAnswer: 'true',
 	              enableClickthrough: _this.props.enableClickthrough,
 	              expanded: _this.state.itemExpanded,
-	              solution: updatedItem.correctAnswerFeedback,
-	              itemId: updatedItem.id,
+	              solution: _this.state.updateableItem.correctAnswerFeedback,
+	              itemId: _this.state.updateableItem.id,
 	              label: 'Correct Answer',
 	              libraryId: _this.props.libraryId,
 	              togglePreview: _this._togglePreview })
@@ -51504,7 +51572,7 @@
 	                ref: 'textContainer' })
 	            )
 	          ),
-	          _this.renderItemAnswerTexts(updatedItem),
+	          _this.renderItemAnswerTexts(_this.state.updateableItem),
 	          itemControls
 	        )
 	      ),
@@ -51526,14 +51594,14 @@
 	            ),
 	            React.createElement(LOText, { component: 'question',
 	              enableClickthrough: _this.props.enableClickthrough,
-	              itemId: updatedItem.id,
+	              itemId: _this.state.updateableItem.id,
 	              libraryId: _this.props.libraryId,
 	              outcomeDescription: _this.getOutcomeDescription(questionLO),
 	              outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
 	              outcomeId: questionLO,
-	              outcomes: _this.filterOutcomes(updatedItem),
+	              outcomes: _this.filterOutcomes(_this.state.updateableItem),
 	              refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
-	              relatedItems: updatedItem.questionRelatedItems })
+	              relatedItems: _this.state.updateableItem.questionRelatedItems })
 	          ),
 	          React.createElement(
 	            'div',
@@ -51549,7 +51617,7 @@
 	              'Correct answer -- no confused LO'
 	            )
 	          ),
-	          _this.renderItemAnswerLOs(updatedItem)
+	          _this.renderItemAnswerLOs(_this.state.updateableItem)
 	        )
 	      )
 	    );
@@ -51641,7 +51709,8 @@
 	                    libraryId: this.props.libraryId,
 	                    outcomeId: this.props.outcomeId,
 	                    outcomes: this.props.outcomes,
-	                    refreshModulesAndOutcomes: this.props.refreshModulesAndOutcomes })
+	                    refreshModulesAndOutcomes: this.props.refreshModulesAndOutcomes,
+	                    updateAnswerLO: this.props.updateAnswerLO })
 	            );
 	        }
 
@@ -51772,6 +51841,7 @@
 	    },
 	    reset: function reset() {},
 	    save: function save(e) {
+	        this.close();
 	        if (this.props.component == 'answer') {
 	            var payload = {
 	                answerId: this.props.answerId,
@@ -51779,7 +51849,7 @@
 	                itemId: this.props.itemId,
 	                libraryId: this.props.libraryId
 	            };
-
+	            this.props.updateAnswerLO(this.props.answerId, this.state.outcomeId);
 	            Dispatcher.dispatch({
 	                type: ActionTypes.LINK_ANSWER_LO,
 	                content: payload
@@ -51797,7 +51867,6 @@
 	                content: payload
 	            });
 	        }
-	        this.close();
 	    },
 	    render: function render() {
 	        var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {

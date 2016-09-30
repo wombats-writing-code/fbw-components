@@ -142,8 +142,24 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         }).then(function (response) {
             if (response.ok) {
                 response.json().then(function (data) {
-                    _this.getItems(payload.libraryId);
-                    console.log(data);
+                  var updatedItems = [];
+                  _.each(_items, function (item) {
+                    if (item.id == data.id) {
+                      _.each(item.answers, function (answer) {
+                        if (answer.id == payload.answerId) {
+                          answer.confusedLearningObjectiveIds = [payload.confusedLearningObjectiveId];
+                        }
+                      });
+                      updatedItems.push(item);
+                    } else {
+                      updatedItems.push(item);
+                    }
+                  });
+
+                  _items = updatedItems;
+                  _this.emitChange();
+//                    _this.getItems(payload.libraryId);
+//                    console.log(data);
                 });
             } else {
                 response.text().then(function (data) {
@@ -171,8 +187,21 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
         }).then(function (response) {
             if (response.ok) {
                 response.json().then(function (data) {
-                    _this.getItems(payload.libraryId);
-                    console.log(data);
+                  var updatedItems = [];
+                  _.each(_items, function (item) {
+                    if (item.id == data.id) {
+                      item.learningObjectiveIds = [payload.learningObjectiveId];
+                      item.question.learningObjectiveIds = [payload.learningObjectiveId];
+                      updatedItems.push(item);
+                    } else {
+                      updatedItems.push(item);
+                    }
+                  });
+
+                  _items = updatedItems;
+                  _this.emitChange();
+//                    _this.getItems(payload.libraryId);
+//                    console.log(data);
                 });
             } else {
                 response.text().then(function (data) {
@@ -205,18 +234,39 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             body: data
         }).then(function (response) {
             if (response.ok) {
-                response.json().then(function (data) {
-                    _this.getItems(payload.libraryId);
-                    console.log(data);
-                });
+                return response.json();
             } else {
                 response.text().then(function (data) {
                     alert(response.statusText + ': ' + data);
                 });
             }
+        }).then(function (data) {
+          // call this again to get the wrong answers
+          var url = `${_this.url()}${payload.libraryId}/items/${payload.itemId}?wronganswers&unrandomized`;
+
+          return fetch(url, {
+              method: 'GET',
+              credentials: "same-origin"
+          });
+        }).then(function (res) {
+          return res.json();
+        }).then(function (data) {
+            var updatedItems = [];
+            _.each(_items, function (item) {
+              if (item.id == data.id) {
+                updatedItems.push(data);
+              } else {
+                updatedItems.push(item);
+              }
+            });
+
+            _items = updatedItems;
+            _this.emitChange();
+//                    _this.getItems(payload.libraryId);
+//                    console.log(data);
         }).catch(function (error) {
             console.log('Problem with updating item ' + payload.itemId + ': ' + error.message);
-        });
+        }).done();
     },
     url: function () {
       if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';

@@ -58,6 +58,7 @@ var LinkLO = React.createClass({
 
     },
     save: function (e) {
+        this.close();
         if (this.props.component == 'answer') {
             var payload = {
                 answerId: this.props.answerId,
@@ -65,7 +66,7 @@ var LinkLO = React.createClass({
                 itemId: this.props.itemId,
                 libraryId: this.props.libraryId
             };
-
+            this.props.updateAnswerLO(this.props.answerId, this.state.outcomeId);
             Dispatcher.dispatch({
                 type: ActionTypes.LINK_ANSWER_LO,
                 content: payload
@@ -83,7 +84,6 @@ var LinkLO = React.createClass({
                 content: payload
             });
         }
-        this.close();
     },
     render: function () {
         var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
