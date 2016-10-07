@@ -52,3 +52,8 @@
   margin-left: 15px;
   padding: 5px;
 }
+
+.question-id {
+  font-size: small;
+  color: gray
+}

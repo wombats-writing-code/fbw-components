@@ -51920,6 +51920,16 @@
 	            { className: 'text-row-wrapper' },
 	            React.createElement(
 	              'p',
+	              { className: 'question-id' },
+	              'ID: ',
+	              updateItem.id
+	            )
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'text-row-wrapper' },
+	            React.createElement(
+	              'p',
 	              { className: 'question-label' },
 	              'Q:'
 	            ),
@@ -52050,7 +52060,7 @@
 
 
 	// module
-	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n\n.panel-body {\n  padding-left: 0;\n}\n\n.right-answer-feedback-preview {\n  margin-left: 15px;\n  padding: 5px;\n}", ""]);
+	exports.push([module.id, ".item-controls {\n    float: right;\n}\n\n.item-controls button {\n    margin-left: 5px;\n    margin-right: 5px;\n}\n\n.item-controls div {\n    display: inline;\n}\n\n.text-row-wrapper {\n    display: flex;\n    padding: 5px 5px;\n}\n\n.answer-label {\n    margin-right: 10px;\n}\n\n.correct-answer-lo {\n    color: darkgreen;\n    font-weight: bold;\n}\n\n.missing-lo {\n    color: darkred;\n    font-weight: bold;\n}\n\n.question-label {\n    font-weight: bold;\n    margin-right: 10px;\n}\n\n.taggable-text {\n    display: flex;\n    flex: 1 1 100%;\n}\n\n.text-blob {\n    flex: 1 1 90%;\n}\n\n.panel-body {\n  padding-left: 0;\n}\n\n.right-answer-feedback-preview {\n  margin-left: 15px;\n  padding: 5px;\n}\n\n.question-id {\n  font-size: small;\n  color: gray\n}", ""]);
 
 	// exports
 

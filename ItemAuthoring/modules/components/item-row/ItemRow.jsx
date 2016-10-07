@@ -247,6 +247,9 @@ var ItemRow = React.createClass({
         expanded={_this.state.itemExpanded}
         onClick={_this.toggleItemState} >
           <div className="text-row-wrapper">
+            <p className="question-id">ID: {updateItem.id}</p>
+          </div>
+          <div className="text-row-wrapper">
             <p className="question-label">Q:</p>
             <QuestionText expanded={_this.state.itemExpanded}
             questionText={updateItem.question.text.text}
