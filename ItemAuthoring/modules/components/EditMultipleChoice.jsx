@@ -300,7 +300,8 @@ var EditMultipleChoice = React.createClass({
 
         var payload = {
             itemId: this.props.item.id,
-            libraryId: this.props.libraryId
+            libraryId: this.props.libraryId,
+            callback: this.props.triggerStateChange
         },
             correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
             correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),

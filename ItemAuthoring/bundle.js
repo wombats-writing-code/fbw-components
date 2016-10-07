@@ -36258,12 +36258,9 @@
 	                      updatedItems.push(item);
 	                    }
 	                  });
-	                  console.log('new lo id');
-	                  console.log(payload.confusedLearningObjectiveId);
-	                  console.log(payload.answerId);
-	                  console.log(_.find(updatedItems, {id: 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU'}));
 	                  _items = updatedItems;
 	                  _this.emitChange();
+	                  payload.callback();
 	//                    _this.getItems(payload.libraryId);
 	//                    console.log(data);
 	                });
@@ -36306,6 +36303,7 @@
 
 	                  _items = updatedItems;
 	                  _this.emitChange();
+	                  payload.callback();
 	//                    _this.getItems(payload.libraryId);
 	//                    console.log(data);
 	                });
@@ -36368,6 +36366,7 @@
 
 	            _items = updatedItems;
 	            _this.emitChange();
+	            payload.callback();
 	//                    _this.getItems(payload.libraryId);
 	//                    console.log(data);
 	        }).catch(function (error) {
@@ -50458,7 +50457,8 @@
 	        libraries: this.props.libraries,
 	        libraryId: this.props.libraryId }),
 	      React.createElement(EditItem, { item: this.props.item,
-	        libraryId: this.props.libraryId }),
+	        libraryId: this.props.libraryId,
+	        triggerStateChange: this.props.triggerStateChange }),
 	      React.createElement(DeleteItem, { item: this.props.item,
 	        libraryId: this.props.libraryId })
 	    );
@@ -50713,7 +50713,8 @@
 	            questionForm = React.createElement(EditMultipleChoice, { close: this.close,
 	                item: this.props.item,
 	                libraryId: this.props.libraryId,
-	                showModal: this.state.showModal });
+	                showModal: this.state.showModal,
+	                triggerStateChange: this.props.triggerStateChange });
 	        }
 
 	        return React.createElement(
@@ -51080,7 +51081,8 @@
 
 	        var payload = {
 	            itemId: this.props.item.id,
-	            libraryId: this.props.libraryId
+	            libraryId: this.props.libraryId,
+	            callback: this.props.triggerStateChange
 	        },
 	            correctAnswer = CKEDITOR.instances.correctAnswer.getData(),
 	            correctAnswerFeedback = CKEDITOR.instances.correctAnswerFeedback.getData(),
@@ -51682,7 +51684,8 @@
 	  getInitialState: function getInitialState() {
 	    return {
 	      itemExpanded: false,
-	      showPreview: false
+	      showPreview: false,
+	      forceUpdate: false
 	    };
 	  },
 	  componentWillMount: function componentWillMount() {},
@@ -51710,31 +51713,28 @@
 	        _this = this,
 	        unequalPropsItem;
 
-	    unequalPropsItem = _.some(equalityKeys, function (key) {
-	      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
-	      //      if (key == 'answers') {
-	      //        _.each(nextProps.item[key], function (answer, index) {
-	      //          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.props.item[key][index]['confusedLearningObjectiveIds'][0];
-	      //          if (answer.id == 'assessment.Answer%3A57bd9b2471e482b4e5522159%40bazzim.MIT.EDU') {
-	      //            console.log(answer['confusedLearningObjectiveIds'][0]);
-	      //            console.log(_this.props.item[key][index]['confusedLearningObjectiveIds'][0]);
-	      //          }
-	      //        });
-	      //      }
-	      //      } else if (key == 'question') {
-	      //        unequalProp = unequalProp || nextProps.item['question']['text']['text'] != _this.state.updateableItem['question']['text']['text'];
-	      //        _.each(nextProps.item[key]['choices'], function (choice, index) {
-	      //          unequalProp = unequalProp || choice['text'] != _this.state.updateableItem[key]['choices'][index]['text'];
-	      //        });
-	      //      }
-	      return unequalProp;
-	    });
+	    unequalPropsItem = !_.isEqual(nextProps.item, _this.props.item);
+	    //    unequalPropsItem = _.some(equalityKeys, function (key) {
+	    //      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
+	    ////      if (key == 'answers') {
+	    ////        _.each(nextProps.item[key], function (answer, index) {
+	    ////          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.props.item[key][index]['confusedLearningObjectiveIds'][0];
+	    ////          if (answer.id == 'assessment.Answer%3A57bd9b2471e482b4e5522159%40bazzim.MIT.EDU') {
+	    ////            console.log(answer['confusedLearningObjectiveIds'][0]);
+	    ////            console.log(_this.props.item[key][index]['confusedLearningObjectiveIds'][0]);
+	    ////          }
+	    ////        });
+	    ////      }
+	    ////      } else if (key == 'question') {
+	    ////        unequalProp = unequalProp || nextProps.item['question']['text']['text'] != _this.state.updateableItem['question']['text']['text'];
+	    ////        _.each(nextProps.item[key]['choices'], function (choice, index) {
+	    ////          unequalProp = unequalProp || choice['text'] != _this.state.updateableItem[key]['choices'][index]['text'];
+	    ////        });
+	    ////      }
+	    //      return unequalProp;
+	    //    });
 
-	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded || this.state.showPreview !== nextState.showPreview || answerLOchanged;
-
-	    if (answerLOchanged) {
-	      console.log('yes, should update');
-	    }
+	    var shouldUpdate = unequalPropsItem || this.state.itemExpanded !== nextState.itemExpanded || this.state.showPreview !== nextState.showPreview || nextState.forceUpdate;
 
 	    return shouldUpdate;
 	  },
@@ -51784,6 +51784,12 @@
 	      return [];
 	    }
 	  },
+	  forceUpdate: function forceUpdate() {
+	    // ugly hack to get the UI to update
+	    this.setState({ forceUpdate: true }, function () {
+	      this.setState({ forceUpdate: false });
+	    });
+	  },
 	  renderItemAnswerLOs: function renderItemAnswerLOs(item) {
 	    // just generate the answer los
 	    var _this = this;
@@ -51792,12 +51798,6 @@
 	          answerId = item.wrongAnswerIds[index],
 	          relatedItems = _this.getRelatedItems(outcomeId),
 	          choiceLetter = ChoiceLabels[visibleIndex];
-
-	      if (_this.props.item.id == 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU') {
-	        console.log('answer LOs');
-	        console.log(answerId);
-	        console.log(outcomeId);
-	      }
 
 	      return React.createElement(
 	        'div',
@@ -51819,7 +51819,8 @@
 	          outcomeId: _this.getQuestionLO(item),
 	          outcomes: _this.filterOutcomes(item),
 	          refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
-	          relatedItems: relatedItems })
+	          relatedItems: relatedItems,
+	          triggerStateChange: _this.forceUpdate })
 	      );
 	    });
 	  },
@@ -51864,11 +51865,6 @@
 	        updateItem = JSON.parse(JSON.stringify(this.props.item));
 	    // map the choiceIds, etc., in answers back to choices in questions
 
-	    if (this.props.item.id == 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU') {
-	      console.log('rendering');
-	      console.log(updateItem);
-	    }
-
 	    var answers = AnswerExtraction(updateItem),
 	        previewHTML = { __html: answers.correctAnswerFeedback };
 	    //      previewHTML = WrapHTML(answers.correctAnswerFeedback);
@@ -51892,7 +51888,8 @@
 	        { className: 'item-controls' },
 	        React.createElement(ItemControls, { item: updateItem,
 	          libraries: _this.props.libraries,
-	          libraryId: _this.props.libraryId })
+	          libraryId: _this.props.libraryId,
+	          triggerStateChange: _this.forceUpdate })
 	      );
 	    } else {
 	      itemControls = '';
@@ -52097,7 +52094,8 @@
 	                    libraryId: this.props.libraryId,
 	                    outcomeId: this.props.outcomeId,
 	                    outcomes: this.props.outcomes,
-	                    refreshModulesAndOutcomes: this.props.refreshModulesAndOutcomes })
+	                    refreshModulesAndOutcomes: this.props.refreshModulesAndOutcomes,
+	                    triggerStateChange: this.props.triggerStateChange })
 	            );
 	        }
 
@@ -52234,7 +52232,8 @@
 	                answerId: this.props.answerId,
 	                confusedLearningObjectiveId: this.state.outcomeId,
 	                itemId: this.props.itemId,
-	                libraryId: this.props.libraryId
+	                libraryId: this.props.libraryId,
+	                callback: this.props.triggerStateChange
 	            };
 	            Dispatcher.dispatch({
 	                type: ActionTypes.LINK_ANSWER_LO,
@@ -52245,7 +52244,8 @@
 	            var payload = {
 	                learningObjectiveId: this.state.outcomeId,
 	                itemId: this.props.itemId,
-	                libraryId: this.props.libraryId
+	                libraryId: this.props.libraryId,
+	                callback: this.props.triggerStateChange
 	            };
 
 	            Dispatcher.dispatch({

@@ -26,7 +26,8 @@ var ItemControls = React.createClass({
                     libraries={this.props.libraries}
                     libraryId={this.props.libraryId} />
       <EditItem item={this.props.item}
-                libraryId={this.props.libraryId} />
+                libraryId={this.props.libraryId}
+                triggerStateChange={this.props.triggerStateChange} />
       <DeleteItem item={this.props.item}
                   libraryId={this.props.libraryId} />
     </div>

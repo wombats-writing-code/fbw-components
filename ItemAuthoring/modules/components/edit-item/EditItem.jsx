@@ -38,7 +38,8 @@ var EditItem = React.createClass({
             questionForm = <EditMultipleChoice close={this.close}
                                                item={this.props.item}
                                                libraryId={this.props.libraryId}
-                                               showModal={this.state.showModal} />;
+                                               showModal={this.state.showModal}
+                                               triggerStateChange={this.props.triggerStateChange} />;
         }
 
         return <div>

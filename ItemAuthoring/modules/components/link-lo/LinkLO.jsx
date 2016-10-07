@@ -61,10 +61,11 @@ var LinkLO = React.createClass({
         this.close();
         if (this.props.component == 'answer') {
             var payload = {
-                answerId: this.props.answerId,
-                confusedLearningObjectiveId: this.state.outcomeId,
-                itemId: this.props.itemId,
-                libraryId: this.props.libraryId
+              answerId: this.props.answerId,
+              confusedLearningObjectiveId: this.state.outcomeId,
+              itemId: this.props.itemId,
+              libraryId: this.props.libraryId,
+              callback: this.props.triggerStateChange
             };
             Dispatcher.dispatch({
                 type: ActionTypes.LINK_ANSWER_LO,
@@ -73,9 +74,10 @@ var LinkLO = React.createClass({
         } else {
             // question
             var payload = {
-                learningObjectiveId: this.state.outcomeId,
-                itemId: this.props.itemId,
-                libraryId: this.props.libraryId
+              learningObjectiveId: this.state.outcomeId,
+              itemId: this.props.itemId,
+              libraryId: this.props.libraryId,
+              callback: this.props.triggerStateChange
             };
 
             Dispatcher.dispatch({

@@ -32,6 +32,7 @@ var ItemRow = React.createClass({
     return {
       itemExpanded: false,
       showPreview: false,
+      forceUpdate: false
     };
   },
   componentWillMount: function() {
@@ -66,34 +67,31 @@ var ItemRow = React.createClass({
       _this = this,
       unequalPropsItem;
 
-    unequalPropsItem = _.some(equalityKeys, function (key) {
-      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
-//      if (key == 'answers') {
-//        _.each(nextProps.item[key], function (answer, index) {
-//          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.props.item[key][index]['confusedLearningObjectiveIds'][0];
-//          if (answer.id == 'assessment.Answer%3A57bd9b2471e482b4e5522159%40bazzim.MIT.EDU') {
-//            console.log(answer['confusedLearningObjectiveIds'][0]);
-//            console.log(_this.props.item[key][index]['confusedLearningObjectiveIds'][0]);
-//          }
-//        });
-//      }
-//      } else if (key == 'question') {
-//        unequalProp = unequalProp || nextProps.item['question']['text']['text'] != _this.state.updateableItem['question']['text']['text'];
-//        _.each(nextProps.item[key]['choices'], function (choice, index) {
-//          unequalProp = unequalProp || choice['text'] != _this.state.updateableItem[key]['choices'][index]['text'];
-//        });
-//      }
-      return unequalProp;
-    });
+    unequalPropsItem = !_.isEqual(nextProps.item, _this.props.item);
+//    unequalPropsItem = _.some(equalityKeys, function (key) {
+//      var unequalProp = !_.isEqual(nextProps.item[key], _this.props.item[key]);
+////      if (key == 'answers') {
+////        _.each(nextProps.item[key], function (answer, index) {
+////          unequalProp = unequalProp || answer['confusedLearningObjectiveIds'][0] != _this.props.item[key][index]['confusedLearningObjectiveIds'][0];
+////          if (answer.id == 'assessment.Answer%3A57bd9b2471e482b4e5522159%40bazzim.MIT.EDU') {
+////            console.log(answer['confusedLearningObjectiveIds'][0]);
+////            console.log(_this.props.item[key][index]['confusedLearningObjectiveIds'][0]);
+////          }
+////        });
+////      }
+////      } else if (key == 'question') {
+////        unequalProp = unequalProp || nextProps.item['question']['text']['text'] != _this.state.updateableItem['question']['text']['text'];
+////        _.each(nextProps.item[key]['choices'], function (choice, index) {
+////          unequalProp = unequalProp || choice['text'] != _this.state.updateableItem[key]['choices'][index]['text'];
+////        });
+////      }
+//      return unequalProp;
+//    });
 
     var shouldUpdate = unequalPropsItem ||
       this.state.itemExpanded !== nextState.itemExpanded ||
       this.state.showPreview !== nextState.showPreview ||
-      answerLOchanged;
-
-    if (answerLOchanged) {
-      console.log('yes, should update');
-    }
+      nextState.forceUpdate;
 
     return shouldUpdate;
   },
@@ -139,6 +137,12 @@ var ItemRow = React.createClass({
       return [];
     }
   },
+  forceUpdate: function () {
+    // ugly hack to get the UI to update
+    this.setState({ forceUpdate: true }, function () {
+      this.setState({ forceUpdate: false });
+    });
+  },
   renderItemAnswerLOs: function (item) {
     // just generate the answer los
     var _this = this;
@@ -147,12 +151,6 @@ var ItemRow = React.createClass({
           answerId = item.wrongAnswerIds[index],
           relatedItems = _this.getRelatedItems(outcomeId),
           choiceLetter = ChoiceLabels[visibleIndex];
-
-      if (_this.props.item.id == 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU') {
-        console.log('answer LOs');
-        console.log(answerId);
-        console.log(outcomeId);
-      }
 
       return <div className="text-row-wrapper"
                   key={index}>
@@ -167,7 +165,8 @@ var ItemRow = React.createClass({
                 outcomeId={_this.getQuestionLO(item)}
                 outcomes={_this.filterOutcomes(item)}
                 refreshModulesAndOutcomes={_this.props.refreshModulesAndOutcomes}
-                relatedItems={relatedItems} />
+                relatedItems={relatedItems}
+                triggerStateChange={_this.forceUpdate} />
       </div>
     });
   },
@@ -205,11 +204,6 @@ var ItemRow = React.createClass({
       updateItem = JSON.parse(JSON.stringify(this.props.item));
       // map the choiceIds, etc., in answers back to choices in questions
 
-    if (this.props.item.id == 'assessment.Item%3A57bd9b2471e482b4e552213f%40bazzim.MIT.EDU') {
-      console.log('rendering');
-      console.log(updateItem);
-    }
-
     var answers = AnswerExtraction(updateItem),
       previewHTML = {__html: answers.correctAnswerFeedback};
     //      previewHTML = WrapHTML(answers.correctAnswerFeedback);
@@ -230,8 +224,9 @@ var ItemRow = React.createClass({
     if (_this.props.enableClickthrough) {
       itemControls = <div className="item-controls">
         <ItemControls item={updateItem}
-        libraries={_this.props.libraries}
-        libraryId={_this.props.libraryId} />
+                      libraries={_this.props.libraries}
+                      libraryId={_this.props.libraryId}
+                      triggerStateChange={_this.forceUpdate} />
       </div>
     } else {
       itemControls = '';
