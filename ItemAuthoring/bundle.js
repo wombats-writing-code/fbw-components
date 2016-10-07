@@ -36372,7 +36372,7 @@
 	//                    console.log(data);
 	        }).catch(function (error) {
 	            console.log('Problem with updating item ' + payload.itemId + ': ' + error.message);
-	        }).done();
+	        });
 	    },
 	    url: function () {
 	      if (MiddlewareService.shouldReturnStatic()) return '/raw_data/libraries.json';
