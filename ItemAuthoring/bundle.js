@@ -50529,6 +50529,10 @@
 	          // because right answer is already there
 	      wrongChoiceLO = choiceData.wrongAnswerLOs[index];
 
+	      if (wrongChoiceLO == 'None linked yet') {
+	        wrongChoiceLO = '';
+	      }
+
 	      payload.question.choices.push(wrongAnswerText);
 
 	      payload.answers.push({
