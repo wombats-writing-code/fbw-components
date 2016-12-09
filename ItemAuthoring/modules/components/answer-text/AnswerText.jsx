@@ -44,6 +44,10 @@ var AnswerText = React.createClass({
     return {__html: this.props.answerText};
   },
   render: function () {
+    if (!this.props.expanded) {
+      return <div></div>
+    }
+
     var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
       return {
         value: outcome.id,

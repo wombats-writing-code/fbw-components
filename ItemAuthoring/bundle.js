@@ -48569,6 +48569,10 @@
 	    return { __html: this.props.answerText };
 	  },
 	  render: function render() {
+	    if (!this.props.expanded) {
+	      return React.createElement('div', null);
+	    }
+
 	    var formattedOutcomes = _.map(this.props.outcomes, function (outcome) {
 	      return {
 	        value: outcome.id,
@@ -51905,6 +51909,109 @@
 	      }
 	    }
 
+	    var panelContent = React.createElement('div', null);
+	    var objectiveContent = React.createElement('div', null);
+
+	    if (_this.props.expanded) {
+	      panelContent = React.createElement(
+	        'div',
+	        null,
+	        React.createElement(
+	          'div',
+	          { className: 'text-row-wrapper' },
+	          React.createElement(
+	            'p',
+	            { className: 'question-id' },
+	            'ID: ',
+	            updateItem.id
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'text-row-wrapper' },
+	          React.createElement(
+	            'p',
+	            { className: 'question-label' },
+	            'Q:'
+	          ),
+	          React.createElement(QuestionText, { expanded: _this.state.itemExpanded,
+	            questionText: updateItem.question.text.text,
+	            itemCreator: itemCreator })
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'text-row-wrapper' },
+	          React.createElement(
+	            'p',
+	            { className: 'answer-label' },
+	            'a)'
+	          ),
+	          React.createElement(AnswerText, { answerId: updateItem.correctAnswerId,
+	            answerText: updateItem.correctAnswer,
+	            correctAnswer: 'true',
+	            enableClickthrough: _this.props.enableClickthrough,
+	            expanded: _this.state.itemExpanded,
+	            solution: updateItem.correctAnswerFeedback,
+	            itemId: updateItem.id,
+	            label: 'Correct Answer',
+	            libraryId: _this.props.libraryId,
+	            togglePreview: _this._togglePreview })
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'right-answer-feedback-preview' },
+	          React.createElement(
+	            Panel,
+	            { collapsible: true,
+	              expanded: _this.state.showPreview },
+	            React.createElement('div', { dangerouslySetInnerHTML: previewHTML,
+	              ref: 'textContainer' })
+	          )
+	        ),
+	        _this.renderItemAnswerTexts(updateItem),
+	        itemControls
+	      );
+
+	      objectiveContent = React.createElement(
+	        'div',
+	        null,
+	        React.createElement(
+	          'div',
+	          { className: 'text-row-wrapper' },
+	          React.createElement(
+	            'p',
+	            { className: 'question-label' },
+	            'Q:'
+	          ),
+	          React.createElement(LOText, { component: 'question',
+	            enableClickthrough: _this.props.enableClickthrough,
+	            itemId: updateItem.id,
+	            libraryId: _this.props.libraryId,
+	            outcomeDescription: _this.getOutcomeDescription(questionLO),
+	            outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
+	            outcomeId: questionLO,
+	            outcomes: _this.filterOutcomes(updateItem),
+	            refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
+	            relatedItems: updateItem.questionRelatedItems })
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'text-row-wrapper' },
+	          React.createElement(
+	            'p',
+	            { className: 'answer-label' },
+	            'a)'
+	          ),
+	          React.createElement(
+	            'p',
+	            { className: 'correct-answer-lo' },
+	            'Correct answer -- no confused LO'
+	          )
+	        ),
+	        _this.renderItemAnswerLOs(updateItem)
+	      );
+	    }
+
 	    return React.createElement(
 	      Row,
 	      null,
@@ -51919,60 +52026,7 @@
 	            'data-type': 'item',
 	            expanded: _this.state.itemExpanded,
 	            onClick: _this.toggleItemState },
-	          React.createElement(
-	            'div',
-	            { className: 'text-row-wrapper' },
-	            React.createElement(
-	              'p',
-	              { className: 'question-id' },
-	              'ID: ',
-	              updateItem.id
-	            )
-	          ),
-	          React.createElement(
-	            'div',
-	            { className: 'text-row-wrapper' },
-	            React.createElement(
-	              'p',
-	              { className: 'question-label' },
-	              'Q:'
-	            ),
-	            React.createElement(QuestionText, { expanded: _this.state.itemExpanded,
-	              questionText: updateItem.question.text.text,
-	              itemCreator: itemCreator })
-	          ),
-	          React.createElement(
-	            'div',
-	            { className: 'text-row-wrapper' },
-	            React.createElement(
-	              'p',
-	              { className: 'answer-label' },
-	              'a)'
-	            ),
-	            React.createElement(AnswerText, { answerId: updateItem.correctAnswerId,
-	              answerText: updateItem.correctAnswer,
-	              correctAnswer: 'true',
-	              enableClickthrough: _this.props.enableClickthrough,
-	              expanded: _this.state.itemExpanded,
-	              solution: updateItem.correctAnswerFeedback,
-	              itemId: updateItem.id,
-	              label: 'Correct Answer',
-	              libraryId: _this.props.libraryId,
-	              togglePreview: _this._togglePreview })
-	          ),
-	          React.createElement(
-	            'div',
-	            { className: 'right-answer-feedback-preview' },
-	            React.createElement(
-	              Panel,
-	              { collapsible: true,
-	                expanded: _this.state.showPreview },
-	              React.createElement('div', { dangerouslySetInnerHTML: previewHTML,
-	                ref: 'textContainer' })
-	            )
-	          ),
-	          _this.renderItemAnswerTexts(updateItem),
-	          itemControls
+	          panelContent
 	        )
 	      ),
 	      React.createElement(
@@ -51983,40 +52037,7 @@
 	          { header: 'Learning Outcomes',
 	            collapsible: true,
 	            expanded: _this.state.itemExpanded },
-	          React.createElement(
-	            'div',
-	            { className: 'text-row-wrapper' },
-	            React.createElement(
-	              'p',
-	              { className: 'question-label' },
-	              'Q:'
-	            ),
-	            React.createElement(LOText, { component: 'question',
-	              enableClickthrough: _this.props.enableClickthrough,
-	              itemId: updateItem.id,
-	              libraryId: _this.props.libraryId,
-	              outcomeDescription: _this.getOutcomeDescription(questionLO),
-	              outcomeDisplayName: _this.getOutcomeDisplayName(questionLO),
-	              outcomeId: questionLO,
-	              outcomes: _this.filterOutcomes(updateItem),
-	              refreshModulesAndOutcomes: _this.props.refreshModulesAndOutcomes,
-	              relatedItems: updateItem.questionRelatedItems })
-	          ),
-	          React.createElement(
-	            'div',
-	            { className: 'text-row-wrapper' },
-	            React.createElement(
-	              'p',
-	              { className: 'answer-label' },
-	              'a)'
-	            ),
-	            React.createElement(
-	              'p',
-	              { className: 'correct-answer-lo' },
-	              'Correct answer -- no confused LO'
-	            )
-	          ),
-	          _this.renderItemAnswerLOs(updateItem)
+	          objectiveContent
 	        )
 	      )
 	    );
@@ -52572,6 +52593,10 @@
 	        this.close();
 	    },
 	    render: function render() {
+	        if (!this.props.expanded) {
+	            return React.createElement('div', null);
+	        }
+
 	        var agent = OsidId.getIdentifier(this.props.itemCreator);
 
 	        return React.createElement(

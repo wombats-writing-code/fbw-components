@@ -84,6 +84,10 @@ var QuestionText = React.createClass({
         this.close();
     },
     render: function () {
+        if (!this.props.expanded) {
+          return <div></div>
+        }
+
         var agent = OsidId.getIdentifier(this.props.itemCreator);
 
         return <div className="taggable-text">

@@ -238,14 +238,12 @@ var ItemRow = React.createClass({
       }
     }
 
-    return <Row>
-      <Col sm={8} md={8} lg={8}>
-        <Panel header={updateItem.displayName.text}
-        collapsible
-        data-id={updateItem.id}
-        data-type="item"
-        expanded={_this.state.itemExpanded}
-        onClick={_this.toggleItemState} >
+    let panelContent = <div></div>
+    let objectiveContent = <div></div>
+
+    if (_this.props.expanded) {
+      panelContent = (
+        <div>
           <div className="text-row-wrapper">
             <p className="question-id">ID: {updateItem.id}</p>
           </div>
@@ -278,12 +276,11 @@ var ItemRow = React.createClass({
           </div>
           {_this.renderItemAnswerTexts(updateItem)}
           {itemControls}
-        </Panel>
-      </Col>
-      <Col sm={4} md={4} lg={4}>
-        <Panel header="Learning Outcomes"
-        collapsible
-        expanded={_this.state.itemExpanded}>
+        </div>
+      )
+
+      objectiveContent = (
+        <div>
           <div className="text-row-wrapper">
             <p className="question-label">Q:</p>
             <LOText component="question"
@@ -304,6 +301,26 @@ var ItemRow = React.createClass({
             </p>
           </div>
             {_this.renderItemAnswerLOs(updateItem)}
+        </div>
+        )
+    }
+
+    return <Row>
+      <Col sm={8} md={8} lg={8}>
+        <Panel header={updateItem.displayName.text}
+        collapsible
+        data-id={updateItem.id}
+        data-type="item"
+        expanded={_this.state.itemExpanded}
+        onClick={_this.toggleItemState} >
+          {panelContent}
+        </Panel>
+      </Col>
+      <Col sm={4} md={4} lg={4}>
+        <Panel header="Learning Outcomes"
+        collapsible
+        expanded={_this.state.itemExpanded}>
+          {objectiveContent}
         </Panel>
       </Col>
     </Row>
