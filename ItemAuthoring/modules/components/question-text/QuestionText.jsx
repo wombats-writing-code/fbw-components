@@ -32,6 +32,7 @@ var QuestionText = React.createClass({
     },
     componentDidMount: function () {
 //      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+      renderMathInElement(this.refs.textContainer);
     },
     componentWillReceiveProps: function (nextProps) {
     },

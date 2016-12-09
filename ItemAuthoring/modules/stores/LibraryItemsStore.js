@@ -115,7 +115,11 @@ var LibraryItemsStore = _.assign({}, EventEmitter.prototype, {
             credentials: "same-origin"
         }).then(function (response) {
             response.json().then(function (data) {
-                _items = data;
+                _items = []
+                _.each(data, (item) => {
+                  item.question.choices = _.sortBy(item.question.choices, 'name')
+                  _items.push(item)
+                })
                 _this.emitChange();
             });
         }).catch(function (error) {

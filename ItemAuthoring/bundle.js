@@ -36218,7 +36218,11 @@
 	            credentials: "same-origin"
 	        }).then(function (response) {
 	            response.json().then(function (data) {
-	                _items = data;
+	                _items = []
+	                _.each(data, (item) => {
+	                  item.question.choices = _.sortBy(item.question.choices, 'name')
+	                  _items.push(item)
+	                })
 	                _this.emitChange();
 	            });
 	        }).catch(function (error) {
@@ -48558,6 +48562,7 @@
 	  componentWillMount: function componentWillMount() {},
 	  componentDidMount: function componentDidMount() {
 	    //    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+	    renderMathInElement(this.refs.textContainer);
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
 	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
@@ -52547,6 +52552,7 @@
 	    componentWillMount: function componentWillMount() {},
 	    componentDidMount: function componentDidMount() {
 	        //      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+	        renderMathInElement(this.refs.textContainer);
 	    },
 	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
 	    componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
