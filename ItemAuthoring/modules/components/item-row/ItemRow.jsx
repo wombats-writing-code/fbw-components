@@ -40,7 +40,9 @@ var ItemRow = React.createClass({
   componentDidMount: function () {
   },
   componentDidUpdate: function (prevProps, prevState) {
-    renderMathInElement(this.refs.textContainer);
+    if (this.state.itemExpanded) {
+      renderMathInElement(this.refs.textContainer);
+    }
     answerLOchanged = false;
   },
   componentWillReceiveProps: function (nextProps) {
@@ -241,7 +243,7 @@ var ItemRow = React.createClass({
     let panelContent = <div></div>
     let objectiveContent = <div></div>
 
-    if (_this.state.expanded) {
+    if (_this.state.itemExpanded) {
       panelContent = (
         <div>
           <div className="text-row-wrapper">

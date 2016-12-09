@@ -48560,9 +48560,9 @@
 	    //    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
-	  componentDidUpdate: function componentDidUpdate(nextProps, nextState) {
+	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
 	    //    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-	    if (nextProps.expanded) {
+	    if (this.props.expanded) {
 	      renderMathInElement(this.refs.textContainer);
 	    }
 	  },
@@ -51700,7 +51700,9 @@
 	  componentWillMount: function componentWillMount() {},
 	  componentDidMount: function componentDidMount() {},
 	  componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
-	    renderMathInElement(this.refs.textContainer);
+	    if (this.state.itemExpanded) {
+	      renderMathInElement(this.refs.textContainer);
+	    }
 	    answerLOchanged = false;
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
@@ -51913,7 +51915,7 @@
 	    var panelContent = React.createElement('div', null);
 	    var objectiveContent = React.createElement('div', null);
 
-	    if (_this.state.expanded) {
+	    if (_this.state.itemExpanded) {
 	      panelContent = React.createElement(
 	        'div',
 	        null,
@@ -52547,9 +52549,9 @@
 	        //      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 	    },
 	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
-	    componentDidUpdate: function componentDidUpdate(nextProps, nextState) {
+	    componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
 	        //      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-	        if (nextProps.expanded) {
+	        if (this.props.expanded) {
 	            renderMathInElement(this.refs.textContainer);
 	        }
 	    },
