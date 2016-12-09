@@ -37298,7 +37298,6 @@
 	var Col = ReactBS.Col;
 	var Row = ReactBS.Row;
 
-	var LibraryItemsStore = __webpack_require__(19);
 	var ModulesStore = __webpack_require__(34);
 	var OutcomesStore = __webpack_require__(35);
 	var RelationshipsStore = __webpack_require__(37);
@@ -48563,7 +48562,9 @@
 	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
 	  componentDidUpdate: function componentDidUpdate(nextProps, nextState) {
 	    //    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-	    renderMathInElement(this.refs.textContainer);
+	    if (nextProps.expanded) {
+	      renderMathInElement(this.refs.textContainer);
+	    }
 	  },
 	  getAnswerText: function getAnswerText() {
 	    return { __html: this.props.answerText };
@@ -51912,7 +51913,7 @@
 	    var panelContent = React.createElement('div', null);
 	    var objectiveContent = React.createElement('div', null);
 
-	    if (_this.props.expanded) {
+	    if (_this.state.expanded) {
 	      panelContent = React.createElement(
 	        'div',
 	        null,
@@ -52548,7 +52549,9 @@
 	    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {},
 	    componentDidUpdate: function componentDidUpdate(nextProps, nextState) {
 	        //      MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-	        renderMathInElement(this.refs.textContainer);
+	        if (nextProps.expanded) {
+	            renderMathInElement(this.refs.textContainer);
+	        }
 	    },
 	    close: function close() {
 	        this.setState({ showModal: false });

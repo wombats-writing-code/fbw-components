@@ -10,7 +10,6 @@ var Badge = ReactBS.Badge;
 var Col = ReactBS.Col;
 var Row = ReactBS.Row;
 
-var LibraryItemsStore = require('../../stores/LibraryItemsStore');
 var ModulesStore = require('../../stores/ModulesStore');
 var OutcomesStore = require('../../stores/OutcomesStore');
 var RelationshipsStore = require('../../stores/RelationshipsStore');

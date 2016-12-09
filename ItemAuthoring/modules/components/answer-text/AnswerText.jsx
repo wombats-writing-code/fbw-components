@@ -38,7 +38,9 @@ var AnswerText = React.createClass({
   },
   componentDidUpdate: function (nextProps, nextState) {
 //    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
-    renderMathInElement(this.refs.textContainer);
+    if (nextProps.expanded) {
+      renderMathInElement(this.refs.textContainer);
+    }
   },
   getAnswerText: function () {
     return {__html: this.props.answerText};

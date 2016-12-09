@@ -241,7 +241,7 @@ var ItemRow = React.createClass({
     let panelContent = <div></div>
     let objectiveContent = <div></div>
 
-    if (_this.props.expanded) {
+    if (_this.state.expanded) {
       panelContent = (
         <div>
           <div className="text-row-wrapper">
