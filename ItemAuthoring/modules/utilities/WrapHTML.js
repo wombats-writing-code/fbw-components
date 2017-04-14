@@ -6,7 +6,7 @@ var WrapHTML = function (str) {
 //    if (str.indexOf("math-tex") >= 0) {
     wrappedStr = '<html>' +
         '<head>' +
-        '<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>' +
+        '<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=default"></script>' +
         '<style>body * {margin:0px;padding:4px;}</style>' +
         '</head>' +
         '<body style="margin:0px;">' + str + '</body>' +
